@@ -74,10 +74,12 @@ frontend-petFinder/
 │   │   ├── apiEndpoints.js       # URLs de API
 │   │   ├── routes.js             # Rutas de la app
 │   │   └── appConfig.js          # Configuración
-│   ├── layouts/           # Layouts
-│   │   └── MainLayout.jsx        # Layout principal
-│   ├── styles/            # Estilos globales
-│   └── data/              # Datos de prueba
+  ├── layouts/           # Layouts
+  │   └── MainLayout.jsx        # Layout principal
+  ├── lib/               # Utilidades de bibliotecas
+  │   └── utils.js              # Utilidades de Tailwind/shadcn
+  ├── styles/            # Estilos globales
+  └── data/              # Datos de prueba
 └── package.json           # Dependencias y scripts
 ```
 
@@ -130,12 +132,17 @@ export const API_BASE_URL = 'http://localhost:3000/api';
 
 Definidas en `src/constants/routes.js`:
 
+**Rutas Públicas:**
 - `/` - Página de inicio
-- `/buscar` - Búsqueda de mascotas
-- `/publicar` - Publicar reporte (requiere autenticación)
-- `/mis-reportes` - Mis reportes (requiere autenticación)
 - `/login` - Inicio de sesión
-- `/registro` - Registro de usuario
+- `/register` - Registro de usuario
+- `/search` - Búsqueda de mascotas
+
+**Rutas Protegidas (requieren autenticación):**
+- `/dashboard` - Panel de control del usuario
+- `/my-reports` - Mis reportes publicados
+- `/publish` - Publicar nuevo reporte
+- `/profile` - Perfil del usuario
 
 ## Componentes UI
 
@@ -172,6 +179,7 @@ import PetMap from './components/PetMap';
 
 ## Información del Proyecto
 
-Proyecto desarrollado para la asignatura de Trabajo de Campo para la Universidad Pedagógica y Tecnológica de Colombia (UPTC), Tunja.
+Proyecto desarrollado como trabajo para la Universidad Pedagógica y Tecnológica de Colombia (UPTC), Tunja.
 
-**Desarrollo**: Frontend / React
+**Desarrollo**: Frontend - React
+**Asignatura**: Trabajo de Campo
