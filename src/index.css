@@ -1,0 +1,22 @@
+@import './styles/fonts.css';
+@import './styles/tailwind.css';
+@import './styles/theme.css';
+@import './styles/leaflet.css';
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
