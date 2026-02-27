@@ -182,4 +182,5 @@ import PetMap from './components/PetMap';
 Proyecto desarrollado como trabajo para la Universidad Pedagógica y Tecnológica de Colombia (UPTC), Tunja.
 
 **Desarrollo**: Frontend - React
+
 **Asignatura**: Trabajo de Campo

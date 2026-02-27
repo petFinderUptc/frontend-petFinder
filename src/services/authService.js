@@ -1,16 +1,16 @@
 /**
- * Authentication Service
+ * Servicio de Autenticación
  * 
- * Handles all authentication-related API calls.
- * Following Single Responsibility Principle - this service only handles auth operations.
+ * Maneja todas las llamadas API relacionadas con autenticación.
+ * Siguiendo el Principio de Responsabilidad Única - este servicio solo maneja operaciones de autenticación.
  * 
- * Functions include:
+ * Funciones incluidas:
  * - Login
- * - Register
+ * - Registro
  * - Logout
- * - Password reset
- * - Email verification
- * - Get current user
+ * - Restablecimiento de contraseña
+ * - Verificación de email
+ * - Obtener usuario actual
  */
 
 import apiClient from './api/apiClient';
@@ -19,16 +19,16 @@ import { STORAGE_KEYS } from '../constants/appConfig';
 import { setItem, removeItem } from '../utils/storage';
 
 /**
- * Login user
+ * Iniciar sesión
  * @param {Object} credentials - { email, password }
- * @returns {Promise<Object>} User data and tokens
+ * @returns {Promise<Object>} Datos de usuario y tokens
  */
 export const login = async (credentials) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
   
   const { accessToken, refreshToken, user } = response.data;
   
-  // Store tokens and user data
+  // Guardar tokens y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
   setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
   setItem(STORAGE_KEYS.USER_DATA, user);
@@ -37,16 +37,16 @@ export const login = async (credentials) => {
 };
 
 /**
- * Register new user
+ * Registrar nuevo usuario
  * @param {Object} userData - { email, password, username, phone }
- * @returns {Promise<Object>} User data and tokens
+ * @returns {Promise<Object>} Datos de usuario y tokens
  */
 export const register = async (userData) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.REGISTER, userData);
   
   const { accessToken, refreshToken, user } = response.data;
   
-  // Store tokens and user data
+  // Guardar tokens y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
   setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
   setItem(STORAGE_KEYS.USER_DATA, user);
@@ -55,17 +55,17 @@ export const register = async (userData) => {
 };
 
 /**
- * Logout user
- * Clears local storage and makes logout request
+ * Cerrar sesión
+ * Limpia el almacenamiento local y hace la petición de logout
  * @returns {Promise<void>}
  */
 export const logout = async () => {
   try {
     await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Error al cerrar sesión:', error);
   } finally {
-    // Always clear local data, even if API call fails
+    // Siempre limpiar datos locales, incluso si la llamada API falla
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
@@ -73,22 +73,22 @@ export const logout = async () => {
 };
 
 /**
- * Get current authenticated user
- * @returns {Promise<Object>} User data
+ * Obtener usuario autenticado actual
+ * @returns {Promise<Object>} Datos del usuario
  */
 export const getCurrentUser = async () => {
   const response = await apiClient.get(AUTH_ENDPOINTS.ME);
   
-  // Update stored user data
+  // Actualizar datos de usuario almacenados
   setItem(STORAGE_KEYS.USER_DATA, response.data.user);
   
   return response.data.user;
 };
 
 /**
- * Verify email address
- * @param {string} token - Verification token from email
- * @returns {Promise<Object>} Verification result
+ * Verificar dirección de email
+ * @param {string} token - Token de verificación del email
+ * @returns {Promise<Object>} Resultado de verificación
  */
 export const verifyEmail = async (token) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.VERIFY_EMAIL, { token });
@@ -96,8 +96,8 @@ export const verifyEmail = async (token) => {
 };
 
 /**
- * Request password reset
- * @param {string} email - User email
+ * Solicitar restablecimiento de contraseña
+ * @param {string} email - Email del usuario
  * @returns {Promise<Object>} Reset request result
  */
 export const forgotPassword = async (email) => {

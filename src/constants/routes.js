@@ -1,16 +1,16 @@
 /**
- * Application Routes Constants
+ * Constantes de Rutas de la Aplicación
  * 
- * Centralized route definitions for the application.
- * This approach provides:
- * - Single source of truth for routes
- * - Easy refactoring and maintenance
- * - Prevents typos in route paths
- * - Better IDE autocomplete support
+ * Definiciones centralizadas de rutas para la aplicación.
+ * Este enfoque proporciona:
+ * - Fuente única de verdad para las rutas
+ * - Fácil refactorización y mantenimiento
+ * - Previene errores tipográficos en las rutas
+ * - Mejor soporte de autocompletado del IDE
  */
 
 /**
- * Public routes (accessible without authentication)
+ * Rutas públicas (accesibles sin autenticación)
  */
 export const PUBLIC_ROUTES = {
   HOME: '/',
@@ -26,7 +26,7 @@ export const PUBLIC_ROUTES = {
 };
 
 /**
- * Protected routes (require authentication)
+ * Rutas protegidas (requieren autenticación)
  */
 export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
@@ -38,10 +38,10 @@ export const PROTECTED_ROUTES = {
 };
 
 /**
- * Helper function to generate dynamic routes
- * @param {string} route - Route template
- * @param {Object} params - Route parameters
- * @returns {string} Generated route
+ * Función auxiliar para generar rutas dinámicas
+ * @param {string} route - Plantilla de ruta
+ * @param {Object} params - Parámetros de ruta
+ * @returns {string} Ruta generada
  */
 export const generateRoute = (route, params) => {
   let generatedRoute = route;
@@ -54,7 +54,7 @@ export const generateRoute = (route, params) => {
 };
 
 /**
- * Example usage:
+ * Ejemplo de uso:
  * generateRoute(PUBLIC_ROUTES.PET_DETAIL, { id: 123 }) => '/pet/123'
  * generateRoute(PROTECTED_ROUTES.EDIT_REPORT, { id: 456 }) => '/edit-report/456'
  */

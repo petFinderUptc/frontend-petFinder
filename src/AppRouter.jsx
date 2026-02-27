@@ -1,14 +1,14 @@
 /**
- * Application Router Configuration
+ * Configuración del Enrutador de la Aplicación
  * 
- * Centralized routing using React Router v6.
- * Organizes routes into public and protected categories.
+ * Enrutamiento centralizado usando React Router v6.
+ * Organiza las rutas en categorías públicas y protegidas.
  * 
- * Features:
- * - Public routes (accessible without authentication)
- * - Protected routes (require authentication)
- * - 404 Not Found page
- * - Clean route organization
+ * Características:
+ * - Rutas públicas (accesibles sin autenticación)
+ * - Rutas protegidas (requieren autenticación)
+ * - Página 404 No Encontrada
+ * - Organización limpia de rutas
  */
 
 import { Routes, Route, Navigate } from 'react-router-dom';
@@ -31,7 +31,7 @@ import DashboardPage from './pages/user/DashboardPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 
 /**
- * NotFoundPage - Simple 404 page
+ * NotFoundPage - Página 404 simple
  */
 const NotFoundPage = () => (
   <div style={{
@@ -44,13 +44,13 @@ const NotFoundPage = () => (
     gap: '1rem',
   }}>
     <h1 style={{ fontSize: '4rem', margin: 0 }}>404</h1>
-    <p style={{ fontSize: '1.25rem', color: '#6b7280' }}>Page not found</p>
+    <p style={{ fontSize: '1.25rem', color: '#6b7280' }}>Página no encontrada</p>
     <a href={PUBLIC_ROUTES.HOME} style={{
       color: '#3b82f6',
       textDecoration: 'none',
       fontWeight: 500,
     }}>
-      Go back home
+      Volver al inicio
     </a>
   </div>
 );
@@ -60,8 +60,8 @@ const NotFoundPage = () => (
  */
 const MyReportsPage = () => (
   <div style={{ textAlign: 'center', padding: '3rem' }}>
-    <h1>My Reports</h1>
-    <p style={{ color: '#6b7280' }}>View and manage your pet reports here</p>
+    <h1>Mis Reportes</h1>
+    <p style={{ color: '#6b7280' }}>Ver y gestionar tus reportes de mascotas aquí</p>
   </div>
 );
 
@@ -70,27 +70,27 @@ const MyReportsPage = () => (
  */
 const ProfilePage = () => (
   <div style={{ textAlign: 'center', padding: '3rem' }}>
-    <h1>Profile</h1>
-    <p style={{ color: '#6b7280' }}>Manage your profile settings here</p>
+    <h1>Perfil</h1>
+    <p style={{ color: '#6b7280' }}>Gestiona tu configuración de perfil aquí</p>
   </div>
 );
 
 /**
- * AppRouter Component
- * Contains all route definitions
+ * Componente AppRouter
+ * Contiene todas las definiciones de rutas
  */
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Public Routes with Layout */}
+      {/* Rutas Públicas con Layout */}
       <Route path={PUBLIC_ROUTES.HOME} element={<MainLayout><HomePage /></MainLayout>} />
       <Route path={PUBLIC_ROUTES.SEARCH} element={<MainLayout><SearchPage /></MainLayout>} />
       
-      {/* Auth Routes without Layout (full-screen) */}
+      {/* Rutas de Autenticación sin Layout (pantalla completa) */}
       <Route path={PUBLIC_ROUTES.LOGIN} element={<LoginPage />} />
       <Route path={PUBLIC_ROUTES.REGISTER} element={<RegisterPage />} />
 
-      {/* Protected Routes with Layout */}
+      {/* Rutas Protegidas con Layout */}
       <Route
         path={PROTECTED_ROUTES.DASHBOARD}
         element={
@@ -132,10 +132,10 @@ const AppRouter = () => {
         }
       />
 
-      {/* 404 Not Found */}
+      {/* 404 No Encontrada */}
       <Route path={PUBLIC_ROUTES.NOT_FOUND} element={<MainLayout><NotFoundPage /></MainLayout>} />
       
-      {/* Catch all - redirect to 404 */}
+      {/* Captura todas las rutas - redirige a 404 */}
       <Route path="*" element={<Navigate to={PUBLIC_ROUTES.NOT_FOUND} replace />} />
     </Routes>
   );

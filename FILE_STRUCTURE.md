@@ -86,6 +86,9 @@ frontend-petFinder/
     ├── 📁 layouts/                        # Layouts de página
     │   └── 📄 MainLayout.jsx              # Layout principal con Header/Footer
     │
+    ├── 📁 lib/                           # Utilidades de bibliotecas
+    │   └── 📄 utils.js                    # Utilidades para Tailwind/shadcn (cn helper)
+    │
     ├── 📁 context/                        # Context API de React
     │   └── 📄 AuthContext.jsx             # Contexto de autenticación
     │
@@ -163,9 +166,9 @@ frontend-petFinder/
 |---------|------|-------------|
 | `HomePage.jsx` | `/` | Landing page con estadísticas |
 | `LoginPage.jsx` | `/login` | Autenticación de usuarios |
-| `RegisterPage.jsx` | `/registro` | Registro de nuevos usuarios |
-| `SearchPage.jsx` | `/buscar` | Búsqueda de mascotas |
-| `PublishReportPage.jsx` | `/publicar` | Crear reporte (protegida) |
+| `RegisterPage.jsx` | `/register` | Registro de nuevos usuarios |
+| `SearchPage.jsx` | `/search` | Búsqueda de mascotas |
+| `PublishReportPage.jsx` | `/publish` | Crear reporte (protegida) |
 | `DashboardPage.jsx` | `/dashboard` | Panel usuario (protegida) |
 
 ### Servicios
