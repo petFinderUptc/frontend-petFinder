@@ -172,11 +172,6 @@ import PetMap from './components/PetMap';
 
 ## Información del Proyecto
 
-Proyecto desarrollado como trabajo de campo para la Universidad Pedagógica y Tecnológica de Colombia (UPTC), Tunja.
+Proyecto desarrollado para la asignatura de Trabajo de Campo para la Universidad Pedagógica y Tecnológica de Colombia (UPTC), Tunja.
 
-**Desarrollo**: Frontend React
-**Asignatura**: Trabajo de Campo
-
-## Licencia
-
-Software educativo desarrollado para la UPTC.
+**Desarrollo**: Frontend / React
