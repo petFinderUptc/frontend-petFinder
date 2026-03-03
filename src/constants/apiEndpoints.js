@@ -10,7 +10,8 @@
  * - Type-safe with JSDoc annotations
  */
 
-export const API_BASE_URL = 'http://localhost:3000/api';
+// Base URL from environment variables with fallback
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 /**
  * Authentication related endpoints

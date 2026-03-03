@@ -64,6 +64,7 @@ export default function RegisterPage() {
     if (!validateForm()) return;
     
     try {
+      // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...userData } = formData;
       await register(userData);
       navigate(PROTECTED_ROUTES.DASHBOARD, { replace: true });
