@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
+import { PUBLIC_ROUTES } from '../constants/routes';
 
 export function PetCard({ pet }) {
   const statusColors = {
@@ -15,7 +16,7 @@ export function PetCard({ pet }) {
   };
   
   return (
-    <Link to={`/mascota/${pet.id}`}>
+    <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}>
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
         <div className="relative h-48 overflow-hidden">
           <img

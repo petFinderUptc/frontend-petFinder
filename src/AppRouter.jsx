@@ -25,6 +25,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SearchPage from './pages/pet/SearchPage';
+import PetDetailPage from './pages/pet/PetDetailPage';
 
 // Protected Pages
 import DashboardPage from './pages/user/DashboardPage';
@@ -85,6 +86,7 @@ const AppRouter = () => {
       {/* Rutas Públicas con Layout */}
       <Route path={PUBLIC_ROUTES.HOME} element={<MainLayout><HomePage /></MainLayout>} />
       <Route path={PUBLIC_ROUTES.SEARCH} element={<MainLayout><SearchPage /></MainLayout>} />
+      <Route path={PUBLIC_ROUTES.PET_DETAIL} element={<MainLayout><PetDetailPage /></MainLayout>} />
       
       {/* Rutas de Autenticación sin Layout (pantalla completa) */}
       <Route path={PUBLIC_ROUTES.LOGIN} element={<LoginPage />} />
