@@ -37,11 +37,11 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors = {};
     
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) newErrors.email = emailValidation.error;
     
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) newErrors.password = passwordError;
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) newErrors.password = passwordValidation.error;
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -54,11 +54,12 @@ export default function LoginPage() {
     if (!validateForm()) return;
     
     try {
-      await login(formData.email, formData.password);
+      // Pasar objeto con email y password
+      await login({ email: formData.email, password: formData.password });
       navigate(from, { replace: true });
     } catch (error) {
       setLoginError(
-        error.response?.data?.message || 
+        error.message || error.response?.data?.message || 
         'Error al iniciar sesión. Por favor verifica tus credenciales.'
       );
     }

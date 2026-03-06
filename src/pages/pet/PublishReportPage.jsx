@@ -58,7 +58,7 @@ export default function PublishReportPage() {
       console.log('Submitting report:', formData);
       await new Promise(resolve => setTimeout(resolve, 1000));
       navigate(PROTECTED_ROUTES.DASHBOARD);
-    } catch (err) {
+    } catch {
       setError('Error al publicar el reporte. Inténtalo nuevamente.');
     } finally {
       setIsSubmitting(false);

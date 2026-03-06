@@ -34,6 +34,7 @@ const AuthContext = createContext(undefined);
  * Throws error if used outside AuthProvider
  * @returns {Object} Auth context value
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
@@ -54,18 +55,10 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Initialize authentication state from localStorage
-   * Runs once on mount
-   */
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
-  /**
    * Initialize authentication state
    * Checks for stored tokens and validates them
    */
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -84,36 +77,22 @@ export const AuthProvider = ({ children }) => {
           console.error('Token validation failed:', error);
           clearAuthData();
         }
-      } else {
-        // En desarrollo, simular sesión iniciada para testing UI
-        if (import.meta.env.DEV) {
-          const mockUser = {
-            id: '1',
-            name: 'Usuario Demo',
-            email: 'demo@petfinder.com'
-          };
-          setUser(mockUser);
-          setIsAuthenticated(true);
-        }
       }
     } catch (error) {
       console.error('Auth initialization error:', error);
-      // En desarrollo, aún así mostrar como autenticado
-      if (import.meta.env.DEV) {
-        const mockUser = {
-          id: '1',
-          name: 'Usuario Demo',
-          email: 'demo@petfinder.com'
-        };
-        setUser(mockUser);
-        setIsAuthenticated(true);
-      } else {
-        clearAuthData();
-      }
+      clearAuthData();
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  /**
+   * Initialize authentication state from localStorage
+   * Runs once on mount
+   */
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   /**
    * Login function
@@ -182,7 +161,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
   };
 

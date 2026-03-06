@@ -21,16 +21,15 @@ import { setItem, removeItem } from '../utils/storage';
 /**
  * Iniciar sesión
  * @param {Object} credentials - { email, password }
- * @returns {Promise<Object>} Datos de usuario y tokens
+ * @returns {Promise<Object>} Datos de usuario y token
  */
 export const login = async (credentials) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
   
-  const { accessToken, refreshToken, user } = response.data;
+  const { accessToken, user } = response.data;
   
-  // Guardar tokens y datos de usuario
+  // Guardar token y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
   setItem(STORAGE_KEYS.USER_DATA, user);
   
   return response.data;
@@ -38,17 +37,16 @@ export const login = async (credentials) => {
 
 /**
  * Registrar nuevo usuario
- * @param {Object} userData - { email, password, username, phone }
- * @returns {Promise<Object>} Datos de usuario y tokens
+ * @param {Object} userData - { email, password, firstName, lastName, phoneNumber (opcional) }
+ * @returns {Promise<Object>} Datos de usuario y token
  */
 export const register = async (userData) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.REGISTER, userData);
   
-  const { accessToken, refreshToken, user } = response.data;
+  const { accessToken, user } = response.data;
   
-  // Guardar tokens y datos de usuario
+  // Guardar token y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
   setItem(STORAGE_KEYS.USER_DATA, user);
   
   return response.data;
@@ -67,7 +65,6 @@ export const logout = async () => {
   } finally {
     // Siempre limpiar datos locales, incluso si la llamada API falla
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
   }
 };
