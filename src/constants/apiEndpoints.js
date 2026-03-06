@@ -31,14 +31,14 @@ export const AUTH_ENDPOINTS = {
  * Pet/Report related endpoints
  */
 export const PET_ENDPOINTS = {
-  GET_ALL: '/pets',
-  GET_BY_ID: (id) => `/pets/${id}`,
-  CREATE: '/pets',
-  UPDATE: (id) => `/pets/${id}`,
-  DELETE: (id) => `/pets/${id}`,
-  SEARCH: '/pets/search',
-  MY_REPORTS: '/pets/my-reports',
-  UPLOAD_IMAGE: '/pets/upload-image',
+  GET_ALL: '/posts',
+  GET_BY_ID: (id) => `/posts/${id}`,
+  CREATE: '/posts',
+  UPDATE: (id) => `/posts/${id}`,
+  DELETE: (id) => `/posts/${id}`,
+  SEARCH: '/posts',
+  MY_REPORTS: '/posts/my-posts',
+  UPLOAD_IMAGE: '/posts/upload-image',
 };
 
 /**

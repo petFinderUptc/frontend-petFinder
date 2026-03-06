@@ -98,40 +98,21 @@ apiClient.interceptors.response.use(
       });
     }
     
-    // Handle 401 Unauthorized errors (token expired)
+    // Handle 401 Unauthorized errors (token expired or invalid)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      try {
-        // Attempt to refresh token
-        const refreshToken = getItem(STORAGE_KEYS.REFRESH_TOKEN);
-        
-        if (refreshToken) {
-          const response = await axios.post(
-            `${API_BASE_URL}/auth/refresh`,
-            { refreshToken }
-          );
-          
-          const { accessToken } = response.data;
-          
-          // Save new access token
-          setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-          
-          // Update authorization header and retry request
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // If refresh fails, clear auth data and redirect to login
-        removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-        removeItem(STORAGE_KEYS.USER_DATA);
-        
-        // Redirect to login page
+      // Clear auth data and redirect to login
+      // TODO: FASE 2 - Implementar refresh token logic
+      removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      removeItem(STORAGE_KEYS.USER_DATA);
+      
+      // Redirect to login page
+      if (window.location.pathname !== '/login') {
         window.location.href = '/login';
-        
-        return Promise.reject(refreshError);
       }
+      
+      return Promise.reject(error);
     }
     
     // Handle network errors

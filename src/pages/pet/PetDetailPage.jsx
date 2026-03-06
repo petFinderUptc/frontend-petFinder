@@ -4,7 +4,7 @@ import { MapPin, Calendar, Phone, Mail, AlertCircle, ArrowLeft, Share2 } from 'l
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import PetMap from '../../components/PetMap';
+import { PetMap } from '../../components/PetMap';
 import * as petService from '../../services/petService';
 
 export default function PetDetailPage() {

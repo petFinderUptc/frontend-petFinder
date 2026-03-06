@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PetCard from '../../components/PetCard';
 import { PetMap } from '../../components/PetMap';
 import { FilterPanel } from '../../components/FilterPanel';
-import { mockPets } from '../../data/mockPets';
 import { Card, CardContent } from '../../components/ui/card';
 import { AlertCircle, Map, List } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { getAllPets } from '../../services/petService';
 
 export default function SearchPage() {
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     status: 'all',
     type: 'all',
@@ -23,39 +26,59 @@ export default function SearchPage() {
   
   const [viewMode, setViewMode] = useState('list');
   const [activeTab, setActiveTab] = useState('all');
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllPets();
+        setPets(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar mascotas:', err);
+        setError('Error al cargar las mascotas');
+        setPets([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPets();
+  }, []);
   
-  const filteredPets = mockPets.filter((pet) => {
+  const filteredPets = pets.filter((pet) => {
     if (filters.status !== 'all' && pet.status !== filters.status) return false;
     if (filters.type !== 'all' && pet.type !== filters.type) return false;
     if (filters.size !== 'all' && pet.size !== filters.size) return false;
     
-    if (filters.location && !pet.location.toLowerCase().includes(filters.location.toLowerCase())) {
-      return false;
+    if (filters.location) {
+      const locationStr = `${pet.location?.city || ''} ${pet.location?.neighborhood || ''} ${pet.location?.address || ''}`.toLowerCase();
+      if (!locationStr.includes(filters.location.toLowerCase())) {
+        return false;
+      }
     }
     
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
       const matchesSearch = 
-        pet.name?.toLowerCase().includes(searchLower) ||
+        pet.petName?.toLowerCase().includes(searchLower) ||
         pet.breed?.toLowerCase().includes(searchLower) ||
-        pet.description.toLowerCase().includes(searchLower) ||
-        pet.color.toLowerCase().includes(searchLower);
+        pet.description?.toLowerCase().includes(searchLower) ||
+        pet.color?.toLowerCase().includes(searchLower);
       
       if (!matchesSearch) return false;
     }
     
     if (filters.breed) {
       const breedLower = filters.breed.toLowerCase();
-      const matchesBreed = 
-        pet.breed?.toLowerCase().includes(breedLower);
+      const matchesBreed = pet.breed?.toLowerCase().includes(breedLower);
       
       if (!matchesBreed) return false;
     }
     
     if (filters.color) {
       const colorLower = filters.color.toLowerCase();
-      const matchesColor = 
-        pet.color.toLowerCase().includes(colorLower);
+      const matchesColor = pet.color?.toLowerCase().includes(colorLower);
       
       if (!matchesColor) return false;
     }
@@ -64,21 +87,21 @@ export default function SearchPage() {
     
     if (filters.dateFrom) {
       const dateFrom = new Date(filters.dateFrom);
-      const petDate = new Date(pet.date);
+      const petDate = new Date(pet.lostOrFoundDate || pet.createdAt);
       if (petDate < dateFrom) return false;
     }
     
     if (filters.dateTo) {
       const dateTo = new Date(filters.dateTo);
-      const petDate = new Date(pet.date);
+      const petDate = new Date(pet.lostOrFoundDate || pet.createdAt);
       if (petDate > dateTo) return false;
     }
     
     return true;
   });
   
-  const lostPets = filteredPets.filter(p => p.status === 'lost');
-  const foundPets = filteredPets.filter(p => p.status === 'found');
+  const lostPets = filteredPets.filter(p => p.type === 'lost');
+  const foundPets = filteredPets.filter(p => p.type === 'found');
   
   const getPetsForTab = () => {
     switch (activeTab) {
@@ -104,30 +127,42 @@ export default function SearchPage() {
           <FilterPanel filters={filters} onFilterChange={setFilters} />
         </div>
         
-        {/* View Mode Toggle */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Todos los Reportes</h2>
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="gap-2"
-            >
-              <List className="h-4 w-4" />
-              Lista
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('map')}
-              className="gap-2"
-            >
-              <Map className="h-4 w-4" />
-              Mapa
-            </Button>
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Cargando mascotas...</p>
           </div>
-        </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 mx-auto text-red-400 mb-4" />
+            <p className="text-red-600">{error}</p>
+          </div>
+        ) : (
+          <>
+            {/* View Mode Toggle */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Todos los Reportes</h2>
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="gap-2"
+                >
+                  <List className="h-4 w-4" />
+                  Lista
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('map')}
+                  className="gap-2"
+                >
+                  <Map className="h-4 w-4" />
+                  Mapa
+                </Button>
+              </div>
+            </div>
         
         {/* Map View */}
         {viewMode === 'map' && (
@@ -214,6 +249,8 @@ export default function SearchPage() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

@@ -1,38 +1,42 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { PlusCircle, Search, Heart, AlertCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../../constants/routes';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { getMyReports } from '../../services/petService';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [myReports, setMyReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data
-  const myReports = [
-    {
-      id: 1,
-      name: 'Max',
-      type: 'Perro',
-      status: 'lost',
-      date: '2024-01-15',
-      views: 45
-    },
-    {
-      id: 2,
-      name: 'Luna',
-      type: 'Gato',
-      status: 'found',
-      date: '2024-01-10',
-      views: 32
-    }
-  ];
+  useEffect(() => {
+    const fetchMyReports = async () => {
+      try {
+        setLoading(true);
+        const data = await getMyReports();
+        setMyReports(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar reportes:', err);
+        setError('Error al cargar tus reportes');
+        setMyReports([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyReports();
+  }, []);
 
   const stats = {
-    activeReports: 2,
-    totalViews: 77,
-    savedSearches: 5
+    activeReports: myReports.filter(r => r.status === 'active').length,
+    totalViews: myReports.reduce((sum, r) => sum + (r.views || 0), 0),
+    savedSearches: 0, // TODO: Implementar saved searches
   };
 
   return (
@@ -142,7 +146,16 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {myReports.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600">Cargando reportes...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+                  <p className="text-red-600">{error}</p>
+                </div>
+              ) : myReports.length === 0 ? (
                 <div className="text-center py-12">
                   <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
