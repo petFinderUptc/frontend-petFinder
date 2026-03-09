@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, MapPin, Phone, AlertCircle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -8,11 +8,14 @@ import { Alert, AlertDescription } from '../../components/ui/alert';
 import { PET_TYPES } from '../../constants/appConfig';
 import { PROTECTED_ROUTES } from '../../constants/routes';
 import { createPet } from '../../services/petService';
+import { useAuth } from '../../context/AuthContext';
 
 export default function PublishReportPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [useMyContact, setUseMyContact] = useState(true); // Marcado por defecto
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -29,6 +32,24 @@ export default function PublishReportPage() {
     contactEmail: '',
     image: null
   });
+
+  // Prellenar información de contacto del usuario
+  useEffect(() => {
+    if (useMyContact && user) {
+      setFormData(prev => ({
+        ...prev,
+        contactEmail: user.email || '',
+        contactPhone: user.phoneNumber || ''
+      }));
+    } else if (!useMyContact) {
+      // Limpiar campos cuando se desmarca
+      setFormData(prev => ({
+        ...prev,
+        contactEmail: '',
+        contactPhone: ''
+      }));
+    }
+  }, [useMyContact, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -328,6 +349,20 @@ export default function PublishReportPage() {
                   </div>
                 </div>
 
+                {/* Use My Contact Info Checkbox */}
+                <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <input
+                    type="checkbox"
+                    id="useMyContact"
+                    checked={useMyContact}
+                    onChange={(e) => setUseMyContact(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                  <label htmlFor="useMyContact" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Usar mi información de contacto ({user?.email || 'No disponible'})
+                  </label>
+                </div>
+
                 {/* Contact Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -345,6 +380,7 @@ export default function PublishReportPage() {
                         placeholder="300 123 4567"
                         className="pl-9"
                         required
+                        disabled={useMyContact}
                       />
                     </div>
                   </div>
@@ -360,6 +396,7 @@ export default function PublishReportPage() {
                       value={formData.contactEmail}
                       onChange={handleChange}
                       placeholder="tu@email.com"
+                      disabled={useMyContact}
                     />
                   </div>
                 </div>
