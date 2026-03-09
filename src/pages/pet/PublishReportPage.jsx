@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { PET_TYPES } from '../../constants/appConfig';
 import { PROTECTED_ROUTES } from '../../constants/routes';
+import { createPet } from '../../services/petService';
 
 export default function PublishReportPage() {
   const navigate = useNavigate();
@@ -16,9 +17,13 @@ export default function PublishReportPage() {
     name: '',
     type: '',
     breed: '',
+    color: '',
+    size: '',
     status: 'lost',
     description: '',
     location: '',
+    city: '',
+    neighborhood: '',
     date: '',
     contactPhone: '',
     contactEmail: '',
@@ -46,7 +51,7 @@ export default function PublishReportPage() {
     e.preventDefault();
     setError('');
     
-    if (!formData.name || !formData.type || !formData.status || !formData.location || !formData.contactPhone) {
+    if (!formData.name || !formData.type || !formData.status || !formData.city || !formData.neighborhood || !formData.contactPhone || !formData.color || !formData.size || !formData.date) {
       setError('Por favor completa todos los campos obligatorios');
       return;
     }
@@ -54,12 +59,31 @@ export default function PublishReportPage() {
     setIsSubmitting(true);
     
     try {
-      // TODO: Implement API call
-      console.log('Submitting report:', formData);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Map frontend data to backend CreatePostDto format
+      const postData = {
+        type: formData.status, // 'lost' or 'found'
+        petName: formData.name,
+        petType: formData.type, // 'dog', 'cat', etc.
+        breed: formData.breed || undefined,
+        color: formData.color,
+        size: formData.size, // 'small', 'medium', 'large'
+        description: formData.description || 'Sin descripción adicional',
+        location: {
+          city: formData.city,
+          neighborhood: formData.neighborhood,
+          address: formData.location || undefined
+        },
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail || undefined,
+        lostOrFoundDate: formData.date
+      };
+
+      console.log('Submitting report:', postData);
+      await createPet(postData);
       navigate(PROTECTED_ROUTES.DASHBOARD);
-    } catch {
-      setError('Error al publicar el reporte. Inténtalo nuevamente.');
+    } catch (err) {
+      console.error('Error creating post:', err);
+      setError(err.response?.data?.message || 'Error al publicar el reporte. Inténtalo nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -172,6 +196,41 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
+                    <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+                      Color *
+                    </label>
+                    <Input
+                      id="color"
+                      name="color"
+                      value={formData.color}
+                      onChange={handleChange}
+                      placeholder="Ej: Café, Blanco, Negro"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
+                      Tamaño *
+                    </label>
+                    <select
+                      id="size"
+                      name="size"
+                      value={formData.size}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Selecciona un tamaño</option>
+                      <option value="small">Pequeño</option>
+                      <option value="medium">Mediano</option>
+                      <option value="large">Grande</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                       Estado *
                     </label>
@@ -208,8 +267,38 @@ export default function PublishReportPage() {
                 {/* Location & Date */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                      Ciudad *
+                    </label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="Ej: Tunja"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700 mb-1">
+                      Barrio *
+                    </label>
+                    <Input
+                      id="neighborhood"
+                      name="neighborhood"
+                      value={formData.neighborhood}
+                      onChange={handleChange}
+                      placeholder="Ej: Centro"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                     <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                      Ubicación *
+                      Dirección (Opcional)
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -218,9 +307,8 @@ export default function PublishReportPage() {
                         name="location"
                         value={formData.location}
                         onChange={handleChange}
-                        placeholder="Ej: Centro, Tunja"
-                        className="pl-9"
-                        required
+                        placeholder="Ej: Calle 10 #5-20"
+                        className="pl-10"
                       />
                     </div>
                   </div>
