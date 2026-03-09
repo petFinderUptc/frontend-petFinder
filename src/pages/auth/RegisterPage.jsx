@@ -19,6 +19,7 @@ export default function RegisterPage() {
     firstName: '',
     lastName: '',
     email: '',
+    username: '',
     phoneNumber: '',
     password: '',
     confirmPassword: ''
@@ -50,6 +51,9 @@ export default function RegisterPage() {
     const emailValidation = validateEmail(formData.email);
     if (!emailValidation.isValid) newErrors.email = emailValidation.error;
     
+    const usernameValidation = validateUsername(formData.username);
+    if (!usernameValidation.isValid) newErrors.username = usernameValidation.error;
+    
     // phoneNumber es opcional
     if (formData.phoneNumber && formData.phoneNumber.trim()) {
       const phoneValidation = validatePhone(formData.phoneNumber);
@@ -73,18 +77,14 @@ export default function RegisterPage() {
     if (!validateForm()) return;
     
     try {
-      // Preparar datos para el backend
+      // Preparar datos para el backend (sin phoneNumber ya que el backend no lo espera)
       const userData = {
         email: formData.email,
+        username: formData.username,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
       };
-      
-      // Solo agregar phoneNumber si tiene valor
-      if (formData.phoneNumber && formData.phoneNumber.trim()) {
-        userData.phoneNumber = formData.phoneNumber.trim();
-      }
       
       await register(userData);
       navigate(PROTECTED_ROUTES.DASHBOARD, { replace: true });
@@ -166,7 +166,7 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Correo Electrónico
+                  Correo Electrónico *
                 </label>
                 <Input
                   id="email"
@@ -181,6 +181,26 @@ export default function RegisterPage() {
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                 )}
+              </div>
+
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre de Usuario *
+                </label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="usuario123"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className={errors.username ? 'border-red-500' : ''}
+                  disabled={isLoading}
+                />
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">3-20 caracteres: letras, números, guiones o guiones bajos</p>
               </div>
 
               <div>
