@@ -13,7 +13,8 @@
 
 import apiClient from './api/apiClient';
 import { USER_ENDPOINTS } from '../constants/apiEndpoints';
-import { setItem, STORAGE_KEYS } from '../utils/storage';
+import { setItem } from '../utils/storage';
+import { STORAGE_KEYS } from '../constants/appConfig';
 
 /**
  * Get user profile

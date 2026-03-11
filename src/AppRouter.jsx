@@ -1,7 +1,6 @@
 /**
  * Configuración del Enrutador de la Aplicación
  * 
- * Enrutamiento centralizado usando React Router v6.
  * Organiza las rutas en categorías públicas y protegidas.
  * 
  * Características:
@@ -126,16 +125,6 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
-
-      {/* 404 No Encontrada */}
-      <Route path={PUBLIC_ROUTES.NOT_FOUND} element={<MainLayout><NotFoundPage /></MainLayout>} />
-      
-      {/* Captura todas las rutas - redirige a 404 */}
-      <Route path="*" element={<Navigate to={PUBLIC_ROUTES.NOT_FOUND} replace />} />
-    </Routes>
-  );
-};
-
       <Route
         path={PROTECTED_ROUTES.SETTINGS}
         element={
@@ -156,4 +145,14 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* 404 No Encontrada */}
+      <Route path={PUBLIC_ROUTES.NOT_FOUND} element={<MainLayout><NotFoundPage /></MainLayout>} />
+      
+      {/* Captura todas las rutas - redirige a 404 */}
+      <Route path="*" element={<Navigate to={PUBLIC_ROUTES.NOT_FOUND} replace />} />
+    </Routes>
+  );
+};
+
 export default AppRouter;
