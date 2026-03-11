@@ -7,6 +7,8 @@
  * - Update profile
  * - Change password
  * - Delete account
+ * 
+ * NOTE: Algunas funcionalidades están pendientes de implementación en backend
  */
 
 import apiClient from './api/apiClient';
@@ -31,7 +33,9 @@ export const updateUserProfile = async (profileData) => {
   const response = await apiClient.put(USER_ENDPOINTS.UPDATE_PROFILE, profileData);
   
   // Update stored user data
-  setItem(STORAGE_KEYS.USER_DATA, response.data.user);
+  if (response.data.user) {
+    setItem(STORAGE_KEYS.USER_DATA, response.data.user);
+  }
   
   return response.data;
 };
@@ -40,22 +44,40 @@ export const updateUserProfile = async (profileData) => {
  * Change user password
  * @param {Object} passwordData - { currentPassword, newPassword }
  * @returns {Promise<Object>} Password change confirmation
+ * 
+ * TODO: Endpoint pendiente de implementación en backend
  */
 export const changePassword = async (passwordData) => {
-  const response = await apiClient.post(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
-  return response.data;
+  // Simulación temporal
+  console.warn('⚠️ Cambio de contraseña simulado. Implementar endpoint en backend.');
+  return Promise.resolve({
+    message: 'Cambio de contraseña simulado. Pendiente implementación en backend.',
+  });
+  
+  // Implementación real cuando el backend esté listo:
+  // const response = await apiClient.post(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
+  // return response.data;
 };
 
 /**
  * Delete user account
  * @param {string} password - User password for confirmation
  * @returns {Promise<Object>} Deletion confirmation
+ * 
+ * TODO: Endpoint pendiente de implementación en backend
  */
 export const deleteAccount = async (password) => {
-  const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {
-    data: { password },
+  // Simulación temporal
+  console.warn('⚠️ Eliminación de cuenta simulada. Implementar endpoint en backend.');
+  return Promise.resolve({
+    message: 'Eliminación de cuenta simulada. Pendiente implementación en backend.',
   });
-  return response.data;
+  
+  // Implementación real cuando el backend esté listo:
+  // const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {
+  //   data: { password },
+  // });
+  // return response.data;
 };
 
 /**

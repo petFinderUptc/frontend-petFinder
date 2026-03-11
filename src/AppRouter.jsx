@@ -29,6 +29,9 @@ import PetDetailPage from './pages/pet/PetDetailPage';
 
 // Protected Pages
 import DashboardPage from './pages/user/DashboardPage';
+import ProfilePage from './pages/user/ProfilePage';
+import NotificationsPage from './pages/user/NotificationsPage';
+import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 
 /**
@@ -63,16 +66,6 @@ const MyReportsPage = () => (
   <div style={{ textAlign: 'center', padding: '3rem' }}>
     <h1>Mis Reportes</h1>
     <p style={{ color: '#6b7280' }}>Ver y gestionar tus reportes de mascotas aquí</p>
-  </div>
-);
-
-/**
- * ProfilePage - Placeholder
- */
-const ProfilePage = () => (
-  <div style={{ textAlign: 'center', padding: '3rem' }}>
-    <h1>Perfil</h1>
-    <p style={{ color: '#6b7280' }}>Gestiona tu configuración de perfil aquí</p>
   </div>
 );
 
@@ -143,4 +136,24 @@ const AppRouter = () => {
   );
 };
 
+      <Route
+        path={PROTECTED_ROUTES.SETTINGS}
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <SettingsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.NOTIFICATIONS}
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <NotificationsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
 export default AppRouter;
