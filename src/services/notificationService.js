@@ -2,8 +2,7 @@
  * Notification Service
  * 
  * API calls for notification management
- * NOTE: Sistema de notificaciones completamente pendiente de implementación en backend
- * Actualmente funciona con datos simulados en NotificationContext
+ * Consumes notification endpoints from backend.
  */
 
 import apiClient from './api/apiClient';
@@ -17,15 +16,8 @@ import { NOTIFICATION_ENDPOINTS } from '../constants/apiEndpoints';
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const getNotifications = async (params = {}) => {
-  // Simulación temporal - los datos vienen del NotificationContext
-  console.warn('⚠️ Servicio de notificaciones simulado. Implementar en backend.');
-  return Promise.resolve({
-    data: [],
-  });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_ALL, { params });
-  // return response.data;
+  const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_ALL, { params });
+  return response.data;
 };
 
 /**
@@ -35,12 +27,8 @@ export const getNotifications = async (params = {}) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const getUnreadCount = async () => {
-  // Simulación temporal - la cuenta viene del NotificationContext
-  return Promise.resolve({ count: 0 });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_UNREAD);
-  // return response.data.count;
+  const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_UNREAD);
+  return response.data?.count ?? 0;
 };
 
 /**
@@ -51,12 +39,8 @@ export const getUnreadCount = async () => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const markAsRead = async (notificationId) => {
-  // Simulación temporal
-  console.warn('⚠️ Marcado de notificación simulado. Implementar en backend.');
-  return Promise.resolve();
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_AS_READ(notificationId));
+  const response = await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_AS_READ(notificationId));
+  return response.data;
 };
 
 /**
@@ -66,12 +50,8 @@ export const markAsRead = async (notificationId) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const markAllAsRead = async () => {
-  // Simulación temporal
-  console.warn('⚠️ Marcado masivo de notificaciones simulado. Implementar en backend.');
-  return Promise.resolve();
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_ALL_AS_READ);
+  const response = await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_ALL_AS_READ);
+  return response.data;
 };
 
 /**
@@ -82,12 +62,8 @@ export const markAllAsRead = async () => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const deleteNotification = async (notificationId) => {
-  // Simulación temporal
-  console.warn('⚠️ Eliminación de notificación simulada. Implementar en backend.');
-  return Promise.resolve();
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.delete(NOTIFICATION_ENDPOINTS.DELETE(notificationId));
+  const response = await apiClient.delete(NOTIFICATION_ENDPOINTS.DELETE(notificationId));
+  return response.data;
 };
 
 /**

@@ -17,6 +17,7 @@ import apiClient from './api/apiClient';
 import { AUTH_ENDPOINTS } from '../constants/apiEndpoints';
 import { STORAGE_KEYS } from '../constants/appConfig';
 import { setItem, removeItem } from '../utils/storage';
+import { normalizeUserFromBackend } from '../utils/userAdapter';
 
 /**
  * Iniciar sesión
@@ -27,12 +28,16 @@ export const login = async (credentials) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
   
   const { accessToken, user } = response.data;
+  const normalizedUser = normalizeUserFromBackend(user);
   
   // Guardar token y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  setItem(STORAGE_KEYS.USER_DATA, user);
+  setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
   
-  return response.data;
+  return {
+    ...response.data,
+    user: normalizedUser,
+  };
 };
 
 /**
@@ -44,12 +49,16 @@ export const register = async (userData) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.REGISTER, userData);
   
   const { accessToken, user } = response.data;
+  const normalizedUser = normalizeUserFromBackend(user);
   
   // Guardar token y datos de usuario
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  setItem(STORAGE_KEYS.USER_DATA, user);
+  setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
   
-  return response.data;
+  return {
+    ...response.data,
+    user: normalizedUser,
+  };
 };
 
 /**
@@ -75,11 +84,12 @@ export const logout = async () => {
  */
 export const getCurrentUser = async () => {
   const response = await apiClient.get(AUTH_ENDPOINTS.ME);
+  const normalizedUser = normalizeUserFromBackend(response.data.user);
   
   // Actualizar datos de usuario almacenados
-  setItem(STORAGE_KEYS.USER_DATA, response.data.user);
+  setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
   
-  return response.data.user;
+  return normalizedUser;
 };
 
 /**
