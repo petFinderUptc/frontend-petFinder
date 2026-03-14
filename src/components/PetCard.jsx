@@ -3,6 +3,9 @@ import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { PUBLIC_ROUTES } from '../constants/routes';
+import { toAbsoluteMediaUrl } from '../utils/userAdapter';
+
+const FALLBACK_PET_IMAGE = 'https://via.placeholder.com/400x300?text=Sin+Foto';
 
 export function PetCard({ pet }) {
   const statusColors = {
@@ -18,7 +21,8 @@ export function PetCard({ pet }) {
   // Adaptar datos del backend al formato del componente
   const petType = pet.petType?.toLowerCase() || 'dog';
   const petTypeLabel = petType === 'dog' ? 'Perro' : petType === 'cat' ? 'Gato' : 'Mascota';
-  const petImage = pet.images?.[0] || pet.photo || 'https://via.placeholder.com/400x300?text=Sin+Foto';
+  const rawPetImage = pet.images?.[0] || pet.photo;
+  const petImage = toAbsoluteMediaUrl(rawPetImage) || FALLBACK_PET_IMAGE;
   const petLocation = typeof pet.location === 'string' 
     ? pet.location 
     : `${pet.location?.neighborhood || ''}, ${pet.location?.city || ''}`.trim();
@@ -32,6 +36,11 @@ export function PetCard({ pet }) {
             src={petImage}
             alt={pet.petName || pet.name || 'Mascota'}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            onError={(event) => {
+              if (event.currentTarget.src !== FALLBACK_PET_IMAGE) {
+                event.currentTarget.src = FALLBACK_PET_IMAGE;
+              }
+            }}
           />
           {pet.isUrgent && (
             <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 shadow-md">

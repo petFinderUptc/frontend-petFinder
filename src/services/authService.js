@@ -84,7 +84,7 @@ export const logout = async () => {
  */
 export const getCurrentUser = async () => {
   const response = await apiClient.get(AUTH_ENDPOINTS.ME);
-  const normalizedUser = normalizeUserFromBackend(response.data.user);
+  const normalizedUser = normalizeUserFromBackend(response.data?.user || response.data);
   
   // Actualizar datos de usuario almacenados
   setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
