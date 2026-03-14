@@ -6,6 +6,12 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import {
+  getNotifications,
+  getUnreadCount,
+  markAsRead as markNotificationAsRead,
+  markAllAsRead as markEveryNotificationAsRead,
+} from '../services/notificationService';
 
 const NotificationContext = createContext(undefined);
 
@@ -24,46 +30,70 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Simulación de notificaciones (luego conectar con API real)
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Aquí iría la llamada a la API para obtener notificaciones
-      const mockNotifications = [
-        {
-          id: 1,
-          type: 'contact',
-          title: 'Nuevo contacto en tu reporte',
-          message: 'Alguien está interesado en tu reporte de "Max"',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          read: false,
-        },
-        {
-          id: 2,
-          type: 'update',
-          title: 'Reporte actualizado',
-          message: 'Tu reporte ha sido verificado correctamente',
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-          read: true,
-        },
-      ];
-      
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.read).length);
-    }
-  }, [isAuthenticated]);
+  const normalizeNotification = useCallback((notification) => ({
+    ...notification,
+    timestamp: notification?.timestamp || notification?.createdAt || new Date().toISOString(),
+  }), []);
 
-  const markAsRead = useCallback((notificationId) => {
-    setNotifications(prev => 
-      prev.map(n => 
-        n.id === notificationId ? { ...n, read: true } : n
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  const loadNotifications = useCallback(async () => {
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    try {
+      const [notificationsData, unread] = await Promise.all([
+        getNotifications({ page: 1, limit: 20 }),
+        getUnreadCount(),
+      ]);
+
+      const normalizedNotifications = Array.isArray(notificationsData)
+        ? notificationsData.map(normalizeNotification)
+        : [];
+
+      setNotifications(normalizedNotifications);
+      setUnreadCount(Number.isFinite(unread) ? unread : 0);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated, normalizeNotification]);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      void loadNotifications();
+    }, 0);
+
+    return () => window.clearTimeout(timerId);
+  }, [loadNotifications]);
+
+  const markAsRead = useCallback(async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId);
+
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification,
+        ),
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   }, []);
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await markEveryNotificationAsRead();
+      setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   }, []);
 
   const addNotification = useCallback((notification) => {
@@ -74,8 +104,8 @@ export const NotificationProvider = ({ children }) => {
       ...notification,
     };
     
-    setNotifications(prev => [newNotification, ...prev]);
-    setUnreadCount(prev => prev + 1);
+    setNotifications((prev) => [newNotification, ...prev]);
+    setUnreadCount((prev) => prev + 1);
   }, []);
 
   const value = {

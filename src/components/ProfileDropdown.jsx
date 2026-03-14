@@ -43,8 +43,8 @@ export function ProfileDropdown() {
   };
 
   const getAvatarImage = () => {
-    if (user?.avatar) {
-      return user.avatar;
+    if (user?.avatar || user?.profileImage) {
+      return user.avatar || user.profileImage;
     }
     return null;
   };

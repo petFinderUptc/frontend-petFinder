@@ -18,7 +18,7 @@ import { updateUserProfile } from '../../services/userService';
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || user?.profileImage || null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
@@ -35,8 +35,8 @@ export default function ProfilePage() {
     lastName: user?.lastName || '',
     username: user?.username || '',
     email: user?.email || '',
-    phone: user?.phone || '',
-    location: user?.location || '',
+    phone: user?.phone || user?.phoneNumber || '',
+    location: user?.location || [user?.city, user?.department].filter(Boolean).join(', '),
   });
 
   // Cargar estadísticas del usuario al montar el componente
@@ -105,10 +105,10 @@ export default function ProfilePage() {
         avatar: avatarUrl,
       };
 
-      await updateUserProfile(profileData);
+      const updatedUser = await updateUserProfile(profileData);
       
       // Actualizar contexto de usuario
-      await updateUser(profileData);
+      updateUser(updatedUser);
 
       setMessage({ 
         type: 'success', 
@@ -134,10 +134,10 @@ export default function ProfilePage() {
       lastName: user?.lastName || '',
       username: user?.username || '',
       email: user?.email || '',
-      phone: user?.phone || '',
-      location: user?.location || '',
+      phone: user?.phone || user?.phoneNumber || '',
+      location: user?.location || [user?.city, user?.department].filter(Boolean).join(', '),
     });
-    setAvatarPreview(user?.avatar || null);
+    setAvatarPreview(user?.avatar || user?.profileImage || null);
     setMessage({ type: '', text: '' });
   };
 
