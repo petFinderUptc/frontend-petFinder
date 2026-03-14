@@ -35,6 +35,7 @@ export const PROTECTED_ROUTES = {
   EDIT_REPORT: '/edit-report/:id',
   PROFILE: '/profile',
   SETTINGS: '/settings',
+  NOTIFICATIONS: '/notifications',
 };
 
 /**

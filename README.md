@@ -89,7 +89,7 @@ frontend-petFinder/
 
 - Node.js 18+ 
 - npm o yarn
-- Backend API corriendo (ver repositorio backend)
+- Backend API corriendo (opcional - ver configuración sin backend)
 
 ### Instalación
 
@@ -100,8 +100,9 @@ cd "frontend-petFinder"
 # 2. Instalar dependencias
 npm install
 
-# 3. Configurar variables de entorno (opcional)
-# Editar src/constants/apiEndpoints.js para cambiar la URL del backend
+# 3. Configurar variables de entorno
+# Copiar el archivo .env.example y ajustar según necesites
+cp .env.example .env
 
 # 4. Iniciar servidor de desarrollo
 npm run dev
@@ -120,12 +121,36 @@ npm run lint      # Ejecuta ESLint
 
 ## Configuración
 
+### Variables de Entorno
+
+Crea un archivo `.env` en la raíz del proyecto (copia `.env.example`):
+
+```env
+# URL del backend API - cambiar según tu entorno
+VITE_API_BASE_URL=http://localhost:3000/api
+
+# Entorno de ejecución
+VITE_ENVIRONMENT=development
+
+# Modo offline (sin backend)
+VITE_OFFLINE_MODE=false
+```
+
+### Trabajo sin Backend
+
+Si aún no tienes el backend configurado:
+
+1. La aplicación te mostrará las páginas de login/registro
+2. Los formularios NO funcionarán hasta conectar con el backend
+3. Verás errores de red en la consola (esto es normal)
+4. Una vez tengas el backend, actualiza `VITE_API_BASE_URL` en el `.env`
+
 ### URL del Backend
 
-Edita el archivo `src/constants/apiEndpoints.js`:
+La URL del backend se configura mediante variables de entorno en el archivo `.env`. El archivo `src/constants/apiEndpoints.js` lee automáticamente esta variable:
 
 ```javascript
-export const API_BASE_URL = 'http://localhost:3000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 ```
 
 ### Rutas

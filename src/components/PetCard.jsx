@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
+import { PUBLIC_ROUTES } from '../constants/routes';
 
 export function PetCard({ pet }) {
   const statusColors = {
@@ -13,14 +14,23 @@ export function PetCard({ pet }) {
     lost: 'Perdido',
     found: 'Encontrado',
   };
+
+  // Adaptar datos del backend al formato del componente
+  const petType = pet.petType?.toLowerCase() || 'dog';
+  const petTypeLabel = petType === 'dog' ? 'Perro' : petType === 'cat' ? 'Gato' : 'Mascota';
+  const petImage = pet.images?.[0] || pet.photo || 'https://via.placeholder.com/400x300?text=Sin+Foto';
+  const petLocation = typeof pet.location === 'string' 
+    ? pet.location 
+    : `${pet.location?.neighborhood || ''}, ${pet.location?.city || ''}`.trim();
+  const petDate = pet.lostOrFoundDate || pet.date || pet.createdAt;
   
   return (
-    <Link to={`/mascota/${pet.id}`}>
+    <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}>
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
         <div className="relative h-48 overflow-hidden">
           <img
-            src={pet.photo}
-            alt={pet.name || 'Mascota'}
+            src={petImage}
+            alt={pet.petName || pet.name || 'Mascota'}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
           {pet.isUrgent && (
@@ -29,18 +39,18 @@ export function PetCard({ pet }) {
               URGENTE
             </div>
           )}
-          <Badge className={`absolute top-2 right-2 ${statusColors[pet.status]} shadow-md`}>
-            {statusLabels[pet.status]}
+          <Badge className={`absolute top-2 right-2 ${statusColors[pet.type || pet.status]} shadow-md`}>
+            {statusLabels[pet.type || pet.status]}
           </Badge>
         </div>
         
         <CardContent className="p-4">
           <div className="mb-3">
             <h3 className="font-bold text-lg mb-1">
-              {pet.name || `${pet.type === 'dog' ? 'Perro' : 'Gato'} sin nombre`}
+              {pet.petName || pet.name || `${petTypeLabel} sin nombre`}
             </h3>
             <p className="text-sm text-gray-600">
-              {pet.breed} • {pet.color}
+              {pet.breed || 'Raza desconocida'} • {pet.color || 'Color no especificado'}
             </p>
           </div>
           
@@ -51,11 +61,11 @@ export function PetCard({ pet }) {
           <div className="space-y-2 text-xs text-gray-600">
             <div className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-              <span className="truncate">{pet.location}</span>
+              <span className="truncate">{petLocation}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-              <span>{new Date(pet.date).toLocaleDateString('es-ES', { 
+              <span>{new Date(petDate).toLocaleDateString('es-ES', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
@@ -66,7 +76,7 @@ export function PetCard({ pet }) {
           <div className="mt-4 pt-4 border-t space-y-1">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <Phone className="h-3.5 w-3.5 text-blue-500" />
-              <span>{pet.contactName}</span>
+              <span>{pet.contactPhone || 'Contacto no disponible'}</span>
             </div>
           </div>
         </CardContent>

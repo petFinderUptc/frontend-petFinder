@@ -82,7 +82,7 @@ export const isAvailable = () => {
     localStorage.setItem(testKey, 'test');
     localStorage.removeItem(testKey);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

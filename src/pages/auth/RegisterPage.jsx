@@ -16,9 +16,11 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
+    username: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: ''
   });
@@ -38,20 +40,31 @@ export default function RegisterPage() {
   const validateForm = () => {
     const newErrors = {};
     
-    const usernameError = validateUsername(formData.username);
-    if (usernameError) newErrors.username = usernameError;
+    if (!formData.firstName || formData.firstName.trim().length < 2) {
+      newErrors.firstName = 'El nombre debe tener al menos 2 caracteres';
+    }
     
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
+    if (!formData.lastName || formData.lastName.trim().length < 2) {
+      newErrors.lastName = 'El apellido debe tener al menos 2 caracteres';
+    }
     
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) newErrors.phone = phoneError;
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) newErrors.email = emailValidation.error;
     
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) newErrors.password = passwordError;
+    const usernameValidation = validateUsername(formData.username);
+    if (!usernameValidation.isValid) newErrors.username = usernameValidation.error;
     
-    const confirmPasswordError = validatePasswordMatch(formData.password, formData.confirmPassword);
-    if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
+    // phoneNumber es opcional
+    if (formData.phoneNumber && formData.phoneNumber.trim()) {
+      const phoneValidation = validatePhone(formData.phoneNumber);
+      if (!phoneValidation.isValid) newErrors.phoneNumber = phoneValidation.error;
+    }
+    
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) newErrors.password = passwordValidation.error;
+    
+    const confirmPasswordValidation = validatePasswordMatch(formData.password, formData.confirmPassword);
+    if (!confirmPasswordValidation.isValid) newErrors.confirmPassword = confirmPasswordValidation.error;
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -64,12 +77,20 @@ export default function RegisterPage() {
     if (!validateForm()) return;
     
     try {
-      const { confirmPassword, ...userData } = formData;
+      // Preparar datos para el backend (sin phoneNumber ya que el backend no lo espera)
+      const userData = {
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      };
+      
       await register(userData);
       navigate(PROTECTED_ROUTES.DASHBOARD, { replace: true });
     } catch (error) {
       setRegisterError(
-        error.response?.data?.message || 
+        error.message || error.response?.data?.message || 
         'Error al registrar la cuenta. Inténtalo nuevamente.'
       );
     }
@@ -106,27 +127,46 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre de Usuario
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre *
                 </label>
                 <Input
-                  id="username"
-                  name="username"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Tu nombre de usuario"
-                  value={formData.username}
+                  placeholder="Tu nombre"
+                  value={formData.firstName}
                   onChange={handleChange}
-                  className={errors.username ? 'border-red-500' : ''}
+                  className={errors.firstName ? 'border-red-500' : ''}
                   disabled={isLoading}
                 />
-                {errors.username && (
-                  <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido *
+                </label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Tu apellido"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className={errors.lastName ? 'border-red-500' : ''}
+                  disabled={isLoading}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
                 )}
               </div>
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Correo Electrónico
+                  Correo Electrónico *
                 </label>
                 <Input
                   id="email"
@@ -144,21 +184,41 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre de Usuario *
                 </label>
                 <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="300 123 4567"
-                  value={formData.phone}
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="usuario123"
+                  value={formData.username}
                   onChange={handleChange}
-                  className={errors.phone ? 'border-red-500' : ''}
+                  className={errors.username ? 'border-red-500' : ''}
                   disabled={isLoading}
                 />
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">3-20 caracteres: letras, números, guiones o guiones bajos</p>
+              </div>
+
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono (Opcional)
+                </label>
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  placeholder="300 123 4567"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className={errors.phoneNumber ? 'border-red-500' : ''}
+                  disabled={isLoading}
+                />
+                {errors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
                 )}
               </div>
 

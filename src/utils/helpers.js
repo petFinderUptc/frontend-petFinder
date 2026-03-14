@@ -223,3 +223,10 @@ export const buildQueryString = (params) => {
   const queryString = searchParams.toString();
   return queryString ? `?${queryString}` : '';
 };
+
+/**
+ * Alias for formatRelativeTime (for compatibility with date-fns naming)
+ * @param {string|Date} date - Date to format
+ * @returns {string} Relative time string
+ */
+export const formatDistanceToNow = formatRelativeTime;

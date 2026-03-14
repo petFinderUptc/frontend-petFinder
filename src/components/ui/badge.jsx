@@ -23,7 +23,7 @@ const badgeVariants = cva(
   }
 );
 
-function Badge({ className, variant, asChild = false, ...props }) {
+function Badge({ className, variant, ...props }) {
   return (
     <span
       data-slot="badge"
@@ -33,4 +33,5 @@ function Badge({ className, variant, asChild = false, ...props }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Badge, badgeVariants };

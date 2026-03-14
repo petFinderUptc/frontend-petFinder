@@ -1,20 +1,15 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, PlusCircle, Heart, LogOut, LogIn } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Search, PlusCircle, LogIn } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
+import { ProfileDropdown } from './ProfileDropdown';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 
 export function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const isActive = (path) => location.pathname === path;
-  
-  const handleLogout = async () => {
-    await logout();
-    navigate(PUBLIC_ROUTES.LOGIN);
-  };
   
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
@@ -63,30 +58,8 @@ export function Header() {
               <span>Publicar</span>
             </Link>
             
-            {isAuthenticated && (
-              <Link
-                to={PROTECTED_ROUTES.MY_REPORTS}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  isActive(PROTECTED_ROUTES.MY_REPORTS) 
-                    ? 'bg-blue-50 text-blue-600' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Heart className="h-4 w-4" />
-                <span>Mis Reportes</span>
-              </Link>
-            )}
-            
             {isAuthenticated ? (
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Cerrar Sesión
-              </Button>
+              <ProfileDropdown />
             ) : (
               <Link to={PUBLIC_ROUTES.LOGIN}>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -107,14 +80,7 @@ export function Header() {
               <span>Publicar</span>
             </Link>
             {isAuthenticated ? (
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:text-red-700"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <ProfileDropdown />
             ) : (
               <Link to={PUBLIC_ROUTES.LOGIN}>
                 <Button variant="outline" size="sm">

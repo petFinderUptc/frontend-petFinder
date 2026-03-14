@@ -1,17 +1,41 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Search, PlusCircle, Heart, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import PetCard from '../components/PetCard';
 import { useAuth } from '../context/AuthContext';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
-import { mockPets } from '../data/mockPets';
+import { getAllPets } from '../services/petService';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
-  const recentPets = mockPets.slice(0, 3);
-  const lostPetsCount = mockPets.filter(p => p.status === 'lost').length;
-  const foundPetsCount = mockPets.filter(p => p.status === 'found').length;
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllPets();
+        setPets(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar mascotas:', err);
+        setError('Error al cargar las mascotas');
+        setPets([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPets();
+  }, []);
+
+  const recentPets = pets.slice(0, 3);
+  const lostPetsCount = pets.filter(p => p.type === 'lost').length;
+  const foundPetsCount = pets.filter(p => p.type === 'found').length;
   
   return (
     <div className="min-h-screen">
@@ -77,7 +101,7 @@ export default function HomePage() {
                 <div className="inline-block p-3 bg-blue-100 rounded-full mb-3">
                   <Search className="h-8 w-8 text-blue-600" />
                 </div>
-                <div className="text-3xl font-bold text-blue-600 mb-1">{mockPets.length}</div>
+                <div className="text-3xl font-bold text-blue-600 mb-1">{pets.length}</div>
                 <div className="text-sm text-gray-600">Reportes Activos</div>
               </CardContent>
             </Card>
@@ -93,20 +117,42 @@ export default function HomePage() {
             <p className="text-gray-600">Las mascotas reportadas más recientemente en nuestra plataforma</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {recentPets.map((pet) => (
-              <PetCard key={pet.id} pet={pet} />
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <Link to={PUBLIC_ROUTES.SEARCH}>
-              <Button size="lg" variant="outline" className="gap-2">
-                Ver Todos los Reportes
-                <Search className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Cargando mascotas...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600">{error}</p>
+            </div>
+          ) : recentPets.length === 0 ? (
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-600">No hay reportes disponibles aún.</p>
+              {isAuthenticated && (
+                <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="mt-4 inline-block">
+                  <Button>Publicar el primer reporte</Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {recentPets.map((pet) => (
+                  <PetCard key={pet.id} pet={pet} />
+                ))}
+              </div>
+              
+              <div className="text-center">
+                <Link to={PUBLIC_ROUTES.SEARCH}>
+                  <Button size="lg" variant="outline" className="gap-2">
+                    Ver Todos los Reportes
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
       

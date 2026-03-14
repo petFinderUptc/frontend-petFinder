@@ -1,7 +1,6 @@
 /**
  * Configuración del Enrutador de la Aplicación
  * 
- * Enrutamiento centralizado usando React Router v6.
  * Organiza las rutas en categorías públicas y protegidas.
  * 
  * Características:
@@ -25,9 +24,13 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SearchPage from './pages/pet/SearchPage';
+import PetDetailPage from './pages/pet/PetDetailPage';
 
 // Protected Pages
 import DashboardPage from './pages/user/DashboardPage';
+import ProfilePage from './pages/user/ProfilePage';
+import NotificationsPage from './pages/user/NotificationsPage';
+import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 
 /**
@@ -66,16 +69,6 @@ const MyReportsPage = () => (
 );
 
 /**
- * ProfilePage - Placeholder
- */
-const ProfilePage = () => (
-  <div style={{ textAlign: 'center', padding: '3rem' }}>
-    <h1>Perfil</h1>
-    <p style={{ color: '#6b7280' }}>Gestiona tu configuración de perfil aquí</p>
-  </div>
-);
-
-/**
  * Componente AppRouter
  * Contiene todas las definiciones de rutas
  */
@@ -85,6 +78,7 @@ const AppRouter = () => {
       {/* Rutas Públicas con Layout */}
       <Route path={PUBLIC_ROUTES.HOME} element={<MainLayout><HomePage /></MainLayout>} />
       <Route path={PUBLIC_ROUTES.SEARCH} element={<MainLayout><SearchPage /></MainLayout>} />
+      <Route path={PUBLIC_ROUTES.PET_DETAIL} element={<MainLayout><PetDetailPage /></MainLayout>} />
       
       {/* Rutas de Autenticación sin Layout (pantalla completa) */}
       <Route path={PUBLIC_ROUTES.LOGIN} element={<LoginPage />} />
@@ -127,6 +121,26 @@ const AppRouter = () => {
           <ProtectedRoute>
             <MainLayout>
               <ProfilePage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.SETTINGS}
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <SettingsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.NOTIFICATIONS}
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <NotificationsPage />
             </MainLayout>
           </ProtectedRoute>
         }
