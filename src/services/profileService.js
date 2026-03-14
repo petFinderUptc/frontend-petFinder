@@ -7,6 +7,7 @@
 
 import apiClient from './api/apiClient';
 import { USER_ENDPOINTS } from '../constants/apiEndpoints';
+import { toAbsoluteMediaUrl, toBackendProfilePayload } from '../utils/userAdapter';
 
 /**
  * Get user profile
@@ -23,7 +24,8 @@ export const getProfile = async () => {
  * @returns {Promise<Object>} Updated user data
  */
 export const updateProfile = async (profileData) => {
-  const response = await apiClient.put(USER_ENDPOINTS.UPDATE_PROFILE, profileData);
+  const payload = toBackendProfilePayload(profileData);
+  const response = await apiClient.put(USER_ENDPOINTS.UPDATE_PROFILE, payload);
   return response.data;
 };
 
@@ -36,25 +38,6 @@ export const updateProfile = async (profileData) => {
  * Actualmente simula la funcionalidad mediante localStorage
  */
 export const uploadAvatar = async (file) => {
-  // Simulación temporal hasta que se implemente en backend
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      // Almacenar temporalmente en localStorage
-      localStorage.setItem('user_avatar_temp', reader.result);
-      
-      resolve({
-        data: {
-          avatarUrl: reader.result,
-          message: 'Avatar cargado temporalmente (localStorage). Pendiente implementación en backend.',
-        },
-      });
-    };
-    reader.readAsDataURL(file);
-  });
-  
-  // Implementación real cuando el backend esté listo:
-  /*
   const formData = new FormData();
   formData.append('avatar', file);
   
@@ -63,9 +46,11 @@ export const uploadAvatar = async (file) => {
       'Content-Type': 'multipart/form-data',
     },
   });
-  
-  return response.data;
-  */
+
+  return {
+    ...response.data,
+    avatarUrl: toAbsoluteMediaUrl(response.data?.avatarUrl),
+  };
 };
 
 /**
@@ -75,12 +60,7 @@ export const uploadAvatar = async (file) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const deleteAvatar = async () => {
-  // Simulación temporal
-  localStorage.removeItem('user_avatar_temp');
-  return Promise.resolve();
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.delete(USER_ENDPOINTS.DELETE_AVATAR);
+  await apiClient.delete(USER_ENDPOINTS.DELETE_AVATAR);
 };
 
 /**
@@ -91,19 +71,8 @@ export const deleteAvatar = async () => {
  * Actualmente retorna datos simulados
  */
 export const getUserStats = async () => {
-  // Simulación temporal con datos de ejemplo
-  return Promise.resolve({
-    data: {
-      reportsPublished: 0,
-      successfulReunions: 0,
-      helpedPets: 0,
-      memberSince: new Date().toISOString(),
-    },
-  });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.get(USER_ENDPOINTS.GET_STATS);
-  // return response.data;
+  const response = await apiClient.get(USER_ENDPOINTS.GET_STATS);
+  return response.data;
 };
 
 /**
@@ -114,16 +83,8 @@ export const getUserStats = async () => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const updatePassword = async (passwordData) => {
-  // Simulación temporal - en producción esto NO debería pasar
-  console.warn('⚠️ Cambio de contraseña simulado. Implementar endpoint en backend.');
-  return Promise.resolve({
-    data: {
-      message: 'Cambio de contraseña simulado. Pendiente implementación en backend.',
-    },
-  });
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.put(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
+  const response = await apiClient.put(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
+  return response.data;
 };
 
 /**
@@ -132,15 +93,9 @@ export const updatePassword = async (passwordData) => {
  * 
  * TODO: Endpoint pendiente de implementación en backend
  */
-export const deleteAccount = async () => {
-  // Simulación temporal
-  console.warn('⚠️ Eliminación de cuenta simulada. Implementar endpoint en backend.');
-  return Promise.resolve({
-    data: {
-      message: 'Eliminación de cuenta simulada. Pendiente implementación en backend.',
-    },
+export const deleteAccount = async (password) => {
+  const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {
+    data: { password },
   });
-  
-  // Implementación real cuando el backend esté listo:
-  // await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT);
+  return response.data;
 };
