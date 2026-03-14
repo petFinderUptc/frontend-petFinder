@@ -15,6 +15,7 @@ import apiClient from './api/apiClient';
 import { USER_ENDPOINTS } from '../constants/apiEndpoints';
 import { setItem } from '../utils/storage';
 import { STORAGE_KEYS } from '../constants/appConfig';
+import { normalizeUserFromBackend, toBackendProfilePayload } from '../utils/userAdapter';
 
 /**
  * Get user profile
@@ -22,7 +23,7 @@ import { STORAGE_KEYS } from '../constants/appConfig';
  */
 export const getUserProfile = async () => {
   const response = await apiClient.get(USER_ENDPOINTS.GET_PROFILE);
-  return response.data;
+  return normalizeUserFromBackend(response.data);
 };
 
 /**
@@ -31,14 +32,14 @@ export const getUserProfile = async () => {
  * @returns {Promise<Object>} Updated user profile
  */
 export const updateUserProfile = async (profileData) => {
-  const response = await apiClient.put(USER_ENDPOINTS.UPDATE_PROFILE, profileData);
+  const payload = toBackendProfilePayload(profileData);
+  const response = await apiClient.put(USER_ENDPOINTS.UPDATE_PROFILE, payload);
+  const normalizedUser = normalizeUserFromBackend(response.data);
   
   // Update stored user data
-  if (response.data.user) {
-    setItem(STORAGE_KEYS.USER_DATA, response.data.user);
-  }
+  setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
   
-  return response.data;
+  return normalizedUser;
 };
 
 /**
@@ -49,15 +50,8 @@ export const updateUserProfile = async (profileData) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const changePassword = async (passwordData) => {
-  // Simulación temporal
-  console.warn('⚠️ Cambio de contraseña simulado. Implementar endpoint en backend.');
-  return Promise.resolve({
-    message: 'Cambio de contraseña simulado. Pendiente implementación en backend.',
-  });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.post(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
-  // return response.data;
+  const response = await apiClient.put(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
+  return response.data;
 };
 
 /**
@@ -68,17 +62,10 @@ export const changePassword = async (passwordData) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const deleteAccount = async (password) => {
-  // Simulación temporal
-  console.warn('⚠️ Eliminación de cuenta simulada. Implementar endpoint en backend.');
-  return Promise.resolve({
-    message: 'Eliminación de cuenta simulada. Pendiente implementación en backend.',
+  const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {
+    data: { password },
   });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {
-  //   data: { password },
-  // });
-  // return response.data;
+  return response.data;
 };
 
 /**
