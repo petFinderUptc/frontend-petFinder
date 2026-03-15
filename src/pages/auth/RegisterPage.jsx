@@ -105,8 +105,8 @@ export default function RegisterPage() {
             alt="PetFinder" 
             className="h-16 mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-gray-900">Crear Cuenta</h1>
-          <p className="text-gray-600 mt-2">Únete a nuestra comunidad</p>
+          <h1 className="text-3xl font-bold text-foreground">Crear Cuenta</h1>
+          <p className="text-muted-foreground mt-2">Únete a nuestra comunidad</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -127,7 +127,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-1">
                   Nombre *
                 </label>
                 <Input
@@ -146,7 +146,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-1">
                   Apellido *
                 </label>
                 <Input
@@ -165,7 +165,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                   Correo Electrónico *
                 </label>
                 <Input
@@ -184,7 +184,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
                   Nombre de Usuario *
                 </label>
                 <Input
@@ -204,7 +204,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-foreground mb-1">
                   Teléfono (Opcional)
                 </label>
                 <Input
@@ -223,7 +223,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -252,7 +252,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
                   Confirmar Contraseña
                 </label>
                 <div className="relative">
@@ -290,7 +290,7 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 ¿Ya tienes una cuenta?{' '}
                 <Link 
                   to={PUBLIC_ROUTES.LOGIN} 
