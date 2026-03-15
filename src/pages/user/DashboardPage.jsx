@@ -40,15 +40,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-12 border-b">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Hola, {user?.username || 'Usuario'} 👋
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Gestiona tus reportes y ayuda a reunir mascotas con sus familias
             </p>
           </div>
@@ -63,7 +63,7 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Reportes Activos</p>
+                    <p className="text-sm text-muted-foreground mb-1">Reportes Activos</p>
                     <p className="text-3xl font-bold text-blue-600">{stats.activeReports}</p>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-full">
@@ -77,7 +77,7 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Total Visitas</p>
+                    <p className="text-sm text-muted-foreground mb-1">Total Visitas</p>
                     <p className="text-3xl font-bold text-green-600">{stats.totalViews}</p>
                   </div>
                   <div className="p-3 bg-green-100 rounded-full">
@@ -91,7 +91,7 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Búsquedas Guardadas</p>
+                    <p className="text-sm text-muted-foreground mb-1">Búsquedas Guardadas</p>
                     <p className="text-3xl font-bold text-purple-600">{stats.savedSearches}</p>
                   </div>
                   <div className="p-3 bg-purple-100 rounded-full">
@@ -112,7 +112,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-1">Publicar Nuevo Reporte</h3>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       ¿Perdiste o encontraste una mascota? Crea un reporte ahora
                     </p>
                   </div>
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-1">Buscar Mascotas</h3>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       Explora reportes de mascotas perdidas o encontradas
                     </p>
                   </div>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
             <CardContent>
               {loading ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-600">Cargando reportes...</p>
+                  <p className="text-muted-foreground">Cargando reportes...</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-12">
@@ -158,10 +158,10 @@ export default function DashboardPage() {
               ) : myReports.length === 0 ? (
                 <div className="text-center py-12">
                   <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     No tienes reportes activos
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-muted-foreground mb-6">
                     Crea tu primer reporte para ayudar a reunir mascotas
                   </p>
                   <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>

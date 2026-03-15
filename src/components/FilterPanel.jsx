@@ -40,7 +40,7 @@ export function FilterPanel({ filters, onFilterChange }) {
   ].filter(Boolean).length;
   
   return (
-    <div className="bg-white rounded-lg border shadow-sm p-4">
+    <div className="bg-card rounded-lg border shadow-sm p-4">
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

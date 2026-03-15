@@ -52,13 +52,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-            <p className="text-gray-600 mt-1">Personaliza tu experiencia en PetFinder</p>
+            <h1 className="text-3xl font-bold text-foreground">Configuración</h1>
+            <p className="text-muted-foreground mt-1">Personaliza tu experiencia en PetFinder</p>
           </div>
 
           {message.text && (
@@ -89,8 +89,8 @@ export default function SettingsPage() {
                     onClick={() => handleThemeChange('light')}
                     className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
                       theme === 'light' 
-                        ? 'border-blue-600 bg-blue-50' 
-                        : 'border-gray-200 bg-white'
+                        ? 'border-primary bg-accent' 
+                        : 'border bg-card'
                     }`}
                   >
                     <div className="flex flex-col items-center gap-2">
@@ -107,8 +107,8 @@ export default function SettingsPage() {
                     onClick={() => handleThemeChange('dark')}
                     className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
                       theme === 'dark' 
-                        ? 'border-blue-600 bg-blue-50' 
-                        : 'border-gray-200 bg-white'
+                        ? 'border-primary bg-accent' 
+                        : 'border bg-card'
                     }`}
                   >
                     <div className="flex flex-col items-center gap-2">
@@ -125,12 +125,12 @@ export default function SettingsPage() {
                     onClick={() => handleThemeChange('system')}
                     className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
                       theme === 'system' 
-                        ? 'border-blue-600 bg-blue-50' 
-                        : 'border-gray-200 bg-white'
+                        ? 'border-primary bg-accent' 
+                        : 'border bg-card'
                     }`}
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <Monitor className="h-8 w-8 text-gray-500" />
+                      <Monitor className="h-8 w-8 text-muted-foreground" />
                       <span className="font-medium text-sm">Sistema</span>
                       {theme === 'system' && (
                         <Check className="h-4 w-4 text-blue-600" />
@@ -154,16 +154,16 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Push Notifications */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-start gap-3">
                     {notificationsEnabled ? (
                       <Bell className="h-5 w-5 text-blue-600 mt-0.5" />
                     ) : (
-                      <BellOff className="h-5 w-5 text-gray-400 mt-0.5" />
+                      <BellOff className="h-5 w-5 text-muted-foreground mt-0.5" />
                     )}
                     <div>
-                      <h4 className="font-medium text-gray-900">Notificaciones Push</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-foreground">Notificaciones Push</h4>
+                      <p className="text-sm text-muted-foreground">
                         Recibe notificaciones en tiempo real
                       </p>
                     </div>
@@ -178,12 +178,12 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Email Notifications */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Globe className="h-5 w-5 text-purple-600 mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-gray-900">Notificaciones por Email</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-foreground">Notificaciones por Email</h4>
+                      <p className="text-sm text-muted-foreground">
                         Recibe resúmenes diarios por correo
                       </p>
                     </div>
@@ -212,12 +212,12 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Profile Visibility */}
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-start gap-3 mb-3">
                     <Eye className="h-5 w-5 text-green-600 mt-0.5" />
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Visibilidad del Perfil</h4>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <h4 className="font-medium text-foreground">Visibilidad del Perfil</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
                         Define quién puede ver tu perfil
                       </p>
                     </div>
@@ -232,17 +232,17 @@ export default function SettingsPage() {
                       }}
                       className={`p-3 border-2 rounded-lg text-left transition-all ${
                         profileVisibility === 'public'
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? 'border-primary bg-accent'
+                          : 'border bg-card hover:border-foreground/30'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Público</span>
                         {profileVisibility === 'public' && (
-                          <Check className="h-4 w-4 text-blue-600" />
+                          <Check className="h-4 w-4 text-primary" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">Cualquiera puede ver tu perfil</p>
+                      <p className="text-xs text-muted-foreground mt-1">Cualquiera puede ver tu perfil</p>
                     </button>
                     
                     <button
@@ -253,32 +253,32 @@ export default function SettingsPage() {
                       }}
                       className={`p-3 border-2 rounded-lg text-left transition-all ${
                         profileVisibility === 'private'
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? 'border-primary bg-accent'
+                          : 'border bg-card hover:border-foreground/30'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Privado</span>
                         {profileVisibility === 'private' && (
-                          <Check className="h-4 w-4 text-blue-600" />
+                          <Check className="h-4 w-4 text-primary" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">Solo usuarios registrados</p>
+                      <p className="text-xs text-muted-foreground mt-1">Solo usuarios registrados</p>
                     </button>
                   </div>
                 </div>
 
                 {/* Phone Visibility */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-start gap-3">
                     {showPhone ? (
                       <Eye className="h-5 w-5 text-blue-600 mt-0.5" />
                     ) : (
-                      <EyeOff className="h-5 w-5 text-gray-400 mt-0.5" />
+                      <EyeOff className="h-5 w-5 text-muted-foreground mt-0.5" />
                     )}
                     <div>
-                      <h4 className="font-medium text-gray-900">Mostrar Teléfono</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-foreground">Mostrar Teléfono</h4>
+                      <p className="text-sm text-muted-foreground">
                         Muestra tu número en los reportes
                       </p>
                     </div>
@@ -304,9 +304,9 @@ export default function SettingsPage() {
             {/* Language Settings (Future) */}
             <Card className="border-dashed">
               <CardContent className="p-6 text-center">
-                <Globe className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <h4 className="font-medium text-gray-900 mb-1">Más opciones próximamente</h4>
-                <p className="text-sm text-gray-600">
+                <Globe className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <h4 className="font-medium text-foreground mb-1">Más opciones próximamente</h4>
+                <p className="text-sm text-muted-foreground">
                   Configuración de idioma, zona horaria y más
                 </p>
               </CardContent>

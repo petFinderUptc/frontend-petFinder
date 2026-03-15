@@ -13,6 +13,7 @@ export default function PetDetailPage() {
   const [pet, setPet] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     loadPetDetail();
@@ -22,6 +23,7 @@ export default function PetDetailPage() {
     try {
       setIsLoading(true);
       setError(null);
+      setImgError(false);
       const data = await petService.getPetById(id);
       setPet(data);
     } catch (err) {
@@ -47,10 +49,10 @@ export default function PetDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando información...</p>
+          <p className="text-muted-foreground">Cargando información...</p>
         </div>
       </div>
     );
@@ -58,12 +60,12 @@ export default function PetDetailPage() {
 
   if (error || !pet) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Error</h2>
-            <p className="text-gray-600 mb-4">{error || 'Mascota no encontrada'}</p>
+            <p className="text-muted-foreground mb-4">{error || 'Mascota no encontrada'}</p>
             <Button onClick={() => navigate('/search')}>
               Volver a búsqueda
             </Button>
@@ -84,9 +86,9 @@ export default function PetDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header con botón de volver */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button 
@@ -117,11 +119,19 @@ export default function PetDetailPage() {
             <Card>
               <CardContent className="p-0">
                 <div className="relative">
-                  <img
-                    src={pet.photo}
-                    alt={pet.name || 'Mascota'}
-                    className="w-full h-96 object-cover"
-                  />
+                  {!imgError && pet.photo ? (
+                    <img
+                      src={pet.photo}
+                      alt={pet.name || 'Mascota'}
+                      className="w-full h-96 object-cover"
+                      onError={() => setImgError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-96 bg-muted flex flex-col items-center justify-center gap-3">
+                      <AlertCircle className="h-16 w-16 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">Sin foto disponible</p>
+                    </div>
+                  )}
                   {pet.isUrgent && (
                     <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-lg">
                       <AlertCircle className="h-5 w-5" />
@@ -156,13 +166,13 @@ export default function PetDetailPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">Descripción</h3>
-                    <p className="text-gray-700 leading-relaxed">{pet.description}</p>
+                    <p className="text-foreground leading-relaxed">{pet.description}</p>
                   </div>
 
                   {pet.characteristics && (
                     <div>
                       <h3 className="font-semibold mb-2">Características adicionales</h3>
-                      <p className="text-gray-700">{pet.characteristics}</p>
+                      <p className="text-foreground">{pet.characteristics}</p>
                     </div>
                   )}
 
@@ -170,14 +180,21 @@ export default function PetDetailPage() {
                     <div className="flex items-center gap-3">
                       <MapPin className="h-5 w-5 text-blue-500 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500">Ubicación</p>
-                        <p className="font-medium">{pet.location}</p>
+                        <p className="text-xs text-muted-foreground">Ubicación</p>
+                        <p className="font-medium">
+                          {typeof pet.location === 'object' && pet.location !== null
+                            ? [
+                                pet.location.neighborhood,
+                                pet.location.city,
+                              ].filter(Boolean).join(', ') || 'N/A'
+                            : pet.location || 'N/A'}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Calendar className="h-5 w-5 text-blue-500 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-gray-500">Fecha</p>
+                        <p className="text-xs text-muted-foreground">Fecha</p>
                         <p className="font-medium">
                           {new Date(pet.date).toLocaleDateString('es-ES', { 
                             year: 'numeric', 
@@ -193,7 +210,7 @@ export default function PetDetailPage() {
             </Card>
 
             {/* Mapa */}
-            {pet.coordinates && (
+            {(pet.coordinates || pet.location?.coordinates) && (
               <Card>
                 <CardHeader>
                   <CardTitle>Ubicación en el mapa</CardTitle>
@@ -202,7 +219,7 @@ export default function PetDetailPage() {
                   <div className="h-64 rounded-lg overflow-hidden">
                     <PetMap 
                       pets={[pet]} 
-                      center={pet.coordinates} 
+                      center={pet.coordinates || pet.location?.coordinates} 
                       zoom={15}
                     />
                   </div>
@@ -221,7 +238,7 @@ export default function PetDetailPage() {
                 <div className="flex items-start gap-3">
                   <Phone className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Nombre</p>
+                    <p className="text-xs text-muted-foreground mb-1">Nombre</p>
                     <p className="font-medium">{pet.contactName}</p>
                   </div>
                 </div>
@@ -230,7 +247,7 @@ export default function PetDetailPage() {
                   <div className="flex items-start gap-3">
                     <Phone className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Teléfono</p>
+                      <p className="text-xs text-muted-foreground mb-1">Teléfono</p>
                       <a 
                         href={`tel:${pet.contactPhone}`}
                         className="font-medium text-blue-600 hover:underline"
@@ -245,7 +262,7 @@ export default function PetDetailPage() {
                   <div className="flex items-start gap-3">
                     <Mail className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
+                      <p className="text-xs text-muted-foreground mb-1">Email</p>
                       <a 
                         href={`mailto:${pet.contactEmail}`}
                         className="font-medium text-blue-600 hover:underline break-all"
@@ -264,7 +281,7 @@ export default function PetDetailPage() {
                   </Button>
                 </div>
 
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   Publicado hace{' '}
                   {Math.floor((new Date() - new Date(pet.date)) / (1000 * 60 * 60 * 24))}{' '}
                   días
