@@ -152,13 +152,13 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-            <p className="text-gray-600 mt-1">Gestiona tu información personal y configuración</p>
+            <h1 className="text-3xl font-bold text-foreground">Mi Perfil</h1>
+            <p className="text-muted-foreground mt-1">Gestiona tu información personal y configuración</p>
           </div>
 
           {message.text && (
@@ -217,12 +217,12 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-1">
                         {values.firstName || values.lastName 
                           ? `${values.firstName} ${values.lastName}` 
                           : values.username || 'Usuario'}
                       </h3>
-                      <p className="text-gray-600 text-sm mb-4">@{values.username}</p>
+                      <p className="text-muted-foreground text-sm mb-4">@{values.username}</p>
                       
                       {!isEditing && (
                         <Button
@@ -240,7 +240,7 @@ export default function ProfilePage() {
                   {/* Form Fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <User className="h-4 w-4 inline mr-1" />
                         Nombre
                       </label>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <User className="h-4 w-4 inline mr-1" />
                         Apellido
                       </label>
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <User className="h-4 w-4 inline mr-1" />
                         Nombre de usuario
                       </label>
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <Mail className="h-4 w-4 inline mr-1" />
                         Email
                       </label>
@@ -300,7 +300,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <Phone className="h-4 w-4 inline mr-1" />
                         Teléfono
                       </label>
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         <MapPin className="h-4 w-4 inline mr-1" />
                         Ubicación
                       </label>
@@ -368,23 +368,23 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <p className="text-3xl font-bold text-blue-600">{stats.reportsPublished}</p>
-                    <p className="text-sm text-gray-600 mt-1">Reportes Publicados</p>
+                    <p className="text-sm text-muted-foreground mt-1">Reportes Publicados</p>
                   </div>
                   
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <p className="text-3xl font-bold text-green-600">{stats.successfulReunions}</p>
-                    <p className="text-sm text-gray-600 mt-1">Reuniones Exitosas</p>
+                    <p className="text-sm text-muted-foreground mt-1">Reuniones Exitosas</p>
                   </div>
                   
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <p className="text-3xl font-bold text-purple-600">{stats.helpedPets}</p>
-                    <p className="text-sm text-gray-600 mt-1">Mascotas Ayudadas</p>
+                    <p className="text-sm text-muted-foreground mt-1">Mascotas Ayudadas</p>
                   </div>
                   
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
                     <Calendar className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-gray-900">{stats.memberSince}</p>
-                    <p className="text-xs text-gray-600 mt-1">Miembro desde</p>
+                    <p className="text-sm font-semibold text-foreground">{stats.memberSince}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Miembro desde</p>
                   </div>
                 </div>
               </CardContent>

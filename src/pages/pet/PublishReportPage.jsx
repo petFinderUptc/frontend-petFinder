@@ -111,13 +111,13 @@ export default function PublishReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-12 border-b">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl font-bold mb-3 text-gray-900">Publicar Reporte</h1>
-            <p className="text-lg text-gray-600">
+            <h1 className="text-4xl font-bold mb-3 text-foreground">Publicar Reporte</h1>
+            <p className="text-lg text-muted-foreground">
               Ayúdanos a reunir mascotas con sus familias compartiendo información
             </p>
           </div>
@@ -145,10 +145,10 @@ export default function PublishReportPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Foto de la Mascota *
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                  <div className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                     <input
                       type="file"
                       accept="image/*"
@@ -157,11 +157,11 @@ export default function PublishReportPage() {
                       id="image-upload"
                     />
                     <label htmlFor="image-upload" className="cursor-pointer">
-                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm text-gray-600 mb-1">
+                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground mb-1">
                         {formData.image ? formData.image.name : 'Click para subir una imagen'}
                       </p>
-                      <p className="text-xs text-gray-500">PNG, JPG hasta 5MB</p>
+                      <p className="text-xs text-muted-foreground">PNG, JPG hasta 5MB</p>
                     </label>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export default function PublishReportPage() {
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
                       Nombre *
                     </label>
                     <Input
@@ -183,7 +183,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="type" className="block text-sm font-medium text-foreground mb-1">
                       Tipo *
                     </label>
                     <select
@@ -191,7 +191,7 @@ export default function PublishReportPage() {
                       name="type"
                       value={formData.type}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
                       required
                     >
                       <option value="">Selecciona un tipo</option>
@@ -204,7 +204,7 @@ export default function PublishReportPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="breed" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="breed" className="block text-sm font-medium text-foreground mb-1">
                       Raza
                     </label>
                     <Input
@@ -217,7 +217,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="color" className="block text-sm font-medium text-foreground mb-1">
                       Color *
                     </label>
                     <Input
@@ -233,7 +233,7 @@ export default function PublishReportPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="size" className="block text-sm font-medium text-foreground mb-1">
                       Tamaño *
                     </label>
                     <select
@@ -241,7 +241,7 @@ export default function PublishReportPage() {
                       name="size"
                       value={formData.size}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
                       required
                     >
                       <option value="">Selecciona un tamaño</option>
@@ -252,7 +252,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
                       Estado *
                     </label>
                     <select
@@ -260,7 +260,7 @@ export default function PublishReportPage() {
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
                       required
                     >
                       <option value="lost">Perdido</option>
@@ -271,7 +271,7 @@ export default function PublishReportPage() {
 
                 {/* Description */}
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
                     Descripción Detallada
                   </label>
                   <textarea
@@ -281,14 +281,14 @@ export default function PublishReportPage() {
                     onChange={handleChange}
                     rows={4}
                     placeholder="Describe características distintivas, comportamiento, etc."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
                   />
                 </div>
 
                 {/* Location & Date */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="city" className="block text-sm font-medium text-foreground mb-1">
                       Ciudad *
                     </label>
                     <Input
@@ -302,7 +302,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="neighborhood" className="block text-sm font-medium text-foreground mb-1">
                       Barrio *
                     </label>
                     <Input
@@ -318,11 +318,11 @@ export default function PublishReportPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="location" className="block text-sm font-medium text-foreground mb-1">
                       Dirección (Opcional)
                     </label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="location"
                         name="location"
@@ -335,7 +335,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="date" className="block text-sm font-medium text-foreground mb-1">
                       Fecha del Evento *
                     </label>
                     <Input
@@ -358,7 +358,7 @@ export default function PublishReportPage() {
                     onChange={(e) => setUseMyContact(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <label htmlFor="useMyContact" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  <label htmlFor="useMyContact" className="text-sm font-medium text-foreground cursor-pointer">
                     Usar mi información de contacto ({user?.email || 'No disponible'})
                   </label>
                 </div>
@@ -366,11 +366,11 @@ export default function PublishReportPage() {
                 {/* Contact Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="contactPhone" className="block text-sm font-medium text-foreground mb-1">
                       Teléfono de Contacto *
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="contactPhone"
                         name="contactPhone"
@@ -386,7 +386,7 @@ export default function PublishReportPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="contactEmail" className="block text-sm font-medium text-foreground mb-1">
                       Email de Contacto
                     </label>
                     <Input
