@@ -74,8 +74,8 @@ export default function LoginPage() {
             alt="PetFinder" 
             className="h-16 mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-gray-900">Bienvenido</h1>
-          <p className="text-gray-600 mt-2">Inicia sesión en tu cuenta</p>
+          <h1 className="text-3xl font-bold text-foreground">Bienvenido</h1>
+          <p className="text-muted-foreground mt-2">Inicia sesión en tu cuenta</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -96,7 +96,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                   Correo Electrónico
                 </label>
                 <Input
@@ -115,7 +115,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -150,7 +150,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2 rounded" />
-                  <span className="text-gray-600">Recordarme</span>
+                  <span className="text-muted-foreground">Recordarme</span>
                 </label>
                 <Link 
                   to="#" 
@@ -170,7 +170,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 ¿No tienes una cuenta?{' '}
                 <Link 
                   to={PUBLIC_ROUTES.REGISTER} 

@@ -46,10 +46,10 @@ export default function HomePage() {
             <div className="inline-block mb-4 px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-blue-800">
               🐾 Plataforma de Reencuentro de Mascotas
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
               Ayudamos a reunir familias con sus mascotas
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8">
               Busca, publica y encuentra mascotas perdidas en Tunja y alrededores. 
               Una comunidad unida para ayudar a nuestros mejores amigos.
             </p>
@@ -73,7 +73,7 @@ export default function HomePage() {
       </section>
       
       {/* Stats Section */}
-      <section className="py-12 bg-white border-b">
+      <section className="py-12 bg-background border-b">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <Card className="border-2 border-red-200 bg-red-50">
@@ -110,7 +110,7 @@ export default function HomePage() {
       </section>
       
       {/* Recent Reports */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold mb-3">Reportes Recientes</h2>
@@ -157,7 +157,7 @@ export default function HomePage() {
       </section>
       
       {/* How it Works */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold mb-3">¿Cómo Funciona?</h2>

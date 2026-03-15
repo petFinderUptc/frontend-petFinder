@@ -114,11 +114,11 @@ export default function SearchPage() {
   const displayPets = getPetsForTab();
   
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Buscar Mascotas</h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Explora todos los reportes activos en Tunja y alrededores con búsqueda inteligente
           </p>
         </div>
@@ -173,8 +173,8 @@ export default function SearchPage() {
                   <div className="h-[600px]">
                     <PetMap pets={filteredPets} />
                   </div>
-                  <div className="p-4 bg-gray-50 border-t">
-                    <p className="text-sm text-gray-600">
+                  <div className="p-4 bg-muted/50 border-t">
+                    <p className="text-sm text-muted-foreground">
                       Mostrando <span className="font-semibold">{filteredPets.length}</span> mascota{filteredPets.length !== 1 ? 's' : ''} en el mapa. 
                       Haz clic en los marcadores para ver más información.
                     </p>
@@ -203,7 +203,7 @@ export default function SearchPage() {
                 className={`px-6 py-3 font-medium transition-colors border-b-2 ${
                   activeTab === 'all'
                     ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Todos ({filteredPets.length})
@@ -213,7 +213,7 @@ export default function SearchPage() {
                 className={`px-6 py-3 font-medium transition-colors border-b-2 ${
                   activeTab === 'lost'
                     ? 'border-red-600 text-red-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Perdidos ({lostPets.length})
@@ -223,7 +223,7 @@ export default function SearchPage() {
                 className={`px-6 py-3 font-medium transition-colors border-b-2 ${
                   activeTab === 'found'
                     ? 'border-green-600 text-green-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Encontrados ({foundPets.length})

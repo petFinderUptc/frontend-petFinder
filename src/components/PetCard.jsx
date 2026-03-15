@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { PUBLIC_ROUTES } from '../constants/routes';
 import { toAbsoluteMediaUrl } from '../utils/userAdapter';
 
-const FALLBACK_PET_IMAGE = 'https://via.placeholder.com/400x300?text=Sin+Foto';
-
 export function PetCard({ pet }) {
+  const [imgError, setImgError] = useState(false);
   const statusColors = {
     lost: 'bg-red-100 text-red-800 border-red-200',
     found: 'bg-green-100 text-green-800 border-green-200',
@@ -22,7 +22,7 @@ export function PetCard({ pet }) {
   const petType = pet.petType?.toLowerCase() || 'dog';
   const petTypeLabel = petType === 'dog' ? 'Perro' : petType === 'cat' ? 'Gato' : 'Mascota';
   const rawPetImage = pet.images?.[0] || pet.photo;
-  const petImage = toAbsoluteMediaUrl(rawPetImage) || FALLBACK_PET_IMAGE;
+  const petImage = toAbsoluteMediaUrl(rawPetImage);
   const petLocation = typeof pet.location === 'string' 
     ? pet.location 
     : `${pet.location?.neighborhood || ''}, ${pet.location?.city || ''}`.trim();
@@ -32,16 +32,19 @@ export function PetCard({ pet }) {
     <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}>
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
         <div className="relative h-48 overflow-hidden">
-          <img
-            src={petImage}
-            alt={pet.petName || pet.name || 'Mascota'}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            onError={(event) => {
-              if (event.currentTarget.src !== FALLBACK_PET_IMAGE) {
-                event.currentTarget.src = FALLBACK_PET_IMAGE;
-              }
-            }}
-          />
+          {!imgError && petImage ? (
+            <img
+              src={petImage}
+              alt={pet.petName || pet.name || 'Mascota'}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex flex-col items-center justify-center gap-2">
+              <AlertCircle className="h-10 w-10 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Sin foto</span>
+            </div>
+          )}
           {pet.isUrgent && (
             <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 shadow-md">
               <AlertCircle className="h-3 w-3" />
@@ -58,16 +61,16 @@ export function PetCard({ pet }) {
             <h3 className="font-bold text-lg mb-1">
               {pet.petName || pet.name || `${petTypeLabel} sin nombre`}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               {pet.breed || 'Raza desconocida'} • {pet.color || 'Color no especificado'}
             </p>
           </div>
           
-          <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
             {pet.description}
           </p>
           
-          <div className="space-y-2 text-xs text-gray-600">
+          <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
               <span className="truncate">{petLocation}</span>
@@ -83,7 +86,7 @@ export function PetCard({ pet }) {
           </div>
           
           <div className="mt-4 pt-4 border-t space-y-1">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Phone className="h-3.5 w-3.5 text-blue-500" />
               <span>{pet.contactPhone || 'Contacto no disponible'}</span>
             </div>

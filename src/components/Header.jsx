@@ -12,7 +12,7 @@ export function Header() {
   const isActive = (path) => location.pathname === path;
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105">
@@ -28,8 +28,8 @@ export function Header() {
               to="/"
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                 isActive('/') 
-                  ? 'bg-blue-50 text-blue-600' 
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-accent text-accent-foreground' 
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Home className="h-4 w-4" />
@@ -40,8 +40,8 @@ export function Header() {
               to={PUBLIC_ROUTES.SEARCH}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                 isActive(PUBLIC_ROUTES.SEARCH) 
-                  ? 'bg-blue-50 text-blue-600' 
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-accent text-accent-foreground' 
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Search className="h-4 w-4" />

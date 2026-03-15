@@ -61,7 +61,7 @@ export function ProfileDropdown() {
       {/* Avatar Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors relative"
+        className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-colors relative"
         aria-label="Menu de perfil"
       >
         {/* Avatar with notification badge */}
@@ -80,31 +80,31 @@ export function ProfileDropdown() {
           
           {/* Notification Badge */}
           {unreadCount > 0 && (
-            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-background">
               {unreadCount > 9 ? '9+' : unreadCount}
             </div>
           )}
         </div>
         
         <ChevronDown 
-          className={`h-4 w-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-card rounded-lg shadow-xl border py-2 z-50">
           {/* User Info */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <p className="font-semibold text-gray-900">{user?.username || 'Usuario'}</p>
-            <p className="text-sm text-gray-500 truncate">{user?.email || ''}</p>
+          <div className="px-4 py-3 border-b">
+            <p className="font-semibold text-foreground">{user?.username || 'Usuario'}</p>
+            <p className="text-sm text-muted-foreground truncate">{user?.email || ''}</p>
           </div>
 
           {/* Menu Items */}
           <div className="py-2">
             <Link
               to={PROTECTED_ROUTES.PROFILE}
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <User className="h-4 w-4" />
@@ -113,7 +113,7 @@ export function ProfileDropdown() {
 
             <Link
               to={PROTECTED_ROUTES.MY_REPORTS}
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <Heart className="h-4 w-4" />
@@ -122,7 +122,7 @@ export function ProfileDropdown() {
 
             <Link
               to={PROTECTED_ROUTES.SETTINGS}
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <Settings className="h-4 w-4" />
@@ -131,7 +131,7 @@ export function ProfileDropdown() {
 
             <Link
               to="/notifications"
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors relative"
+              className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors relative"
               onClick={() => setIsOpen(false)}
             >
               <Bell className="h-4 w-4" />
@@ -145,7 +145,7 @@ export function ProfileDropdown() {
           </div>
 
           {/* Logout */}
-          <div className="border-t border-gray-200 pt-2">
+          <div className="border-t pt-2">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"

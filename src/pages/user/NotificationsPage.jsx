@@ -24,7 +24,7 @@ export default function NotificationsPage() {
       case 'message':
         return <Mail className="h-5 w-5 text-purple-600" />;
       default:
-        return <Bell className="h-5 w-5 text-gray-600" />;
+        return <Bell className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -37,19 +37,19 @@ export default function NotificationsPage() {
       case 'message':
         return 'border-purple-200 bg-purple-50';
       default:
-        return 'border-gray-200 bg-gray-50';
+        return 'border-muted bg-muted/50';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notificaciones</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-foreground">Notificaciones</h1>
+              <p className="text-muted-foreground mt-1">
                 {unreadCount > 0 
                   ? `Tienes ${unreadCount} notificación${unreadCount > 1 ? 'es' : ''} sin leer`
                   : 'No tienes notificaciones sin leer'
@@ -79,14 +79,14 @@ export default function NotificationsPage() {
                   className={`transition-all hover:shadow-md ${
                     !notification.read 
                       ? `border-2 ${getNotificationColor(notification.type)}` 
-                      : 'border bg-white'
+                      : 'border bg-card'
                   }`}
                 >
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       {/* Icon */}
                       <div className={`flex-shrink-0 p-3 rounded-full ${
-                        !notification.read ? 'bg-white' : 'bg-gray-100'
+                      !notification.read ? 'bg-card' : 'bg-muted'
                       }`}>
                         {getNotificationIcon(notification.type)}
                       </div>
@@ -94,7 +94,7 @@ export default function NotificationsPage() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-semibold text-foreground">
                             {notification.title}
                           </h3>
                           {!notification.read && (
@@ -104,12 +104,12 @@ export default function NotificationsPage() {
                           )}
                         </div>
                         
-                        <p className="text-gray-600 text-sm mb-2">
+                        <p className="text-muted-foreground text-sm mb-2">
                           {notification.message}
                         </p>
                         
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             {formatDistanceToNow(notification.timestamp)}
                           </div>
@@ -135,13 +135,13 @@ export default function NotificationsPage() {
           ) : (
             <Card className="border-2 border-dashed">
               <CardContent className="p-12 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                  <Bell className="h-8 w-8 text-gray-400" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
+                  <Bell className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   No hay notificaciones
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Cuando recibas notificaciones, aparecerán aquí
                 </p>
               </CardContent>
