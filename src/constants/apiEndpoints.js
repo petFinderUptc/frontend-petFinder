@@ -24,7 +24,7 @@ export const AUTH_ENDPOINTS = {
   VERIFY_EMAIL: '/auth/verify-email',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
-  ME: '/auth/me',
+  ME: '/users/profile/me',
 };
 
 /**
