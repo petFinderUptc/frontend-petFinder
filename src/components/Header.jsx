@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlusCircle, LogIn } from 'lucide-react';
+import { Home, Search, PlusCircle, LogIn, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { ProfileDropdown } from './ProfileDropdown';
