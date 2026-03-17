@@ -15,6 +15,20 @@ import { useForm } from '../../hooks/useForm';
 import { getUserStats, uploadAvatar } from '../../services/profileService';
 import { updateUserProfile } from '../../services/userService';
 
+function formatMemberSince(value) {
+  if (!value) return 'Fecha no disponible';
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return String(value);
+  }
+
+  return parsedDate.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+  });
+}
+
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -49,12 +63,7 @@ export default function ProfilePage() {
           reportsPublished: statsData.reportsPublished || 0,
           successfulReunions: statsData.successfulReunions || 0,
           helpedPets: statsData.helpedPets || 0,
-          memberSince: user?.createdAt 
-            ? new Date(user.createdAt).toLocaleDateString('es-ES', { 
-                year: 'numeric', 
-                month: 'long' 
-              })
-            : statsData.memberSince || 'Enero 2024',
+          memberSince: formatMemberSince(user?.createdAt || statsData.memberSince || 'Enero 2024'),
         });
       } catch (error) {
         console.error('Error cargando estadísticas:', error);
@@ -366,24 +375,24 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                     <p className="text-3xl font-bold text-blue-600">{stats.reportsPublished}</p>
                     <p className="text-sm text-muted-foreground mt-1">Reportes Publicados</p>
                   </div>
                   
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
                     <p className="text-3xl font-bold text-green-600">{stats.successfulReunions}</p>
                     <p className="text-sm text-muted-foreground mt-1">Reuniones Exitosas</p>
                   </div>
                   
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                     <p className="text-3xl font-bold text-purple-600">{stats.helpedPets}</p>
                     <p className="text-sm text-muted-foreground mt-1">Mascotas Ayudadas</p>
                   </div>
                   
-                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
                     <Calendar className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-foreground">{stats.memberSince}</p>
+                    <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">{stats.memberSince}</p>
                     <p className="text-xs text-muted-foreground mt-1">Miembro desde</p>
                   </div>
                 </div>

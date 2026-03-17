@@ -97,7 +97,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 
@@ -105,8 +105,8 @@ export default function RegisterPage() {
             alt="PetFinder" 
             className="h-16 mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-foreground">Crear Cuenta</h1>
-          <p className="text-muted-foreground mt-2">Únete a nuestra comunidad</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Crear Cuenta</h1>
+          <p className="text-gray-700 dark:text-slate-300 mt-2">Únete a nuestra comunidad</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                 {errors.username && (
                   <p className="mt-1 text-sm text-red-600">{errors.username}</p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">3-20 caracteres: letras, números, guiones o guiones bajos</p>
+                <p className="mt-1 text-xs text-muted-foreground">3-20 caracteres: letras, números, guiones o guiones bajos</p>
               </div>
 
               <div>
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -269,7 +269,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -306,7 +306,7 @@ export default function RegisterPage() {
         <div className="text-center mt-6">
           <Link 
             to={PUBLIC_ROUTES.HOME} 
-            className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
             ← Volver al inicio
           </Link>
