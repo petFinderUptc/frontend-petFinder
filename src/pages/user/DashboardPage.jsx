@@ -42,13 +42,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-12 border-b">
+      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               Hola, {user?.username || 'Usuario'} 👋
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-gray-700 dark:text-slate-300">
               Gestiona tus reportes y ayuda a reunir mascotas con sus familias
             </p>
           </div>
@@ -59,7 +59,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="border-2 border-blue-200 bg-blue-50">
+            <Card className="border-2 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-green-200 bg-green-50">
+            <Card className="border-2 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-200 bg-purple-50">
+            <Card className="border-2 border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -157,7 +157,7 @@ export default function DashboardPage() {
                 </div>
               ) : myReports.length === 0 ? (
                 <div className="text-center py-12">
-                  <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     No tienes reportes activos
                   </h3>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                       className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                        <div className="w-16 h-16 bg-muted rounded-lg"></div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-semibold">{report.name}</h4>
@@ -187,8 +187,8 @@ export default function DashboardPage() {
                               {report.status === 'lost' ? 'Perdido' : 'Encontrado'}
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-600">{report.type} • Publicado el {report.date}</p>
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                          <p className="text-sm text-muted-foreground">{report.type} • Publicado el {report.date}</p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                             <Eye className="h-3 w-3" />
                             {report.views} visitas
                           </p>

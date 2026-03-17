@@ -66,7 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 
@@ -74,8 +74,8 @@ export default function LoginPage() {
             alt="PetFinder" 
             className="h-16 mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-foreground">Bienvenido</h1>
-          <p className="text-muted-foreground mt-2">Inicia sesión en tu cuenta</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Bienvenido</h1>
+          <p className="text-gray-700 dark:text-slate-300 mt-2">Inicia sesión en tu cuenta</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -186,7 +186,7 @@ export default function LoginPage() {
         <div className="text-center mt-6">
           <Link 
             to={PUBLIC_ROUTES.HOME} 
-            className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
             ← Volver al inicio
           </Link>
