@@ -113,11 +113,11 @@ export default function PublishReportPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-12 border-b">
+      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl font-bold mb-3 text-foreground">Publicar Reporte</h1>
-            <p className="text-lg text-muted-foreground">
+            <h1 className="text-4xl font-bold mb-3 text-slate-900 dark:text-white">Publicar Reporte</h1>
+            <p className="text-lg text-gray-700 dark:text-slate-300">
               Ayúdanos a reunir mascotas con sus familias compartiendo información
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function PublishReportPage() {
                       name="type"
                       value={formData.type}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
+                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       required
                     >
                       <option value="">Selecciona un tipo</option>
@@ -241,7 +241,7 @@ export default function PublishReportPage() {
                       name="size"
                       value={formData.size}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
+                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       required
                     >
                       <option value="">Selecciona un tamaño</option>
@@ -260,7 +260,7 @@ export default function PublishReportPage() {
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
+                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       required
                     >
                       <option value="lost">Perdido</option>
@@ -281,7 +281,7 @@ export default function PublishReportPage() {
                     onChange={handleChange}
                     rows={4}
                     placeholder="Describe características distintivas, comportamiento, etc."
-                    className="w-full px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 h-9 px-3 py-1 text-sm"
+                    className="w-full min-h-[104px] px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
 
@@ -350,7 +350,7 @@ export default function PublishReportPage() {
                 </div>
 
                 {/* Use My Contact Info Checkbox */}
-                <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 rounded-lg">
                   <input
                     type="checkbox"
                     id="useMyContact"
@@ -358,7 +358,7 @@ export default function PublishReportPage() {
                     onChange={(e) => setUseMyContact(e.target.checked)}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <label htmlFor="useMyContact" className="text-sm font-medium text-foreground cursor-pointer">
+                  <label htmlFor="useMyContact" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
                     Usar mi información de contacto ({user?.email || 'No disponible'})
                   </label>
                 </div>
