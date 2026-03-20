@@ -153,7 +153,7 @@ export default function LoginPage() {
                   <span className="text-muted-foreground">Recordarme</span>
                 </label>
                 <Link 
-                  to="#" 
+                  to={PUBLIC_ROUTES.FORGOT_PASSWORD}
                   className="text-blue-600 hover:text-blue-700 hover:underline"
                 >
                   ¿Olvidaste tu contraseña?
