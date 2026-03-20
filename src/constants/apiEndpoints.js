@@ -11,7 +11,7 @@
  */
 
 // Base URL from environment variables with fallback
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 /**
  * Authentication related endpoints
@@ -39,6 +39,18 @@ export const PET_ENDPOINTS = {
   SEARCH: '/posts',
   MY_REPORTS: '/posts/my-posts',
   UPLOAD_IMAGE: '/posts/upload-image',
+};
+
+/**
+ * Reports related endpoints (paginated CRUD)
+ */
+export const REPORT_ENDPOINTS = {
+  GET_ALL: '/reports',
+  GET_BY_ID: (id) => `/reports/${id}`,
+  CREATE: '/reports',
+  UPDATE: (id) => `/reports/${id}`,
+  DELETE: (id) => `/reports/${id}`,
+  MY_REPORTS: '/reports/my-reports',
 };
 
 /**

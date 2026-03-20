@@ -1,139 +1,141 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, MapPin, Phone, AlertCircle } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { AlertCircle, Loader2, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
-import { PET_TYPES } from '../../constants/appConfig';
-import { PROTECTED_ROUTES } from '../../constants/routes';
-import { createPet } from '../../services/petService';
-import { useAuth } from '../../context/AuthContext';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { PUBLIC_ROUTES } from '../../constants/routes';
+import { createReport, uploadReportImage } from '../../services/reportService';
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+const initialForm = {
+  species: 'dog',
+  type: 'lost',
+  status: 'active',
+  description: '',
+  color: '',
+  breed: '',
+  size: 'medium',
+  contact: '',
+  lat: '',
+  lon: '',
+};
 
 export default function PublishReportPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [formData, setFormData] = useState(initialForm);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [useMyContact, setUseMyContact] = useState(true); // Marcado por defecto
-  const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    breed: '',
-    color: '',
-    size: '',
-    status: 'lost',
-    description: '',
-    location: '',
-    city: '',
-    neighborhood: '',
-    date: '',
-    contactPhone: '',
-    contactEmail: '',
-    image: null
-  });
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Prellenar información de contacto del usuario
-  useEffect(() => {
-    if (useMyContact && user) {
-      setFormData(prev => ({
-        ...prev,
-        contactEmail: user.email || '',
-        contactPhone: user.phoneNumber || ''
-      }));
-    } else if (!useMyContact) {
-      // Limpiar campos cuando se desmarca
-      setFormData(prev => ({
-        ...prev,
-        contactEmail: '',
-        contactPhone: ''
-      }));
-    }
-  }, [useMyContact, user]);
+  const canSubmit = useMemo(() => {
+    return (
+      !!formData.species &&
+      !!formData.type &&
+      !!formData.status &&
+      !!formData.description.trim() &&
+      !!formData.color.trim() &&
+      !!formData.breed.trim() &&
+      !!formData.size &&
+      !!formData.contact.trim() &&
+      formData.lat !== '' &&
+      formData.lon !== '' &&
+      !!imageFile
+    );
+  }, [formData, imageFile]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError('La imagen no debe superar los 5MB');
-        return;
-      }
-      setFormData(prev => ({ ...prev, image: file }));
-      setError('');
-    }
-  };
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError('Tipo de imagen no permitido. Usa JPG, PNG, WEBP o GIF.');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setError('La imagen no debe superar 5MB.');
+      return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    const nextPreview = URL.createObjectURL(file);
+    setImageFile(file);
+    setPreviewUrl(nextPreview);
     setError('');
-    
-    if (!formData.name || !formData.type || !formData.status || !formData.city || !formData.neighborhood || !formData.contactPhone || !formData.color || !formData.size || !formData.date) {
-      setError('Por favor completa todos los campos obligatorios');
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+
+    if (!canSubmit) {
+      setError('Completa todos los campos obligatorios antes de publicar.');
       return;
     }
 
     setIsSubmitting(true);
-    
+    setUploadProgress(0);
+
     try {
-      // Map frontend data to backend CreatePostDto format
-      const postData = {
-        type: formData.status, // 'lost' or 'found'
-        petName: formData.name,
-        petType: formData.type, // 'dog', 'cat', etc.
-        breed: formData.breed || undefined,
-        color: formData.color,
-        size: formData.size, // 'small', 'medium', 'large'
-        description: formData.description || 'Sin descripción adicional',
-        location: {
-          city: formData.city,
-          neighborhood: formData.neighborhood,
-          address: formData.location || undefined
-        },
-        contactPhone: formData.contactPhone,
-        contactEmail: formData.contactEmail || undefined,
-        lostOrFoundDate: formData.date
+      const uploadResult = await uploadReportImage(imageFile, (progressEvent) => {
+        const total = progressEvent.total || 1;
+        const percent = Math.round((progressEvent.loaded * 100) / total);
+        setUploadProgress(percent);
+      });
+
+      const imageUrl = uploadResult?.imageUrl;
+      if (!imageUrl) {
+        throw new Error('No se obtuvo la URL de la imagen cargada.');
+      }
+
+      const payload = {
+        species: formData.species,
+        type: formData.type,
+        status: formData.status,
+        description: formData.description.trim(),
+        color: formData.color.trim(),
+        breed: formData.breed.trim(),
+        size: formData.size,
+        contact: formData.contact.trim(),
+        imageUrl,
+        lat: Number(formData.lat),
+        lon: Number(formData.lon),
       };
 
-      console.log('Submitting report:', postData);
-      await createPet(postData);
-      navigate(PROTECTED_ROUTES.DASHBOARD);
+      await createReport(payload);
+      navigate(PUBLIC_ROUTES.SEARCH);
     } catch (err) {
-      console.error('Error creating post:', err);
-      setError(err.response?.data?.message || 'Error al publicar el reporte. Inténtalo nuevamente.');
+      setError(err?.message || err?.data?.message || 'No fue posible crear el reporte.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl font-bold mb-3 text-slate-900 dark:text-white">Publicar Reporte</h1>
-            <p className="text-lg text-gray-700 dark:text-slate-300">
-              Ayúdanos a reunir mascotas con sus familias compartiendo información
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Información de la Mascota</CardTitle>
+              <CardTitle>Crear reporte</CardTitle>
               <CardDescription>
-                Completa todos los campos para ayudar a otros a identificar la mascota
+                Completa los datos obligatorios del reporte y adjunta una imagen.
               </CardDescription>
             </CardHeader>
-            
             <CardContent>
               {error && (
                 <Alert variant="destructive" className="mb-6">
@@ -142,282 +144,167 @@ export default function PublishReportPage() {
                 </Alert>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Image Upload */}
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Foto de la Mascota *
-                  </label>
-                  <div className="border-2 border-dashed border-input rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                  <label className="block text-sm font-medium mb-2">Imagen *</label>
+                  <div className="border-2 border-dashed rounded-lg p-4">
                     <input
+                      id="report-image"
                       type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                       className="hidden"
-                      id="image-upload"
+                      onChange={handleImageChange}
                     />
-                    <label htmlFor="image-upload" className="cursor-pointer">
-                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {formData.image ? formData.image.name : 'Click para subir una imagen'}
+                    <label htmlFor="report-image" className="cursor-pointer block text-center">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        {imageFile ? imageFile.name : 'Selecciona una imagen'}
                       </p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG hasta 5MB</p>
                     </label>
                   </div>
+                  {previewUrl && (
+                    <img
+                      src={previewUrl}
+                      alt="Vista previa del reporte"
+                      className="mt-3 w-full h-64 object-cover rounded-lg border"
+                    />
+                  )}
+                  {isSubmitting && uploadProgress > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Subiendo imagen: {uploadProgress}%
+                    </p>
+                  )}
                 </div>
 
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-                      Nombre *
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Nombre de la mascota"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-foreground mb-1">
-                      Tipo *
-                    </label>
+                    <label className="block text-sm font-medium mb-1">Especie *</label>
                     <select
-                      id="type"
+                      name="species"
+                      value={formData.species}
+                      onChange={handleChange}
+                      className="w-full h-9 px-3 rounded-md border bg-background"
+                      required
+                    >
+                      <option value="dog">Perro</option>
+                      <option value="cat">Gato</option>
+                      <option value="bird">Ave</option>
+                      <option value="rabbit">Conejo</option>
+                      <option value="other">Otro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tipo *</label>
+                    <select
                       name="type"
                       value={formData.type}
                       onChange={handleChange}
-                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    >
-                      <option value="">Selecciona un tipo</option>
-                      {Object.entries(PET_TYPES).map(([key, value]) => (
-                        <option key={key} value={value}>{value}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="breed" className="block text-sm font-medium text-foreground mb-1">
-                      Raza
-                    </label>
-                    <Input
-                      id="breed"
-                      name="breed"
-                      value={formData.breed}
-                      onChange={handleChange}
-                      placeholder="Ej: Golden Retriever"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="color" className="block text-sm font-medium text-foreground mb-1">
-                      Color *
-                    </label>
-                    <Input
-                      id="color"
-                      name="color"
-                      value={formData.color}
-                      onChange={handleChange}
-                      placeholder="Ej: Café, Blanco, Negro"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="size" className="block text-sm font-medium text-foreground mb-1">
-                      Tamaño *
-                    </label>
-                    <select
-                      id="size"
-                      name="size"
-                      value={formData.size}
-                      onChange={handleChange}
-                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    >
-                      <option value="">Selecciona un tamaño</option>
-                      <option value="small">Pequeño</option>
-                      <option value="medium">Mediano</option>
-                      <option value="large">Grande</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
-                      Estado *
-                    </label>
-                    <select
-                      id="status"
-                      name="status"
-                      value={formData.status}
-                      onChange={handleChange}
-                      className="w-full h-9 px-3 py-1 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full h-9 px-3 rounded-md border bg-background"
                       required
                     >
                       <option value="lost">Perdido</option>
                       <option value="found">Encontrado</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Estado *</label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleChange}
+                      className="w-full h-9 px-3 rounded-md border bg-background"
+                      required
+                    >
+                      <option value="active">Activo</option>
+                      <option value="resolved">Resuelto</option>
+                      <option value="inactive">Inactivo</option>
+                    </select>
+                  </div>
                 </div>
 
-                {/* Description */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Color *</label>
+                    <Input name="color" value={formData.color} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Raza *</label>
+                    <Input name="breed" value={formData.breed} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tamano *</label>
+                    <select
+                      name="size"
+                      value={formData.size}
+                      onChange={handleChange}
+                      className="w-full h-9 px-3 rounded-md border bg-background"
+                      required
+                    >
+                      <option value="small">Pequeno</option>
+                      <option value="medium">Mediano</option>
+                      <option value="large">Grande</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
-                    Descripción Detallada
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Descripcion *</label>
                   <textarea
-                    id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
+                    minLength={10}
+                    required
                     rows={4}
-                    placeholder="Describe características distintivas, comportamiento, etc."
-                    className="w-full min-h-[104px] px-3 py-2 border-input bg-background rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full min-h-[96px] px-3 py-2 rounded-md border bg-background"
                   />
                 </div>
 
-                {/* Location & Date */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-foreground mb-1">
-                      Ciudad *
-                    </label>
+                    <label className="block text-sm font-medium mb-1">Contacto *</label>
+                    <Input name="contact" value={formData.contact} onChange={handleChange} required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Latitud *</label>
                     <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
+                      type="number"
+                      step="0.000001"
+                      min="-90"
+                      max="90"
+                      name="lat"
+                      value={formData.lat}
                       onChange={handleChange}
-                      placeholder="Ej: Tunja"
                       required
                     />
                   </div>
-
                   <div>
-                    <label htmlFor="neighborhood" className="block text-sm font-medium text-foreground mb-1">
-                      Barrio *
-                    </label>
+                    <label className="block text-sm font-medium mb-1">Longitud *</label>
                     <Input
-                      id="neighborhood"
-                      name="neighborhood"
-                      value={formData.neighborhood}
-                      onChange={handleChange}
-                      placeholder="Ej: Centro"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-foreground mb-1">
-                      Dirección (Opcional)
-                    </label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="location"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleChange}
-                        placeholder="Ej: Calle 10 #5-20"
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-foreground mb-1">
-                      Fecha del Evento *
-                    </label>
-                    <Input
-                      id="date"
-                      name="date"
-                      type="date"
-                      value={formData.date}
+                      type="number"
+                      step="0.000001"
+                      min="-180"
+                      max="180"
+                      name="lon"
+                      value={formData.lon}
                       onChange={handleChange}
                       required
                     />
                   </div>
                 </div>
 
-                {/* Use My Contact Info Checkbox */}
-                <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 rounded-lg">
-                  <input
-                    type="checkbox"
-                    id="useMyContact"
-                    checked={useMyContact}
-                    onChange={(e) => setUseMyContact(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                  <label htmlFor="useMyContact" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
-                    Usar mi información de contacto ({user?.email || 'No disponible'})
-                  </label>
-                </div>
-
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="contactPhone" className="block text-sm font-medium text-foreground mb-1">
-                      Teléfono de Contacto *
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="contactPhone"
-                        name="contactPhone"
-                        type="tel"
-                        value={formData.contactPhone}
-                        onChange={handleChange}
-                        placeholder="300 123 4567"
-                        className="pl-9"
-                        required
-                        disabled={useMyContact}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="contactEmail" className="block text-sm font-medium text-foreground mb-1">
-                      Email de Contacto
-                    </label>
-                    <Input
-                      id="contactEmail"
-                      name="contactEmail"
-                      type="email"
-                      value={formData.contactEmail}
-                      onChange={handleChange}
-                      placeholder="tu@email.com"
-                      disabled={useMyContact}
-                    />
-                  </div>
-                </div>
-
-                {/* Submit Buttons */}
-                <div className="flex gap-4 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(PROTECTED_ROUTES.DASHBOARD)}
-                    disabled={isSubmitting}
-                    className="flex-1"
-                  >
+                <div className="flex gap-3">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                  >
-                    {isSubmitting ? 'Publicando...' : 'Publicar Reporte'}
+                  <Button type="submit" className="flex-1" disabled={isSubmitting || !canSubmit}>
+                    {isSubmitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Publicando...
+                      </span>
+                    ) : (
+                      'Publicar reporte'
+                    )}
                   </Button>
                 </div>
               </form>
