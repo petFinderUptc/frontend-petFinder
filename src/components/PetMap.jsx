@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Link } from 'react-router-dom';
+import { adaptPost } from '../utils/postAdapter';
+import { toAbsoluteMediaUrl } from '../utils/userAdapter';
+import { PUBLIC_ROUTES } from '../constants/routes';
 
 export function PetMap({ pets, center = [5.5353, -73.3678], zoom = 13, selectedPet = null }) {
   const mapRef = useRef(null);
@@ -65,7 +68,11 @@ export function PetMap({ pets, center = [5.5353, -73.3678], zoom = 13, selectedP
     };
 
     // Add markers
-    pets.forEach((pet) => {
+    pets.forEach((rawPet) => {
+      const pet = adaptPost(rawPet);
+      
+      if (!pet.latitude || !pet.longitude) return;
+
       const marker = L.marker([pet.latitude, pet.longitude], {
         icon: createCustomIcon(pet),
       }).addTo(map);
@@ -80,36 +87,38 @@ export function PetMap({ pets, center = [5.5353, -73.3678], zoom = 13, selectedP
         found: 'background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0;',
       };
 
+      const petImage = toAbsoluteMediaUrl(pet.imageUrl);
+
       const popupContent = `
         <div style="min-width: 200px;">
-          <a href="/mascota/${pet.id}" style="display: block; text-decoration: none; color: inherit;">
+          <a href="${PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}" style="display: block; text-decoration: none; color: inherit;">
             <img 
-              src="${pet.photo}" 
-              alt="${pet.name || 'Mascota'}" 
-              style="width: 100%; height: 128px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;"
+              src="${petImage || ''}" 
+              alt="${pet.petName || 'Mascota'}" 
+              style="width: 100%; height: 128px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background-color: #f3f4f6;"
             />
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
               <h3 style="font-weight: bold; font-size: 16px; margin: 0;">
-                ${pet.name || `${pet.type === 'dog' ? 'Perro' : 'Gato'} sin nombre`}
+                ${pet.petName || 'Sin nombre'}
               </h3>
               <span style="
                 font-size: 12px;
                 padding: 2px 8px;
                 border-radius: 4px;
-                ${statusColors[pet.status]}
+                ${statusColors[pet.type] || ''}
               ">
-                ${statusLabels[pet.status]}
+                ${statusLabels[pet.type] || pet.type}
               </span>
             </div>
             <p style="font-size: 14px; color: #4b5563; margin: 0 0 8px 0;">
-              ${pet.breed} • ${pet.color}
+              ${pet.breed || 'Raza desconocida'} • ${pet.color || 'Color no especificado'}
             </p>
             <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-bottom: 4px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pet.location}</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pet.location || 'Ubicación no especificada'}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-bottom: 8px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -119,7 +128,7 @@ export function PetMap({ pets, center = [5.5353, -73.3678], zoom = 13, selectedP
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
               <span>
-                ${new Date(pet.date).toLocaleDateString('es-ES', { 
+                ${new Date(pet.eventDate).toLocaleDateString('es-ES', { 
                   day: 'numeric',
                   month: 'short'
                 })}

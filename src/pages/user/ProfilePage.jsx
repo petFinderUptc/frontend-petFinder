@@ -110,7 +110,10 @@ export default function ProfilePage() {
 
       // Actualizar perfil
       const profileData = {
-        ...values,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        phone: values.phone,
+        location: values.location,
         avatar: avatarUrl,
       };
 
@@ -288,9 +291,10 @@ export default function ProfilePage() {
                         name="username"
                         value={values.username}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled
                         placeholder="usuario123"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Este campo no se puede editar desde este formulario.</p>
                     </div>
 
                     <div>
@@ -303,9 +307,10 @@ export default function ProfilePage() {
                         name="email"
                         value={values.email}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled
                         placeholder="tu@email.com"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Este campo no se puede editar desde este formulario.</p>
                     </div>
 
                     <div>

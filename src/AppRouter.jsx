@@ -23,6 +23,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import SearchPage from './pages/pet/SearchPage';
 import PetDetailPage from './pages/pet/PetDetailPage';
 
@@ -32,6 +34,7 @@ import ProfilePage from './pages/user/ProfilePage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
+import MyReportsPage from './pages/user/MyReportsPage';
 
 /**
  * NotFoundPage - Página 404 simple
@@ -59,16 +62,6 @@ const NotFoundPage = () => (
 );
 
 /**
- * MyReportsPage - Placeholder
- */
-const MyReportsPage = () => (
-  <div style={{ textAlign: 'center', padding: '3rem' }}>
-    <h1>Mis Reportes</h1>
-    <p style={{ color: '#6b7280' }}>Ver y gestionar tus reportes de mascotas aquí</p>
-  </div>
-);
-
-/**
  * Componente AppRouter
  * Contiene todas las definiciones de rutas
  */
@@ -83,6 +76,8 @@ const AppRouter = () => {
       {/* Rutas de Autenticación sin Layout (pantalla completa) */}
       <Route path={PUBLIC_ROUTES.LOGIN} element={<LoginPage />} />
       <Route path={PUBLIC_ROUTES.REGISTER} element={<RegisterPage />} />
+      <Route path={PUBLIC_ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+      <Route path={PUBLIC_ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
 
       {/* Rutas Protegidas con Layout */}
       <Route
