@@ -12,31 +12,27 @@ import { NOTIFICATION_ENDPOINTS } from '../constants/apiEndpoints';
  * Get all notifications for current user
  * @param {Object} params - Query parameters (page, limit, read)
  * @returns {Promise<Array>} List of notifications
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const getNotifications = async (params = {}) => {
   const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_ALL, { params });
-  return response.data;
+  // Backend devuelve estructura paginada: { data: [], pagination: {} }
+  return Array.isArray(response.data) ? response.data : response.data?.data || [];
 };
 
 /**
  * Get unread notification count
  * @returns {Promise<number>} Unread count
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const getUnreadCount = async () => {
   const response = await apiClient.get(NOTIFICATION_ENDPOINTS.GET_UNREAD);
+  // Backend devuelve: { count: number, notifications: [] }
   return response.data?.count ?? 0;
 };
 
 /**
  * Mark notification as read
  * @param {string|number} notificationId - Notification ID
- * @returns {Promise<void>}
- * 
- * TODO: Endpoint pendiente de implementación en backend
+ * @returns {Promise<Object>} Success message
  */
 export const markAsRead = async (notificationId) => {
   const response = await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_AS_READ(notificationId));
@@ -45,9 +41,7 @@ export const markAsRead = async (notificationId) => {
 
 /**
  * Mark all notifications as read
- * @returns {Promise<void>}
- * 
- * TODO: Endpoint pendiente de implementación en backend
+ * @returns {Promise<Object>} Success message
  */
 export const markAllAsRead = async () => {
   const response = await apiClient.put(NOTIFICATION_ENDPOINTS.MARK_ALL_AS_READ);
@@ -57,9 +51,7 @@ export const markAllAsRead = async () => {
 /**
  * Delete notification
  * @param {string|number} notificationId - Notification ID
- * @returns {Promise<void>}
- * 
- * TODO: Endpoint pendiente de implementación en backend
+ * @returns {Promise<Object>} Success message
  */
 export const deleteNotification = async (notificationId) => {
   const response = await apiClient.delete(NOTIFICATION_ENDPOINTS.DELETE(notificationId));
@@ -67,13 +59,10 @@ export const deleteNotification = async (notificationId) => {
 };
 
 /**
- * Get notification preferences
+ * Get notification preferences - Almacenadas localmente en frontend
  * @returns {Promise<Object>} Notification preferences
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const getNotificationPreferences = async () => {
-  // Simulación temporal - usar localStorage
   const prefs = localStorage.getItem('notification_preferences');
   return Promise.resolve({
     data: prefs ? JSON.parse(prefs) : {
@@ -83,21 +72,15 @@ export const getNotificationPreferences = async () => {
       updateAlerts: true,
     },
   });
-  
-  // Implementación real cuando el backend esté listo:
-  // const response = await apiClient.get('/notifications/preferences');
-  // return response.data;
 };
 
 /**
- * Update notification preferences
+ * Update notification preferences - Almacenadas localmente en frontend
  * @param {Object} preferences - Updated preferences
  * @returns {Promise<Object>} Updated preferences
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const updateNotificationPreferences = async (preferences) => {
-  // Simulación temporal - guardar en localStorage
+  // Guardar en localStorage - backend no tiene este endpoint
   localStorage.setItem('notification_preferences', JSON.stringify(preferences));
   return Promise.resolve({ data: preferences });
   
