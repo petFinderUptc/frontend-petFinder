@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { getMyReports } from '../../services/petService';
+import { adaptPost } from '../../utils/postAdapter';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -173,37 +174,42 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {myReports.map(report => (
-                    <div
-                      key={report.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-muted rounded-lg"></div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold">{report.name}</h4>
-                            <Badge variant={report.status === 'lost' ? 'destructive' : 'success'}>
-                              {report.status === 'lost' ? 'Perdido' : 'Encontrado'}
-                            </Badge>
+                  {myReports.map(rawReport => {
+                    const report = adaptPost(rawReport);
+                    const statusLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
+                    
+                    return (
+                      <div
+                        key={report.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-muted rounded-lg"></div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">{report.petName}</h4>
+                              <Badge variant={report.type === 'lost' ? 'destructive' : 'success'}>
+                                {statusLabel}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{report.species} • Publicado el {new Date(report.eventDate).toLocaleDateString('es-ES')}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                              <Eye className="h-3 w-3" />
+                              {report.views} visitas
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">{report.type} • Publicado el {report.date}</p>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                            <Eye className="h-3 w-3" />
-                            {report.views} visitas
-                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

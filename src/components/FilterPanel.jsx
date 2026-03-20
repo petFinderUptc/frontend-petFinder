@@ -106,9 +106,9 @@ export function FilterPanel({ filters, onFilterChange }) {
                 className="w-full h-9 px-3 py-1 rounded-md border border-input bg-background text-sm"
               >
                 <option value="all">Todos</option>
-                <option value="pequeño">Pequeño</option>
-                <option value="mediano">Mediano</option>
-                <option value="grande">Grande</option>
+                <option value="small">Pequeño</option>
+                <option value="medium">Mediano</option>
+                <option value="large">Grande</option>
               </select>
             </div>
             
