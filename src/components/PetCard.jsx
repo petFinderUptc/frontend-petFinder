@@ -5,9 +5,12 @@ import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { PUBLIC_ROUTES } from '../constants/routes';
 import { toAbsoluteMediaUrl } from '../utils/userAdapter';
+import { adaptPost } from '../utils/postAdapter';
 
 export function PetCard({ pet }) {
   const [imgError, setImgError] = useState(false);
+  const adapted = adaptPost(pet);
+  
   const statusColors = {
     lost: 'bg-red-100 text-red-800 border-red-200',
     found: 'bg-green-100 text-green-800 border-green-200',
@@ -18,24 +21,24 @@ export function PetCard({ pet }) {
     found: 'Encontrado',
   };
 
-  // Adaptar datos del backend al formato del componente
-  const petType = pet.petType?.toLowerCase() || 'dog';
-  const petTypeLabel = petType === 'dog' ? 'Perro' : petType === 'cat' ? 'Gato' : 'Mascota';
-  const rawPetImage = pet.images?.[0] || pet.photo;
-  const petImage = toAbsoluteMediaUrl(rawPetImage);
-  const petLocation = typeof pet.location === 'string' 
-    ? pet.location 
-    : `${pet.location?.neighborhood || ''}, ${pet.location?.city || ''}`.trim();
-  const petDate = pet.lostOrFoundDate || pet.date || pet.createdAt;
+  const speciesLabel = {
+    dog: 'Perro',
+    cat: 'Gato',
+    bird: 'Ave',
+    rabbit: 'Conejo',
+    other: 'Otro',
+  };
+
+  const petImage = toAbsoluteMediaUrl(adapted.imageUrl);
   
   return (
-    <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}>
+    <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', adapted.id)}>
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
         <div className="relative h-48 overflow-hidden">
           {!imgError && petImage ? (
             <img
               src={petImage}
-              alt={pet.petName || pet.name || 'Mascota'}
+              alt={adapted.petName}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               onError={() => setImgError(true)}
             />
@@ -45,39 +48,39 @@ export function PetCard({ pet }) {
               <span className="text-xs text-muted-foreground">Sin foto</span>
             </div>
           )}
-          {pet.isUrgent && (
+          {adapted.isUrgent && (
             <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 shadow-md">
               <AlertCircle className="h-3 w-3" />
               URGENTE
             </div>
           )}
-          <Badge className={`absolute top-2 right-2 ${statusColors[pet.type || pet.status]} shadow-md`}>
-            {statusLabels[pet.type || pet.status]}
+          <Badge className={`absolute top-2 right-2 ${statusColors[adapted.type]} shadow-md`}>
+            {statusLabels[adapted.type]}
           </Badge>
         </div>
         
         <CardContent className="p-4">
           <div className="mb-3">
             <h3 className="font-bold text-lg mb-1">
-              {pet.petName || pet.name || `${petTypeLabel} sin nombre`}
+              {adapted.petName}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {pet.breed || 'Raza desconocida'} • {pet.color || 'Color no especificado'}
+              {speciesLabel[adapted.species] || adapted.species} • {adapted.breed || 'Raza desconocida'}
             </p>
           </div>
           
           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {pet.description}
+            {adapted.description || 'Sin descripción disponible'}
           </p>
           
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-              <span className="truncate">{petLocation}</span>
+              <span className="truncate">{adapted.location || 'Ubicación no especificada'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-              <span>{new Date(petDate).toLocaleDateString('es-ES', { 
+              <span>{new Date(adapted.eventDate).toLocaleDateString('es-ES', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
@@ -88,7 +91,7 @@ export function PetCard({ pet }) {
           <div className="mt-4 pt-4 border-t space-y-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Phone className="h-3.5 w-3.5 text-blue-500" />
-              <span>{pet.contactPhone || 'Contacto no disponible'}</span>
+              <span>{adapted.contactPhone || 'Contacto no disponible'}</span>
             </div>
           </div>
         </CardContent>

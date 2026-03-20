@@ -4,6 +4,7 @@ import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
+import { FilterPanel } from '../../components/FilterPanel';
 import { PUBLIC_ROUTES } from '../../constants/routes';
 import { getReports } from '../../services/reportService';
 import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
@@ -25,6 +26,18 @@ const speciesLabel = {
 
 export default function SearchPage() {
   const [reports, setReports] = useState([]);
+  const [filters, setFilters] = useState({
+    status: 'all',
+    type: 'all',
+    size: 'all',
+    location: '',
+    searchTerm: '',
+    breed: '',
+    color: '',
+    urgentOnly: false,
+    dateFrom: '',
+    dateTo: '',
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGE_SIZE,
@@ -36,12 +49,37 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchReports = async (targetPage = 1) => {
+  const fetchReports = async (targetPage = 1, activeFilters = filters) => {
     try {
       setLoading(true);
       setError('');
 
-      const response = await getReports({ page: targetPage, limit: PAGE_SIZE });
+      // Construir parámetros de query basados en filtros
+      const queryParams = {
+        page: targetPage,
+        limit: PAGE_SIZE,
+      };
+
+      if (activeFilters.status !== 'all') {
+        queryParams.type = activeFilters.status; // Backend espera 'type' para lost/found
+      }
+      if (activeFilters.type !== 'all') {
+        queryParams.species = activeFilters.type; // Backend espera 'species' para dog/cat/etc
+      }
+      if (activeFilters.size !== 'all') {
+        queryParams.size = activeFilters.size;
+      }
+      if (activeFilters.breed) {
+        queryParams.breed = activeFilters.breed;
+      }
+      if (activeFilters.color) {
+        queryParams.color = activeFilters.color;
+      }
+      if (activeFilters.searchTerm) {
+        queryParams.search = activeFilters.searchTerm;
+      }
+
+      const response = await getReports(queryParams);
       setReports(Array.isArray(response?.data) ? response.data : []);
       setPagination(
         response?.pagination || {
@@ -62,7 +100,7 @@ export default function SearchPage() {
   };
 
   useEffect(() => {
-    void fetchReports(1);
+    void fetchReports(1, filters);
   }, []);
 
   const title = useMemo(() => {
@@ -71,12 +109,21 @@ export default function SearchPage() {
     return `Reportes activos (${pagination.total})`;
   }, [loading, reports.length, pagination.total]);
 
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    void fetchReports(1, newFilters);
+  };
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Listado de reportes</h1>
           <p className="text-muted-foreground">{title}</p>
+        </div>
+
+        <div className="mb-6">
+          <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
         </div>
 
         {loading ? (
