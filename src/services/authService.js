@@ -16,7 +16,7 @@
 import apiClient from './api/apiClient';
 import { AUTH_ENDPOINTS } from '../constants/apiEndpoints';
 import { STORAGE_KEYS } from '../constants/appConfig';
-import { setItem, removeItem } from '../utils/storage';
+import { getItem, setItem, removeItem } from '../utils/storage';
 import { normalizeUserFromBackend } from '../utils/userAdapter';
 
 /**
@@ -26,14 +26,16 @@ import { normalizeUserFromBackend } from '../utils/userAdapter';
  */
 export const login = async (credentials) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
-  
-  const { accessToken, user } = response.data;
+
+  const { accessToken, refreshToken, user } = response.data;
   const normalizedUser = normalizeUserFromBackend(user);
-  
-  // Guardar token y datos de usuario
+
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+  if (refreshToken) {
+    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+  }
   setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
-  
+
   return {
     ...response.data,
     user: normalizedUser,
@@ -47,14 +49,16 @@ export const login = async (credentials) => {
  */
 export const register = async (userData) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.REGISTER, userData);
-  
-  const { accessToken, user } = response.data;
+
+  const { accessToken, refreshToken, user } = response.data;
   const normalizedUser = normalizeUserFromBackend(user);
-  
-  // Guardar token y datos de usuario
+
   setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+  if (refreshToken) {
+    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+  }
   setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
-  
+
   return {
     ...response.data,
     user: normalizedUser,
@@ -68,12 +72,15 @@ export const register = async (userData) => {
  */
 export const logout = async () => {
   try {
-    await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
+    const refreshTokenValue = getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    await apiClient.post(AUTH_ENDPOINTS.LOGOUT, {
+      refreshToken: refreshTokenValue,
+    });
   } catch (error) {
     console.error('Error al cerrar sesión:', error);
   } finally {
-    // Siempre limpiar datos locales, incluso si la llamada API falla
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
   }
 };

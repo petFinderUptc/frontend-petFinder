@@ -97,7 +97,7 @@ export const updateNotificationPreferences = async (preferences) => {
  * TODO: Endpoint pendiente de implementación en backend
  */
 export const subscribeToPush = async (subscription) => {
-  console.warn('⚠️ Suscripción a push notifications simulada. Implementar en backend.');
+  console.warn('⚠️ Suscripción a push notifications simulada. Implementar en backend.', subscription);
   return Promise.resolve();
   
   // Implementación real cuando el backend esté listo:

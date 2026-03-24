@@ -51,6 +51,7 @@ export const REPORT_ENDPOINTS = {
   UPDATE: (id) => `/reports/${id}`,
   DELETE: (id) => `/reports/${id}`,
   MY_REPORTS: '/reports/my-reports',
+  UPLOAD_IMAGE: '/reports/upload-image',
 };
 
 /**
@@ -74,6 +75,7 @@ export const USER_ENDPOINTS = {
 export const LOCATION_ENDPOINTS = {
   NEARBY_PETS: '/location/nearby',
   GEOCODE: '/location/geocode',
+  SEARCH_ADDRESS: '/location/search-address',
   REVERSE_GEOCODE: '/location/reverse-geocode',
 };
 
