@@ -4,8 +4,8 @@ import { AlertCircle, Eye, Pencil, PlusCircle, RefreshCw, Trash2 } from 'lucide-
 import { useAlert } from '../../context/AlertContext';
 import { deleteReport, getMyReports, updateReport } from '../../services/reportService';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../../constants/routes';
-import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
 import { Button } from '../../components/ui/button';
+import { ReportCardItem } from '../../components/ReportCardItem';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 
@@ -154,81 +154,21 @@ export default function MyReportsPage() {
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {reports.map((report) => {
-                const imageUrl = toAbsoluteMediaUrl(report.imageUrl);
                 const isBusy = busyId === report.id;
 
                 return (
-                  <Card key={report.id} className="h-full overflow-hidden">
-                    {imageUrl ? (
-                      <img src={imageUrl} alt="Reporte" className="h-48 w-full object-cover" />
-                    ) : (
-                      <div className="flex h-48 w-full items-center justify-center bg-muted text-muted-foreground">
-                        Sin imagen
-                      </div>
-                    )}
-                    <CardContent className="space-y-3 p-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <h2 className="line-clamp-1 text-lg font-semibold">
-                          {speciesLabels[report.species] || report.species || 'Mascota'}
-                        </h2>
-                        <div className="flex gap-1">
-                          <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
-                            {typeLabels[report.type] || report.type}
-                          </Badge>
-                          <Badge variant={statusVariant[report.status] || 'outline'}>
-                            {statusLabels[report.status] || report.status}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {report.description || 'Sin descripcion'}
-                      </p>
-
-                      <div className="text-xs text-muted-foreground">
-                        <p>
-                          Raza: <span className="font-medium">{report.breed || 'No especificada'}</span>
-                        </p>
-                        <p>
-                          Publicado:{' '}
-                          <span className="font-medium">
-                            {new Date(report.createdAt || Date.now()).toLocaleDateString('es-ES')}
-                          </span>
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)}>
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Eye className="mr-2 h-4 w-4" /> Ver
-                          </Button>
-                        </Link>
-                        <Link to={PROTECTED_ROUTES.EDIT_REPORT.replace(':id', report.id)}>
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Pencil className="mr-2 h-4 w-4" /> Editar
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled={isBusy || report.status === 'resolved'}
-                          onClick={() => markAsResolved(report)}
-                          className="w-full"
-                        >
-                          {isBusy ? 'Procesando...' : 'Marcar resuelto'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          disabled={isBusy}
-                          onClick={() => removeReport(report)}
-                          className="w-full"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ReportCardItem
+                    key={report.id}
+                    report={report}
+                    isBusy={isBusy}
+                    isResolved={report.status === 'resolved'}
+                    onMarkResolved={markAsResolved}
+                    onDelete={removeReport}
+                    speciesLabels={speciesLabels}
+                    typeLabels={typeLabels}
+                    statusLabels={statusLabels}
+                    statusVariant={statusVariant}
+                  />
                 );
               })}
             </div>

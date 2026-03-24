@@ -4,7 +4,7 @@ import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { PUBLIC_ROUTES } from '../constants/routes';
-import { toAbsoluteMediaUrl } from '../utils/userAdapter';
+import { useMediaUrl } from '../hooks/useSignedUrl';
 import { adaptPost } from '../utils/postAdapter';
 
 export function PetCard({ pet }) {
@@ -29,7 +29,7 @@ export function PetCard({ pet }) {
     other: 'Otro',
   };
 
-  const petImage = toAbsoluteMediaUrl(adapted.imageUrl);
+  const petImage = useMediaUrl(adapted.imageUrl);
   
   return (
     <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', adapted.id)}>
