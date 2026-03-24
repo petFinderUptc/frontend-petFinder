@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Loader2, Trash2, Pencil, Eye } from 'lucide-react';
-import { Card, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
-import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../../constants/routes';
-import { useMediaUrl } from '../../hooks/useSignedUrl';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
+import { useMediaUrl } from '../hooks/useSignedUrl';
 
 export function ReportCardItem({
   report,

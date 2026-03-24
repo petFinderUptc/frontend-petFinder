@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Badge } from '../../components/ui/badge';
-import { Card, CardContent } from '../../components/ui/card';
-import { PUBLIC_ROUTES } from '../../constants/routes';
-import { useMediaUrl } from '../../hooks/useSignedUrl';
+import { Badge } from './ui/badge';
+import { Card, CardContent } from './ui/card';
+import { PUBLIC_ROUTES } from '../constants/routes';
+import { useMediaUrl } from '../hooks/useSignedUrl';
 
 export function SearchResultCard({ report, speciesLabel, typeLabel }) {
   const imageUrl = useMediaUrl(report.imageUrl);
