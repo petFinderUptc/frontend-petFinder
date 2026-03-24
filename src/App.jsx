@@ -18,6 +18,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AlertProvider } from './context/AlertContext';
 import AppRouter from './AppRouter';
 
 function App() {
@@ -26,7 +27,9 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <NotificationProvider>
-            <AppRouter />
+            <AlertProvider>
+              <AppRouter />
+            </AlertProvider>
           </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>

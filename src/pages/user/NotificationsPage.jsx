@@ -4,8 +4,7 @@
  * Displays notification history and allows marking as read.
  */
 
-import { useEffect } from 'react';
-import { Bell, Check, CheckCheck, Trash2, Mail, MessageSquare, AlertCircle, Clock } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Mail, MessageSquare, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -13,7 +12,14 @@ import { Badge } from '../../components/ui/badge';
 import { formatDistanceToNow } from '../../utils/helpers';
 
 export default function NotificationsPage() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    refreshNotifications,
+  } = useNotifications();
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -57,17 +63,28 @@ export default function NotificationsPage() {
               </p>
             </div>
             
-            {unreadCount > 0 && (
+            <div className="flex gap-2">
               <Button
-                onClick={markAllAsRead}
+                onClick={refreshNotifications}
                 variant="outline"
                 size="sm"
                 className="gap-2"
               >
-                <CheckCheck className="h-4 w-4" />
-                Marcar todas como leídas
+                <RefreshCw className="h-4 w-4" />
+                Actualizar
               </Button>
-            )}
+              {unreadCount > 0 && (
+                <Button
+                  onClick={markAllAsRead}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <CheckCheck className="h-4 w-4" />
+                  Marcar todas como leídas
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Notifications List */}
@@ -114,17 +131,28 @@ export default function NotificationsPage() {
                             {formatDistanceToNow(notification.timestamp)}
                           </div>
                           
-                          {!notification.read && (
+                          <div className="flex items-center gap-1">
+                            {!notification.read && (
+                              <Button
+                                onClick={() => markAsRead(notification.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="gap-1 h-7 text-xs"
+                              >
+                                <Check className="h-3 w-3" />
+                                Marcar como leída
+                              </Button>
+                            )}
                             <Button
-                              onClick={() => markAsRead(notification.id)}
+                              onClick={() => removeNotification(notification.id)}
                               variant="ghost"
                               size="sm"
-                              className="gap-1 h-7 text-xs"
+                              className="gap-1 h-7 text-xs text-red-600 hover:text-red-700"
                             >
-                              <Check className="h-3 w-3" />
-                              Marcar como leída
+                              <Trash2 className="h-3 w-3" />
+                              Eliminar
                             </Button>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </div>
