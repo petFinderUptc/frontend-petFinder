@@ -11,10 +11,12 @@ import {
   getUnreadCount,
   markAsRead as markNotificationAsRead,
   markAllAsRead as markEveryNotificationAsRead,
+  deleteNotification,
 } from '../services/notificationService';
 
 const NotificationContext = createContext(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   
@@ -66,7 +68,14 @@ export const NotificationProvider = ({ children }) => {
       void loadNotifications();
     }, 0);
 
-    return () => window.clearTimeout(timerId);
+    const intervalId = window.setInterval(() => {
+      void loadNotifications();
+    }, 45000);
+
+    return () => {
+      window.clearTimeout(timerId);
+      window.clearInterval(intervalId);
+    };
   }, [loadNotifications]);
 
   const markAsRead = useCallback(async (notificationId) => {
@@ -96,6 +105,23 @@ export const NotificationProvider = ({ children }) => {
     }
   }, []);
 
+  const removeNotification = useCallback(async (notificationId) => {
+    try {
+      await deleteNotification(notificationId);
+      let removedWasUnread = false;
+      setNotifications((prev) => {
+        const target = prev.find((item) => item.id === notificationId);
+        removedWasUnread = Boolean(target && !target.read);
+        return prev.filter((notification) => notification.id !== notificationId);
+      });
+      if (removedWasUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  }, []);
+
   const addNotification = useCallback((notification) => {
     const newNotification = {
       id: Date.now(),
@@ -103,7 +129,7 @@ export const NotificationProvider = ({ children }) => {
       read: false,
       ...notification,
     };
-    
+
     setNotifications((prev) => [newNotification, ...prev]);
     setUnreadCount((prev) => prev + 1);
   }, []);
@@ -113,6 +139,8 @@ export const NotificationProvider = ({ children }) => {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    removeNotification,
+    refreshNotifications: loadNotifications,
     addNotification,
   };
 

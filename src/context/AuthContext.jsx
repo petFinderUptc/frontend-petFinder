@@ -161,6 +161,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
   };
 

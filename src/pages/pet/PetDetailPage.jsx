@@ -5,6 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { getReportById } from '../../services/reportService';
+import { reverseGeocode } from '../../services/locationService';
 import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
 
 const typeLabel = {
@@ -20,13 +21,24 @@ const speciesLabel = {
   other: 'Otro',
 };
 
+const statusLabel = {
+  active: 'Activo',
+  resolved: 'Resuelto',
+  inactive: 'Inactivo',
+};
+
+const statusVariant = {
+  active: 'default',
+  resolved: 'secondary',
+  inactive: 'outline',
+};
 export default function PetDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
+  const [locationLabel, setLocationLabel] = useState('');
   useEffect(() => {
     const loadDetail = async () => {
       try {
@@ -34,6 +46,18 @@ export default function PetDetailPage() {
         setError('');
         const response = await getReportById(id);
         setReport(response || null);
+
+        const lat = Number(response?.lat);
+        const lon = Number(response?.lon);
+
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          try {
+            const reverse = await reverseGeocode(lat, lon);
+            setLocationLabel(reverse?.displayName || 'Ubicacion aproximada');
+          } catch {
+            setLocationLabel('Ubicacion aproximada');
+          }
+        }
       } catch (err) {
         if (err?.status === 404) {
           setError('El reporte no existe o ya no esta disponible.');
@@ -84,7 +108,9 @@ export default function PetDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{speciesLabel[report.species] || report.species}</Badge>
               <Badge>{typeLabel[report.type] || report.type}</Badge>
-              <Badge variant="secondary">{report.status}</Badge>
+              <Badge variant={statusVariant[report.status] || 'outline'}>
+                {statusLabel[report.status] || report.status}
+              </Badge>
             </div>
             <CardTitle className="text-2xl">Detalle del reporte</CardTitle>
           </CardHeader>
@@ -120,7 +146,7 @@ export default function PetDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Estado</p>
-                <p className="font-medium">{report.status}</p>
+                <p className="font-medium">{statusLabel[report.status] || report.status}</p>
               </div>
             </div>
 
@@ -140,8 +166,9 @@ export default function PetDetailPage() {
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-blue-500" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Coordenadas</p>
-                  <p className="font-medium">{report.lat}, {report.lon}</p>
+                  <p className="text-xs text-muted-foreground">Ubicacion</p>
+                  <p className="font-medium">{locationLabel || `${report.lat}, ${report.lon}`}</p>
+                  <p className="text-xs text-muted-foreground">{report.lat}, {report.lon}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

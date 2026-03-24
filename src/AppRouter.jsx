@@ -34,6 +34,7 @@ import ProfilePage from './pages/user/ProfilePage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
+import EditReportPage from './pages/pet/EditReportPage';
 import MyReportsPage from './pages/user/MyReportsPage';
 
 /**
@@ -106,6 +107,16 @@ const AppRouter = () => {
           <ProtectedRoute>
             <MainLayout>
               <PublishReportPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={PROTECTED_ROUTES.EDIT_REPORT}
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <EditReportPage />
             </MainLayout>
           </ProtectedRoute>
         }

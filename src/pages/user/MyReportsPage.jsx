@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Eye, PlusCircle } from 'lucide-react';
-import { getMyReports } from '../../services/petService';
+import { AlertCircle, Eye, Pencil, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { useAlert } from '../../context/AlertContext';
+import { deleteReport, getMyReports, updateReport } from '../../services/reportService';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../../constants/routes';
 import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
-import { adaptPosts } from '../../utils/postAdapter';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -22,45 +22,107 @@ const speciesLabels = {
   other: 'Otro',
 };
 
+const statusLabels = {
+  active: 'Activo',
+  resolved: 'Resuelto',
+  inactive: 'Inactivo',
+};
+
+const statusVariant = {
+  active: 'default',
+  resolved: 'secondary',
+  inactive: 'outline',
+};
+
 export default function MyReportsPage() {
+  const { addAlert } = useAlert();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [busyId, setBusyId] = useState('');
+
+  const loadReports = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await getMyReports();
+      setReports(Array.isArray(response) ? response : []);
+    } catch (err) {
+      setError(err?.message || 'No fue posible cargar tus reportes.');
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadReports = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const response = await getMyReports();
-        const rawReports = Array.isArray(response) ? response : response?.data;
-        setReports(adaptPosts(rawReports));
-      } catch (err) {
-        setError(err?.message || 'No fue posible cargar tus reportes.');
-        setReports([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     void loadReports();
   }, []);
+
+  const markAsResolved = async (report) => {
+    try {
+      setBusyId(report.id);
+      await updateReport(report.id, {
+        status: 'resolved',
+      });
+      addAlert({
+        type: 'success',
+        message: 'Reporte marcado como resuelto.',
+      });
+      await loadReports();
+    } catch (err) {
+      addAlert({
+        type: 'error',
+        message: err?.message || 'No fue posible actualizar el estado.',
+      });
+    } finally {
+      setBusyId('');
+    }
+  };
+
+  const removeReport = async (report) => {
+    const confirmed = window.confirm('Se eliminara este reporte. Deseas continuar?');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setBusyId(report.id);
+      await deleteReport(report.id);
+      addAlert({
+        type: 'success',
+        message: 'Reporte eliminado correctamente.',
+      });
+      await loadReports();
+    } catch (err) {
+      addAlert({
+        type: 'error',
+        message: err?.message || 'No fue posible eliminar el reporte.',
+      });
+    } finally {
+      setBusyId('');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-3xl font-bold">Mis Reportes</h1>
-              <p className="text-muted-foreground mt-1">Administra tus reportes publicados</p>
+              <p className="mt-1 text-muted-foreground">Administra, edita, resuelve o elimina tus reportes.</p>
             </div>
-            <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Publicar reporte
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={loadReports} className="gap-2">
+                <RefreshCw className="h-4 w-4" /> Actualizar
               </Button>
-            </Link>
+              <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Publicar reporte
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {loading ? (
@@ -70,7 +132,7 @@ export default function MyReportsPage() {
           ) : error ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-3" />
+                <AlertCircle className="mx-auto mb-3 h-12 w-12 text-red-500" />
                 <p className="text-red-600">{error}</p>
               </CardContent>
             </Card>
@@ -83,52 +145,88 @@ export default function MyReportsPage() {
               <CardContent>
                 <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
                   <Button>
-                    <PlusCircle className="h-4 w-4 mr-2" />
+                    <PlusCircle className="mr-2 h-4 w-4" />
                     Crear primer reporte
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {reports.map((report) => {
                 const imageUrl = toAbsoluteMediaUrl(report.imageUrl);
+                const isBusy = busyId === report.id;
+
                 return (
-                  <Card key={report.id} className="overflow-hidden h-full">
+                  <Card key={report.id} className="h-full overflow-hidden">
                     {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={report.petName || 'Reporte'}
-                        className="w-full h-48 object-cover"
-                      />
+                      <img src={imageUrl} alt="Reporte" className="h-48 w-full object-cover" />
                     ) : (
-                      <div className="w-full h-48 bg-muted flex items-center justify-center text-muted-foreground">
+                      <div className="flex h-48 w-full items-center justify-center bg-muted text-muted-foreground">
                         Sin imagen
                       </div>
                     )}
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h2 className="font-semibold text-lg line-clamp-1">{report.petName || 'Sin nombre'}</h2>
-                        <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
-                          {typeLabels[report.type] || report.type}
-                        </Badge>
+                    <CardContent className="space-y-3 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <h2 className="line-clamp-1 text-lg font-semibold">
+                          {speciesLabels[report.species] || report.species || 'Mascota'}
+                        </h2>
+                        <div className="flex gap-1">
+                          <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
+                            {typeLabels[report.type] || report.type}
+                          </Badge>
+                          <Badge variant={statusVariant[report.status] || 'outline'}>
+                            {statusLabels[report.status] || report.status}
+                          </Badge>
+                        </div>
                       </div>
 
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {report.description || 'Sin descripción'}
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {report.description || 'Sin descripcion'}
                       </p>
 
                       <div className="text-xs text-muted-foreground">
-                        <p>Especie: <span className="font-medium">{speciesLabels[report.species] || report.species || 'N/A'}</span></p>
-                        <p>Fecha: <span className="font-medium">{new Date(report.eventDate).toLocaleDateString('es-ES')}</span></p>
+                        <p>
+                          Raza: <span className="font-medium">{report.breed || 'No especificada'}</span>
+                        </p>
+                        <p>
+                          Publicado:{' '}
+                          <span className="font-medium">
+                            {new Date(report.createdAt || Date.now()).toLocaleDateString('es-ES')}
+                          </span>
+                        </p>
                       </div>
 
-                      <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)}>
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver detalle
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)}>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Eye className="mr-2 h-4 w-4" /> Ver
+                          </Button>
+                        </Link>
+                        <Link to={PROTECTED_ROUTES.EDIT_REPORT.replace(':id', report.id)}>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Pencil className="mr-2 h-4 w-4" /> Editar
+                          </Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={isBusy || report.status === 'resolved'}
+                          onClick={() => markAsResolved(report)}
+                          className="w-full"
+                        >
+                          {isBusy ? 'Procesando...' : 'Marcar resuelto'}
                         </Button>
-                      </Link>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={isBusy}
+                          onClick={() => removeReport(report)}
+                          className="w-full"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );

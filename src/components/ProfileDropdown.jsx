@@ -130,7 +130,7 @@ export function ProfileDropdown() {
             </Link>
 
             <Link
-              to="/notifications"
+              to={PROTECTED_ROUTES.NOTIFICATIONS}
               className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors relative"
               onClick={() => setIsOpen(false)}
             >

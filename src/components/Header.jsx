@@ -1,13 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlusCircle, LogIn, Heart } from 'lucide-react';
+import { Home, Search, PlusCircle, LogIn, Heart, Bell } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { ProfileDropdown } from './ProfileDropdown';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 
 export function Header() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { unreadCount } = useNotifications();
   
   const isActive = (path) => location.pathname === path;
   
@@ -57,7 +59,26 @@ export function Header() {
               <PlusCircle className="h-4 w-4" />
               <span>Publicar</span>
             </Link>
-            
+
+            {isAuthenticated && (
+              <Link
+                to={PROTECTED_ROUTES.NOTIFICATIONS}
+                className={`relative flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
+                  isActive(PROTECTED_ROUTES.NOTIFICATIONS)
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <Bell className="h-4 w-4" />
+                <span>Notificaciones</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {isAuthenticated ? (
               <ProfileDropdown />
             ) : (
@@ -79,6 +100,19 @@ export function Header() {
               <PlusCircle className="h-4 w-4" />
               <span>Publicar</span>
             </Link>
+            {isAuthenticated && (
+              <Link
+                to={PROTECTED_ROUTES.NOTIFICATIONS}
+                className="relative flex items-center rounded-lg border px-3 py-2"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
             {isAuthenticated ? (
               <ProfileDropdown />
             ) : (

@@ -11,6 +11,7 @@ import { getItem, setItem } from '../utils/storage';
 
 const ThemeContext = createContext(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   

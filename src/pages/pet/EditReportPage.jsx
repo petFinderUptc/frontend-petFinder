@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -7,14 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../components/ui/input';
 import { LocationPicker } from '../../components/LocationPicker';
 import { useAlert } from '../../context/AlertContext';
-import { PUBLIC_ROUTES } from '../../constants/routes';
+import { PROTECTED_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
-import { createReport, uploadReportImage } from '../../services/reportService';
+import { getReportById, updateReport, uploadReportImage } from '../../services/reportService';
+import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
-const initialForm = {
+const emptyForm = {
   species: 'dog',
   type: 'lost',
   status: 'active',
@@ -26,12 +27,15 @@ const initialForm = {
   locationQuery: '',
 };
 
-export default function PublishReportPage() {
+export default function EditReportPage() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { addAlert } = useAlert();
-  const [formData, setFormData] = useState(initialForm);
+  const [formData, setFormData] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [currentImageUrl, setCurrentImageUrl] = useState('');
+  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -41,6 +45,54 @@ export default function PublishReportPage() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const locationTimerRef = useRef(null);
+
+  useEffect(() => {
+    const loadReport = async () => {
+      try {
+        setLoading(true);
+        const report = await getReportById(id);
+
+        setFormData({
+          species: report.species || 'dog',
+          type: report.type || 'lost',
+          status: report.status || 'active',
+          description: report.description || '',
+          color: report.color || '',
+          breed: report.breed || '',
+          size: report.size || 'medium',
+          contact: report.contact || '',
+          locationQuery: `${report.lat ?? ''}, ${report.lon ?? ''}`,
+        });
+
+        const reportLat = Number(report.lat);
+        const reportLon = Number(report.lon);
+        if (Number.isFinite(reportLat) && Number.isFinite(reportLon)) {
+          setLatitude(reportLat);
+          setLongitude(reportLon);
+
+          try {
+            const reverse = await reverseGeocode(reportLat, reportLon);
+            if (reverse?.displayName) {
+              setFormData((prev) => ({
+                ...prev,
+                locationQuery: reverse.displayName,
+              }));
+            }
+          } catch {
+            // no-op
+          }
+        }
+
+        setCurrentImageUrl(toAbsoluteMediaUrl(report.imageUrl));
+      } catch (loadError) {
+        setError(loadError?.message || 'No fue posible cargar el reporte.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadReport();
+  }, [id]);
 
   useEffect(() => {
     return () => {
@@ -88,11 +140,10 @@ export default function PublishReportPage() {
       !!formData.breed.trim() &&
       !!formData.size &&
       !!formData.contact.trim() &&
-      !!imageFile &&
       ((typeof latitude === 'number' && typeof longitude === 'number') ||
         formData.locationQuery.trim().length >= 3)
     );
-  }, [formData, imageFile, latitude, longitude]);
+  }, [formData, latitude, longitude]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -156,7 +207,6 @@ export default function PublishReportPage() {
     }
 
     setIsLocating(true);
-    setError('');
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -190,35 +240,12 @@ export default function PublishReportPage() {
     );
   };
 
-  const uploadImageWithRetry = async (file, retries = 1) => {
-    let lastError;
-
-    for (let attempt = 0; attempt <= retries; attempt += 1) {
-      try {
-        const uploadResult = await uploadReportImage(file, (progressEvent) => {
-          const total = progressEvent.total || 1;
-          setUploadProgress(Math.round((progressEvent.loaded * 100) / total));
-        });
-
-        if (!uploadResult?.imageUrl) {
-          throw new Error('No se obtuvo la URL final de la imagen.');
-        }
-
-        return uploadResult.imageUrl;
-      } catch (uploadError) {
-        lastError = uploadError;
-      }
-    }
-
-    throw lastError;
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
     if (!canSubmit) {
-      setError('Completa todos los campos obligatorios antes de publicar.');
+      setError('Completa los datos obligatorios antes de guardar.');
       return;
     }
 
@@ -226,18 +253,25 @@ export default function PublishReportPage() {
     setUploadProgress(0);
 
     try {
-      const imageUrl = await uploadImageWithRetry(imageFile, 1);
+      let nextImageUrl;
+
+      if (imageFile) {
+        const uploadResult = await uploadReportImage(imageFile, (progressEvent) => {
+          const total = progressEvent.total || 1;
+          setUploadProgress(Math.round((progressEvent.loaded * 100) / total));
+        });
+
+        nextImageUrl = uploadResult?.imageUrl;
+      }
 
       const payload = {
         species: formData.species,
-        type: formData.type,
         status: formData.status,
         description: formData.description.trim(),
         color: formData.color.trim(),
         breed: formData.breed.trim(),
         size: formData.size,
         contact: formData.contact.trim(),
-        imageUrl,
         locationQuery: formData.locationQuery.trim(),
       };
 
@@ -246,31 +280,45 @@ export default function PublishReportPage() {
         payload.lon = longitude;
       }
 
-      await createReport(payload);
+      if (nextImageUrl) {
+        payload.imageUrl = nextImageUrl;
+      }
+
+      await updateReport(id, payload);
 
       addAlert({
         type: 'success',
-        message: 'Reporte publicado correctamente.',
+        message: 'Reporte actualizado correctamente.',
       });
 
-      navigate(PUBLIC_ROUTES.SEARCH);
-    } catch (err) {
-      setError(err?.message || err?.data?.message || 'No fue posible crear el reporte.');
+      navigate(PROTECTED_ROUTES.MY_REPORTS);
+    } catch (submitError) {
+      setError(submitError?.message || 'No fue posible actualizar el reporte.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4">
+          <Card className="mx-auto max-w-3xl">
+            <CardContent className="py-12 text-center text-muted-foreground">Cargando reporte...</CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="mx-auto max-w-3xl">
           <Card>
             <CardHeader>
-              <CardTitle>Crear reporte</CardTitle>
-              <CardDescription>
-                Publica un reporte con foto y ubicacion precisa sin escribir coordenadas manualmente.
-              </CardDescription>
+              <CardTitle>Editar reporte</CardTitle>
+              <CardDescription>Actualiza la informacion y guarda los cambios.</CardDescription>
             </CardHeader>
             <CardContent>
               {error && (
@@ -282,39 +330,31 @@ export default function PublishReportPage() {
 
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Imagen *</label>
+                  <label className="mb-2 block text-sm font-medium">Imagen</label>
                   <div className="rounded-lg border-2 border-dashed p-4">
                     <input
-                      id="report-image"
+                      id="edit-report-image"
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
                       className="hidden"
                       onChange={handleImageChange}
                     />
-                    <label htmlFor="report-image" className="block cursor-pointer text-center">
+                    <label htmlFor="edit-report-image" className="block cursor-pointer text-center">
                       <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">
-                        {imageFile ? imageFile.name : 'Selecciona una imagen'}
+                        {imageFile ? imageFile.name : 'Selecciona una nueva imagen (opcional)'}
                       </p>
                     </label>
                   </div>
-                  {previewUrl && (
+                  {(previewUrl || currentImageUrl) && (
                     <img
-                      src={previewUrl}
-                      alt="Vista previa del reporte"
+                      src={previewUrl || currentImageUrl}
+                      alt="Vista previa"
                       className="mt-3 h-64 w-full rounded-lg border object-cover"
                     />
                   )}
                   {isSubmitting && uploadProgress > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
-                      <div className="mt-1 h-1.5 rounded-full bg-muted">
-                        <div
-                          className="h-1.5 rounded-full bg-cyan-500 transition-all"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
                   )}
                 </div>
 
@@ -336,17 +376,8 @@ export default function PublishReportPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Tipo *</label>
-                    <select
-                      name="type"
-                      value={formData.type}
-                      onChange={handleChange}
-                      className="h-9 w-full rounded-md border bg-background px-3"
-                      required
-                    >
-                      <option value="lost">Perdido</option>
-                      <option value="found">Encontrado</option>
-                    </select>
+                    <label className="mb-1 block text-sm font-medium">Tipo</label>
+                    <Input value={formData.type === 'lost' ? 'Perdido' : 'Encontrado'} disabled />
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium">Estado *</label>
@@ -414,7 +445,7 @@ export default function PublishReportPage() {
                       name="locationQuery"
                       value={formData.locationQuery}
                       onChange={handleChange}
-                      placeholder="Direccion o referencia del lugar"
+                      placeholder="Direccion o referencia"
                       required
                     />
                     {isSearchingLocation && (
@@ -437,31 +468,23 @@ export default function PublishReportPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={useCurrentLocation}
-                      disabled={isLocating}
-                      className="gap-2"
-                    >
-                      {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-                      Usar mi ubicacion actual
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={useCurrentLocation}
+                    disabled={isLocating}
+                    className="gap-2"
+                  >
+                    {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                    Usar mi ubicacion actual
+                  </Button>
 
                   <LocationPicker
                     latitude={latitude}
                     longitude={longitude}
                     onLocationChange={updateLocationFromMap}
                   />
-
-                  {typeof latitude === 'number' && typeof longitude === 'number' && (
-                    <p className="text-xs text-muted-foreground">
-                      Coordenadas detectadas: {latitude}, {longitude}
-                    </p>
-                  )}
                 </div>
 
                 <div className="flex gap-3">
@@ -471,10 +494,10 @@ export default function PublishReportPage() {
                   <Button type="submit" className="flex-1" disabled={isSubmitting || !canSubmit}>
                     {isSubmitting ? (
                       <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Publicando...
+                        <Loader2 className="h-4 w-4 animate-spin" /> Guardando...
                       </span>
                     ) : (
-                      'Publicar reporte'
+                      'Guardar cambios'
                     )}
                   </Button>
                 </div>
