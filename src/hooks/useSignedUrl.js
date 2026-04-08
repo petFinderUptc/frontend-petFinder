@@ -25,25 +25,18 @@ export const useSignedUrl = (imageUrl) => {
       return;
     }
 
-    // Extraer blobName de la URL
-    const blobName = extractBlobName(imageUrl);
-    if (!blobName) {
-      setSignedUrl(imageUrl);
-      return;
-    }
-
     // Obtener URL firmada
     const fetchSignedUrl = async () => {
       setLoading(true);
       setError(null);
       try {
-        const signed = await getSignedUrl(blobName);
+        const signed = await getSignedUrl(imageUrl);
         setSignedUrl(signed);
       } catch (err) {
         console.error('Error obteniendo signed URL:', err);
         setError(err);
-        // Fallback a URL original en caso de error
-        setSignedUrl(imageUrl);
+        // En storage privado, un fallback directo a la URL cruda produce 409.
+        setSignedUrl('');
       } finally {
         setLoading(false);
       }
@@ -62,30 +55,5 @@ export const useMediaUrl = (imageUrl) => {
   const signedUrl = useSignedUrl(imageUrl);
   return signedUrl;
 };
-
-/**
- * Extrae el nombre del blob de una URL completa de Azure Blob Storage
- * Ej: https://petfinderimg.blob.core.windows.net/pet-images/reports/abc123.jpg → pet-images/reports/abc123.jpg
- */
-function extractBlobName(url) {
-  try {
-    if (!url) return null;
-    
-    const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    
-    // Remove leading slash and extract everything after container name
-    const parts = pathname.split('/').filter(Boolean);
-    
-    if (parts.length < 1) return null;
-    
-    // Skip the container name and return the rest as blob name
-    // Format: /container-name/blob/name/path → container-name/blob/name/path
-    return parts.join('/');
-  } catch (error) {
-    console.error('Error extracting blob name:', error);
-    return null;
-  }
-}
 
 export default useMediaUrl;
