@@ -187,7 +187,6 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
       const dateLabel = formatDate(report.createdAt || report.updatedAt);
       const locationLabel = `Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
 
-      const imageUrl = toAbsoluteMediaUrl(report.imageUrl);
       const safeDescription = escapeHtml(description);
       const safeSpecies = escapeHtml(speciesLabel);
       const safeType = escapeHtml(reportTypeLabel);
