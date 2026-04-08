@@ -6,6 +6,16 @@ export const getReports = async (params = {}) => {
   return response.data;
 };
 
+export const searchReports = async (query, params = {}) => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.SEARCH, {
+    params: {
+      query,
+      ...params,
+    },
+  });
+  return response.data;
+};
+
 export const getReportById = async (id) => {
   const response = await apiClient.get(REPORT_ENDPOINTS.GET_BY_ID(id));
   return response.data;
@@ -42,5 +52,17 @@ export const uploadReportImage = async (file, onUploadProgress) => {
     onUploadProgress,
   });
 
+  return response.data;
+};
+
+export const exportReportsJson = async () => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.EXPORT_JSON);
+  return response.data;
+};
+
+export const exportReportsCsv = async () => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.EXPORT_CSV, {
+    responseType: 'text',
+  });
   return response.data;
 };
