@@ -4,53 +4,69 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
-export function FilterPanel({ filters, onFilterChange }) {
+export function FilterPanel({ filters, onFilterChange, onSearch }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const updateFilter = (key, value) => {
     onFilterChange({ ...filters, [key]: value });
   };
-  
+
+  const triggerSearch = () => {
+    if (typeof onSearch === 'function') {
+      onSearch({ ...filters });
+    }
+  };
+
+  const onSearchInputKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      triggerSearch();
+    }
+  };
+
   const clearFilters = () => {
     onFilterChange({
-      status: 'all',
-      type: 'all',
+      reportType: 'all',
+      species: 'all',
       size: 'all',
-      location: '',
       searchTerm: '',
-      breed: '',
-      color: '',
-      urgentOnly: false,
-      dateFrom: '',
-      dateTo: '',
     });
+
+    if (typeof onSearch === 'function') {
+      onSearch({
+        reportType: 'all',
+        species: 'all',
+        size: 'all',
+        searchTerm: '',
+      });
+    }
   };
-  
+
   const activeFiltersCount = [
-    filters.status !== 'all',
-    filters.type !== 'all',
+    filters.reportType !== 'all',
+    filters.species !== 'all',
     filters.size !== 'all',
-    filters.location !== '',
     filters.searchTerm !== '',
-    filters.breed !== '',
-    filters.color !== '',
-    filters.urgentOnly,
-    filters.dateFrom !== '',
-    filters.dateTo !== '',
   ].filter(Boolean).length;
-  
+
   return (
     <div className="bg-card rounded-lg border shadow-sm p-4">
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por nombre, raza, descripción..."
+            placeholder="Buscar por especie, raza o descripción"
             value={filters.searchTerm}
             onChange={(e) => updateFilter('searchTerm', e.target.value)}
+            onKeyDown={onSearchInputKeyDown}
             className="pl-10"
           />
         </div>
+
+        <Button size="sm" onClick={triggerSearch} className="gap-2">
+          <Search className="h-4 w-4" />
+          Buscar
+        </Button>
         
         <Button
           variant="outline"
@@ -67,15 +83,15 @@ export function FilterPanel({ filters, onFilterChange }) {
           )}
         </Button>
       </div>
-      
+
       {isExpanded && (
         <div className="space-y-4 pt-4 border-t">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Estado</label>
               <select
-                value={filters.status}
-                onChange={(e) => updateFilter('status', e.target.value)}
+                value={filters.reportType}
+                onChange={(e) => updateFilter('reportType', e.target.value)}
                 className="w-full h-9 px-3 py-1 rounded-md border border-input bg-background text-sm"
               >
                 <option value="all">Todos</option>
@@ -85,15 +101,17 @@ export function FilterPanel({ filters, onFilterChange }) {
             </div>
             
             <div>
-              <label className="text-sm font-medium mb-2 block">Tipo</label>
+              <label className="text-sm font-medium mb-2 block">Especie</label>
               <select
-                value={filters.type}
-                onChange={(e) => updateFilter('type', e.target.value)}
+                value={filters.species}
+                onChange={(e) => updateFilter('species', e.target.value)}
                 className="w-full h-9 px-3 py-1 rounded-md border border-input bg-background text-sm"
               >
                 <option value="all">Todos</option>
                 <option value="dog">Perros</option>
                 <option value="cat">Gatos</option>
+                <option value="bird">Aves</option>
+                <option value="rabbit">Conejos</option>
                 <option value="other">Otros</option>
               </select>
             </div>
@@ -111,82 +129,26 @@ export function FilterPanel({ filters, onFilterChange }) {
                 <option value="large">Grande</option>
               </select>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Ubicación</label>
-              <Input
-                placeholder="Ciudad, barrio..."
-                value={filters.location}
-                onChange={(e) => updateFilter('location', e.target.value)}
-              />
-            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Raza</label>
-              <Input
-                placeholder="Raza..."
-                value={filters.breed}
-                onChange={(e) => updateFilter('breed', e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Color</label>
-              <Input
-                placeholder="Color..."
-                value={filters.color}
-                onChange={(e) => updateFilter('color', e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Fecha desde</label>
-              <Input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => updateFilter('dateFrom', e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Fecha hasta</label>
-              <Input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => updateFilter('dateTo', e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <input
-              type="checkbox"
-              id="urgent-filter"
-              checked={filters.urgentOnly}
-              onChange={(e) => updateFilter('urgentOnly', e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300"
-            />
-            <label
-              htmlFor="urgent-filter"
-              className="text-sm font-medium leading-none cursor-pointer"
-            >
-              Mostrar solo reportes urgentes
-            </label>
-          </div>
-          
-          {activeFiltersCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="gap-2 text-gray-600"
-            >
-              <X className="h-4 w-4" />
-              Limpiar filtros
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" onClick={triggerSearch} className="gap-2">
+              <Search className="h-4 w-4" />
+              Aplicar filtros
             </Button>
-          )}
+
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="gap-2 text-gray-600"
+              >
+                <X className="h-4 w-4" />
+                Limpiar filtros
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -5,15 +5,19 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { Camera, Save, X, User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Camera, Save, X, User, Mail, Phone, MapPin, Calendar, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert } from '../../components/ui/alert';
 import { useForm } from '../../hooks/useForm';
 import { getUserStats, uploadAvatar } from '../../services/profileService';
-import { updateUserProfile } from '../../services/userService';
+import { getUserProfile, updateUserProfile } from '../../services/userService';
+import { PROTECTED_ROUTES } from '../../constants/routes';
+import { formatDistanceToNow } from '../../utils/helpers';
 
 function formatMemberSince(value) {
   if (!value) return 'Fecha no disponible';
@@ -31,11 +35,13 @@ function formatMemberSince(value) {
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
+  const { notifications } = useNotifications();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || user?.profileImage || null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [stats, setStats] = useState({
     reportsPublished: 0,
     successfulReunions: 0,
@@ -52,6 +58,38 @@ export default function ProfilePage() {
     phone: user?.phone || user?.phoneNumber || '',
     location: user?.location || [user?.city, user?.department].filter(Boolean).join(', '),
   });
+
+  const recentNotifications = notifications.slice(0, 5);
+
+  const hydrateFormWithUser = (nextUser) => {
+    setValues({
+      firstName: nextUser?.firstName || '',
+      lastName: nextUser?.lastName || '',
+      username: nextUser?.username || '',
+      email: nextUser?.email || '',
+      phone: nextUser?.phone || nextUser?.phoneNumber || '',
+      location: nextUser?.location || [nextUser?.city, nextUser?.department].filter(Boolean).join(', '),
+    });
+    setAvatarPreview(nextUser?.avatar || nextUser?.profileImage || null);
+  };
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      setIsProfileLoading(true);
+      try {
+        const profile = await getUserProfile();
+        updateUser(profile);
+        hydrateFormWithUser(profile);
+      } catch (error) {
+        console.error('Error cargando perfil:', error);
+        hydrateFormWithUser(user);
+      } finally {
+        setIsProfileLoading(false);
+      }
+    };
+
+    void loadProfile();
+  }, []);
 
   // Cargar estadísticas del usuario al montar el componente
   useEffect(() => {
@@ -141,15 +179,7 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setValues({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      username: user?.username || '',
-      email: user?.email || '',
-      phone: user?.phone || user?.phoneNumber || '',
-      location: user?.location || [user?.city, user?.department].filter(Boolean).join(', '),
-    });
-    setAvatarPreview(user?.avatar || user?.profileImage || null);
+    hydrateFormWithUser(user);
     setMessage({ type: '', text: '' });
   };
 
@@ -261,7 +291,7 @@ export default function ProfilePage() {
                         name="firstName"
                         value={values.firstName}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled={!isEditing || isProfileLoading}
                         placeholder="Tu nombre"
                       />
                     </div>
@@ -276,7 +306,7 @@ export default function ProfilePage() {
                         name="lastName"
                         value={values.lastName}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled={!isEditing || isProfileLoading}
                         placeholder="Tu apellido"
                       />
                     </div>
@@ -323,7 +353,7 @@ export default function ProfilePage() {
                         name="phone"
                         value={values.phone}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled={!isEditing || isProfileLoading}
                         placeholder="+57 300 123 4567"
                       />
                     </div>
@@ -338,7 +368,7 @@ export default function ProfilePage() {
                         name="location"
                         value={values.location}
                         onChange={handleChange}
-                        disabled={!isEditing}
+                        disabled={!isEditing || isProfileLoading}
                         placeholder="Ciudad, País"
                       />
                     </div>
@@ -349,7 +379,7 @@ export default function ProfilePage() {
                     <div className="flex gap-3 mt-6 pt-6 border-t">
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || isProfileLoading}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Save className="h-4 w-4 mr-2" />
@@ -359,7 +389,7 @@ export default function ProfilePage() {
                         type="button"
                         onClick={handleCancel}
                         variant="outline"
-                        disabled={loading}
+                        disabled={loading || isProfileLoading}
                       >
                         <X className="h-4 w-4 mr-2" />
                         Cancelar
@@ -401,6 +431,50 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground mt-1">Miembro desde</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-cyan-600" />
+                    Notificaciones recientes
+                  </CardTitle>
+                  <CardDescription>
+                    Eventos de tus reportes y actividad relevante en tu cuenta.
+                  </CardDescription>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link to={PROTECTED_ROUTES.NOTIFICATIONS}>Ver todas</Link>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {recentNotifications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No tienes notificaciones por ahora.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recentNotifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className="rounded-lg border bg-muted/30 px-3 py-2"
+                      >
+                        <div className="mb-1 flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-foreground">{notification.title}</p>
+                          {!notification.read && (
+                            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-700">
+                              Nuevo
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {formatDistanceToNow(notification.timestamp)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -1,157 +1,156 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Link } from 'react-router-dom';
-import { adaptPost } from '../utils/postAdapter';
-import { toAbsoluteMediaUrl } from '../utils/userAdapter';
 import { PUBLIC_ROUTES } from '../constants/routes';
+import { toAbsoluteMediaUrl } from '../utils/userAdapter';
 
-export function PetMap({ pets, center = [5.5353, -73.3678], zoom = 13, selectedPet = null }) {
+const DEFAULT_CENTER = [5.5353, -73.3678];
+
+const SPECIES_LABEL = {
+  dog: 'Perro',
+  cat: 'Gato',
+  bird: 'Ave',
+  rabbit: 'Conejo',
+  other: 'Otro',
+};
+
+const REPORT_TYPE_LABEL = {
+  lost: 'Perdido',
+  found: 'Encontrado',
+};
+
+const MARKER_COLOR_BY_TYPE = {
+  lost: '#dc2626',
+  found: '#16a34a',
+};
+
+const formatDate = (value) => {
+  if (!value) {
+    return 'Sin fecha';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Sin fecha';
+  }
+
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const escapeHtml = (value) =>
+  String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+  const markersLayerRef = useRef(null);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) {
+      return;
+    }
 
-    // Initialize map
-    const map = L.map(mapContainerRef.current).setView(
-      selectedPet ? [selectedPet.latitude, selectedPet.longitude] : center,
-      zoom
-    );
+    const initialCenter =
+      Array.isArray(center) && center.length === 2 ? center : DEFAULT_CENTER;
 
+    const map = L.map(mapContainerRef.current).setView(initialCenter, zoom);
     mapRef.current = map;
 
-    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    // Create custom marker icons
-    const createCustomIcon = (pet) => {
-      const iconColor = pet.isUrgent 
-        ? 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);'
-        : pet.status === 'found' 
-          ? 'background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);'
-          : 'background: linear-gradient(135deg, #33c3f0 0%, #1e88e5 100%);';
-      
-      const iconHtml = `
-        <div style="position: relative; width: 30px; height: 30px;">
-          <div style="
-            width: 30px;
-            height: 30px;
-            border-radius: 50% 50% 50% 0;
-            ${iconColor}
-            position: absolute;
-            transform: rotate(-45deg);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-          ">
-            <div style="
-              content: '';
-              width: 20px;
-              height: 20px;
-              margin: 5px 0 0 5px;
-              background: #fff;
-              position: absolute;
-              border-radius: 50%;
-            "></div>
-          </div>
-        </div>
-      `;
-      
-      return L.divIcon({
-        html: iconHtml,
-        className: 'custom-marker',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
-      });
+    markersLayerRef.current = L.layerGroup().addTo(map);
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markersLayerRef.current = null;
     };
+  }, [center, zoom]);
 
-    // Add markers
-    pets.forEach((rawPet) => {
-      const pet = adaptPost(rawPet);
-      
-      if (!pet.latitude || !pet.longitude) return;
+  useEffect(() => {
+    const map = mapRef.current;
+    const markersLayer = markersLayerRef.current;
 
-      const marker = L.marker([pet.latitude, pet.longitude], {
-        icon: createCustomIcon(pet),
-      }).addTo(map);
+    if (!map || !markersLayer) {
+      return;
+    }
 
-      const statusLabels = {
-        lost: 'Perdido',
-        found: 'Encontrado',
-      };
+    markersLayer.clearLayers();
 
-      const statusColors = {
-        lost: 'background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca;',
-        found: 'background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0;',
-      };
+    const validReports = reports.filter(
+      (report) =>
+        Number.isFinite(Number(report?.lat)) && Number.isFinite(Number(report?.lon)),
+    );
 
-      const petImage = toAbsoluteMediaUrl(pet.imageUrl);
+    validReports.forEach((report) => {
+      const lat = Number(report.lat);
+      const lon = Number(report.lon);
+      const markerColor = MARKER_COLOR_BY_TYPE[report.type] || '#0284c7';
+
+      const marker = L.circleMarker([lat, lon], {
+        radius: 8,
+        color: '#ffffff',
+        weight: 2,
+        fillColor: markerColor,
+        fillOpacity: 0.95,
+      }).addTo(markersLayer);
+
+      const reportUrl = PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id);
+      const speciesLabel = SPECIES_LABEL[report.species] || report.species || 'Mascota';
+      const reportTypeLabel = REPORT_TYPE_LABEL[report.type] || report.type || 'Reporte';
+      const description = report.description || 'Sin descripción';
+      const dateLabel = formatDate(report.createdAt || report.updatedAt);
+      const locationLabel = `Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
+
+      const imageUrl = toAbsoluteMediaUrl(report.imageUrl);
+      const safeDescription = escapeHtml(description);
+      const safeSpecies = escapeHtml(speciesLabel);
+      const safeType = escapeHtml(reportTypeLabel);
+      const safeDate = escapeHtml(dateLabel);
+      const safeLocation = escapeHtml(locationLabel);
+      const safeReportUrl = escapeHtml(reportUrl);
+
+      const imageSection = imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="Reporte ${escapeHtml(report.id)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />`
+        : '';
 
       const popupContent = `
-        <div style="min-width: 200px;">
-          <a href="${PUBLIC_ROUTES.PET_DETAIL.replace(':id', pet.id)}" style="display: block; text-decoration: none; color: inherit;">
-            <img 
-              src="${petImage || ''}" 
-              alt="${pet.petName || 'Mascota'}" 
-              style="width: 100%; height: 128px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background-color: #f3f4f6;"
-            />
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
-              <h3 style="font-weight: bold; font-size: 16px; margin: 0;">
-                ${pet.petName || 'Sin nombre'}
-              </h3>
-              <span style="
-                font-size: 12px;
-                padding: 2px 8px;
-                border-radius: 4px;
-                ${statusColors[pet.type] || ''}
-              ">
-                ${statusLabels[pet.type] || pet.type}
-              </span>
-            </div>
-            <p style="font-size: 14px; color: #4b5563; margin: 0 0 8px 0;">
-              ${pet.breed || 'Raza desconocida'} • ${pet.color || 'Color no especificado'}
-            </p>
-            <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-bottom: 4px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pet.location || 'Ubicación no especificada'}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>
-                ${new Date(pet.eventDate).toLocaleDateString('es-ES', { 
-                  day: 'numeric',
-                  month: 'short'
-                })}
-              </span>
-            </div>
-            <div style="font-size: 12px; color: #2563eb; font-weight: 500;">
-              Ver detalles →
-            </div>
-          </a>
+        <div style="min-width:220px;max-width:240px;">
+          ${imageSection}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+            <strong style="font-size:14px;">${safeSpecies}</strong>
+            <span style="font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#1e3a8a;">${safeType}</span>
+          </div>
+          <p style="font-size:12px;color:#334155;margin:0 0 8px;line-height:1.4;">${safeDescription}</p>
+          <p style="font-size:12px;color:#64748b;margin:0 0 4px;">Ubicación: ${safeLocation}</p>
+          <p style="font-size:12px;color:#64748b;margin:0 0 8px;">Fecha: ${safeDate}</p>
+          <a href="${safeReportUrl}" style="font-size:12px;font-weight:600;color:#2563eb;text-decoration:none;">Ver detalle</a>
         </div>
       `;
 
       marker.bindPopup(popupContent, {
-        maxWidth: 250,
+        maxWidth: 260,
         className: 'custom-popup',
       });
     });
 
-    // Cleanup
-    return () => {
-      map.remove();
-    };
-  }, [pets, center, zoom, selectedPet]);
+    if (validReports.length > 0) {
+      const bounds = L.latLngBounds(validReports.map((report) => [Number(report.lat), Number(report.lon)]));
+      map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+    }
+  }, [reports]);
 
-  return <div ref={mapContainerRef} className="w-full h-full" />;
+  return <div ref={mapContainerRef} className="w-full h-[420px] rounded-lg border" />;
 }
