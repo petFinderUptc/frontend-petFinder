@@ -3,6 +3,11 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { PUBLIC_ROUTES } from '../constants/routes';
 import { toAbsoluteMediaUrl } from '../utils/userAdapter';
+import { getSignedUrl } from '../services/storageService';
+
+const BLOB_STORAGE_DOMAIN = '.blob.core.windows.net';
+const KNOWN_BLOB_PREFIXES = ['pet-images/', 'reports/', 'posts/', 'avatars/'];
+const IMAGE_EXT_REGEX = /\.(jpg|jpeg|png|webp)$/i;
 
 const DEFAULT_CENTER = [5.5353, -73.3678];
 
@@ -49,6 +54,38 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const shouldRequestSignedUrl = (value) => {
+  if (!value) {
+    return false;
+  }
+
+  if (value.includes(BLOB_STORAGE_DOMAIN)) {
+    return true;
+  }
+
+  if (KNOWN_BLOB_PREFIXES.some((prefix) => value.startsWith(prefix))) {
+    return true;
+  }
+
+  return IMAGE_EXT_REGEX.test(value) && !value.startsWith('/') && !value.startsWith('data:');
+};
+
+const normalizeSignedUrlInput = (value) => {
+  if (!value) {
+    return value;
+  }
+
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+
+  if (value.includes(BLOB_STORAGE_DOMAIN)) {
+    return `https://${value.replace(/^\/+/, '')}`;
+  }
+
+  return value;
+};
+
 export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -94,7 +131,43 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
         Number.isFinite(Number(report?.lat)) && Number.isFinite(Number(report?.lon)),
     );
 
-    validReports.forEach((report) => {
+    let cancelled = false;
+
+    const renderMarkers = async () => {
+      const imageMap = new Map();
+
+      await Promise.all(
+        validReports.map(async (report) => {
+          const rawImageUrl = typeof report.imageUrl === 'string' ? report.imageUrl.trim() : '';
+          if (!rawImageUrl) {
+            imageMap.set(report.id, '');
+            return;
+          }
+
+          const shouldSign = shouldRequestSignedUrl(rawImageUrl);
+          if (!shouldSign) {
+            imageMap.set(report.id, toAbsoluteMediaUrl(rawImageUrl));
+            return;
+          }
+
+          const signedUrlInput = normalizeSignedUrlInput(rawImageUrl);
+
+          try {
+            const signedUrl = await getSignedUrl(signedUrlInput);
+            imageMap.set(report.id, signedUrl || '');
+          } catch {
+            imageMap.set(report.id, '');
+          }
+        }),
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      markersLayer.clearLayers();
+
+      validReports.forEach((report) => {
       const lat = Number(report.lat);
       const lon = Number(report.lon);
       const markerColor = MARKER_COLOR_BY_TYPE[report.type] || '#0284c7';
@@ -114,7 +187,6 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
       const dateLabel = formatDate(report.createdAt || report.updatedAt);
       const locationLabel = `Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
 
-      const imageUrl = toAbsoluteMediaUrl(report.imageUrl);
       const safeDescription = escapeHtml(description);
       const safeSpecies = escapeHtml(speciesLabel);
       const safeType = escapeHtml(reportTypeLabel);
@@ -122,6 +194,7 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
       const safeLocation = escapeHtml(locationLabel);
       const safeReportUrl = escapeHtml(reportUrl);
 
+      const imageUrl = imageMap.get(report.id) || '';
       const imageSection = imageUrl
         ? `<img src="${escapeHtml(imageUrl)}" alt="Reporte ${escapeHtml(report.id)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />`
         : '';
@@ -144,12 +217,19 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
         maxWidth: 260,
         className: 'custom-popup',
       });
-    });
+      });
 
-    if (validReports.length > 0) {
-      const bounds = L.latLngBounds(validReports.map((report) => [Number(report.lat), Number(report.lon)]));
-      map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
-    }
+      if (validReports.length > 0) {
+        const bounds = L.latLngBounds(validReports.map((report) => [Number(report.lat), Number(report.lon)]));
+        map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+      }
+    };
+
+    void renderMarkers();
+
+    return () => {
+      cancelled = true;
+    };
   }, [reports]);
 
   return <div ref={mapContainerRef} className="w-full h-[420px] rounded-lg border" />;
