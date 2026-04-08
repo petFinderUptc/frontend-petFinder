@@ -6,7 +6,7 @@ import { Card, CardContent } from '../components/ui/card';
 import PetCard from '../components/PetCard';
 import { useAuth } from '../context/AuthContext';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
-import { getAllPets } from '../services/petService';
+import { getReports } from '../services/reportService';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -18,8 +18,13 @@ export default function HomePage() {
     const fetchPets = async () => {
       try {
         setLoading(true);
-        const data = await getAllPets();
-        setPets(Array.isArray(data) ? data : []);
+        const response = await getReports({ page: 1, limit: 12 });
+        const reports = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+            ? response
+            : [];
+        setPets(reports);
         setError(null);
       } catch (err) {
         console.error('Error al cargar mascotas:', err);
