@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { getReportById } from '../../services/reportService';
+import { getPetById } from '../../services/petService';
 import { reverseGeocode } from '../../services/locationService';
-import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
+import { adaptPost } from '../../utils/postAdapter';
+import { useMediaUrl } from '../../hooks/useSignedUrl';
 
 const typeLabel = {
   lost: 'Perdido',
@@ -39,16 +41,34 @@ export default function PetDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [locationLabel, setLocationLabel] = useState('');
+
   useEffect(() => {
     const loadDetail = async () => {
       try {
         setLoading(true);
         setError('');
-        const response = await getReportById(id);
-        setReport(response || null);
+        let response;
 
-        const lat = Number(response?.lat);
-        const lon = Number(response?.lon);
+        if (id?.startsWith('post_')) {
+          response = await getPetById(id);
+        } else {
+          try {
+            response = await getReportById(id);
+          } catch (err) {
+            const statusCode = err?.status || err?.response?.status;
+            if (statusCode === 404) {
+              response = await getPetById(id);
+            } else {
+              throw err;
+            }
+          }
+        }
+
+        const normalizedReport = adaptPost(response);
+        setReport(normalizedReport || null);
+
+        const lat = Number(normalizedReport?.latitude);
+        const lon = Number(normalizedReport?.longitude);
 
         if (Number.isFinite(lat) && Number.isFinite(lon)) {
           try {
@@ -59,7 +79,8 @@ export default function PetDetailPage() {
           }
         }
       } catch (err) {
-        if (err?.status === 404) {
+        const statusCode = err?.status || err?.response?.status;
+        if (statusCode === 404) {
           setError('El reporte no existe o ya no esta disponible.');
         } else {
           setError(err?.message || 'No fue posible cargar el reporte.');
@@ -72,7 +93,9 @@ export default function PetDetailPage() {
     void loadDetail();
   }, [id]);
 
-  const imageUrl = useMemo(() => toAbsoluteMediaUrl(report?.imageUrl), [report?.imageUrl]);
+  const imageUrl = useMediaUrl(report?.imageUrl);
+  const latitude = report?.latitude;
+  const longitude = report?.longitude;
 
   if (loading) {
     return (
@@ -160,15 +183,15 @@ export default function PetDetailPage() {
                 <Phone className="h-4 w-4 text-blue-500" />
                 <div>
                   <p className="text-xs text-muted-foreground">Contacto</p>
-                  <p className="font-medium">{report.contact}</p>
+                  <p className="font-medium">{report.contactPhone || report.contact || 'No disponible'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-blue-500" />
                 <div>
                   <p className="text-xs text-muted-foreground">Ubicacion</p>
-                  <p className="font-medium">{locationLabel || `${report.lat}, ${report.lon}`}</p>
-                  <p className="text-xs text-muted-foreground">{report.lat}, {report.lon}</p>
+                  <p className="font-medium">{locationLabel || `${latitude ?? 'N/A'}, ${longitude ?? 'N/A'}`}</p>
+                  <p className="text-xs text-muted-foreground">{latitude ?? 'N/A'}, {longitude ?? 'N/A'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -176,7 +199,7 @@ export default function PetDetailPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Publicado</p>
                   <p className="font-medium">
-                    {new Date(report.createdAt).toLocaleDateString('es-CO', {
+                    {new Date(report.createdAt || report.eventDate || Date.now()).toLocaleDateString('es-CO', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
