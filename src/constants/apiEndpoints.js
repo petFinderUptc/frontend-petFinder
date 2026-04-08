@@ -46,12 +46,15 @@ export const PET_ENDPOINTS = {
  */
 export const REPORT_ENDPOINTS = {
   GET_ALL: '/reports',
+  SEARCH: '/reports/search',
   GET_BY_ID: (id) => `/reports/${id}`,
   CREATE: '/reports',
   UPDATE: (id) => `/reports/${id}`,
   DELETE: (id) => `/reports/${id}`,
   MY_REPORTS: '/reports/my-reports',
   UPLOAD_IMAGE: '/reports/upload-image',
+  EXPORT_JSON: '/reports/export',
+  EXPORT_CSV: '/reports/export/csv',
 };
 
 /**

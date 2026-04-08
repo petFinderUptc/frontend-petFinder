@@ -1,14 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, ChevronLeft, ChevronRight, MapPinned, Rows3 } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { FilterPanel } from '../../components/FilterPanel';
-import { PUBLIC_ROUTES } from '../../constants/routes';
-import { getReports } from '../../services/reportService';
-import { useMediaUrl } from '../../hooks/useSignedUrl';
+import { getReports, searchReports } from '../../services/reportService';
 import { SearchResultCard } from '../../components/SearchResultCard';
+import { PetMap } from '../../components/PetMap';
 
 const PAGE_SIZE = 9;
 
@@ -28,17 +25,12 @@ const speciesLabel = {
 export default function SearchPage() {
   const [reports, setReports] = useState([]);
   const [filters, setFilters] = useState({
-    status: 'all',
-    type: 'all',
+    reportType: 'all',
+    species: 'all',
     size: 'all',
-    location: '',
     searchTerm: '',
-    breed: '',
-    color: '',
-    urgentOnly: false,
-    dateFrom: '',
-    dateTo: '',
   });
+  const [viewMode, setViewMode] = useState('cards');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGE_SIZE,
@@ -50,37 +42,32 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchReports = async (targetPage = 1, activeFilters = filters) => {
+  const fetchReports = useCallback(async (targetPage = 1, activeFilters = filters) => {
     try {
       setLoading(true);
       setError('');
 
-      // Construir parámetros de query basados en filtros
       const queryParams = {
         page: targetPage,
         limit: PAGE_SIZE,
       };
 
-      if (activeFilters.status !== 'all') {
-        queryParams.type = activeFilters.status; // Backend espera 'type' para lost/found
+      if (activeFilters.reportType !== 'all') {
+        queryParams.type = activeFilters.reportType;
       }
-      if (activeFilters.type !== 'all') {
-        queryParams.species = activeFilters.type; // Backend espera 'species' para dog/cat/etc
+      if (activeFilters.species !== 'all') {
+        queryParams.species = activeFilters.species;
       }
       if (activeFilters.size !== 'all') {
         queryParams.size = activeFilters.size;
       }
-      if (activeFilters.breed) {
-        queryParams.breed = activeFilters.breed;
-      }
-      if (activeFilters.color) {
-        queryParams.color = activeFilters.color;
-      }
-      if (activeFilters.searchTerm) {
-        queryParams.search = activeFilters.searchTerm;
-      }
 
-      const response = await getReports(queryParams);
+      const searchTerm = activeFilters.searchTerm?.trim() || '';
+      const response =
+        searchTerm.length >= 2
+          ? await searchReports(searchTerm, queryParams)
+          : await getReports(queryParams);
+
       setReports(Array.isArray(response?.data) ? response.data : []);
       setPagination(
         response?.pagination || {
@@ -98,11 +85,21 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     void fetchReports(1, filters);
-  }, []);
+  }, [fetchReports]);
+
+  useEffect(() => {
+    const refreshTimer = window.setInterval(() => {
+      void fetchReports(pagination.page, filters);
+    }, 45000);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+    };
+  }, [fetchReports, filters, pagination.page]);
 
   const title = useMemo(() => {
     if (loading) return 'Cargando reportes...';
@@ -112,7 +109,11 @@ export default function SearchPage() {
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    void fetchReports(1, newFilters);
+  };
+
+  const handleSearch = (nextFilters = filters) => {
+    setFilters(nextFilters);
+    void fetchReports(1, nextFilters);
   };
 
   return (
@@ -124,7 +125,34 @@ export default function SearchPage() {
         </div>
 
         <div className="mb-6">
-          <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
+          <FilterPanel
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onSearch={handleSearch}
+          />
+        </div>
+
+        <div className="mb-6 flex items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant={viewMode === 'cards' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('cards')}
+            className="gap-2"
+          >
+            <Rows3 className="h-4 w-4" />
+            Lista
+          </Button>
+          <Button
+            type="button"
+            variant={viewMode === 'map' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('map')}
+            className="gap-2"
+          >
+            <MapPinned className="h-4 w-4" />
+            Mapa
+          </Button>
         </div>
 
         {loading ? (
@@ -143,24 +171,28 @@ export default function SearchPage() {
           </Card>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reports.map((report) => {
-                return (
-                  <SearchResultCard
-                    key={report.id}
-                    report={report}
-                    speciesLabel={speciesLabel}
-                    typeLabel={typeLabel}
-                  />
-                );
-              })}
-            </div>
+            {viewMode === 'map' ? (
+              <PetMap reports={reports} />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {reports.map((report) => {
+                  return (
+                    <SearchResultCard
+                      key={report.id}
+                      report={report}
+                      speciesLabel={speciesLabel}
+                      typeLabel={typeLabel}
+                    />
+                  );
+                })}
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-3 mt-8">
               <Button
                 variant="outline"
                 disabled={!pagination.hasPrevPage}
-                onClick={() => void fetchReports(pagination.page - 1)}
+                onClick={() => void fetchReports(pagination.page - 1, filters)}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
               </Button>
@@ -170,7 +202,7 @@ export default function SearchPage() {
               <Button
                 variant="outline"
                 disabled={!pagination.hasNextPage}
-                onClick={() => void fetchReports(pagination.page + 1)}
+                onClick={() => void fetchReports(pagination.page + 1, filters)}
               >
                 Siguiente <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
