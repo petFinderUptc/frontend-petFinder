@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 const AlertContext = createContext(undefined);
 
@@ -22,26 +22,48 @@ export const useAlert = () => {
 
 export const AlertProvider = ({ children }) => {
   const [alerts, setAlerts] = useState([]);
+  // Guardamos todos los timers activos para hacer cleanup correcto
+  const timersRef = useRef(new Map());
 
   const removeAlert = useCallback((id) => {
     setAlerts((prev) => prev.filter((item) => item.id !== id));
+    // Limpiar el timer si aún existe
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
   }, []);
 
-  const addAlert = useCallback((payload) => {
-    const id = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
-    const next = {
-      id,
-      type: payload?.type || 'info',
-      message: payload?.message || 'Operacion completada.',
-      durationMs: Number(payload?.durationMs || 4000),
+  const addAlert = useCallback(
+    (payload) => {
+      const id = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+      const next = {
+        id,
+        type: payload?.type || 'info',
+        message: payload?.message || 'Operación completada.',
+        durationMs: Number(payload?.durationMs || 4000),
+      };
+
+      setAlerts((prev) => [next, ...prev].slice(0, 5));
+
+      const timer = setTimeout(() => {
+        removeAlert(id);
+      }, next.durationMs);
+
+      timersRef.current.set(id, timer);
+    },
+    [removeAlert],
+  );
+
+  // Limpiar TODOS los timers al desmontar el provider
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
     };
-
-    setAlerts((prev) => [next, ...prev].slice(0, 5));
-
-    window.setTimeout(() => {
-      removeAlert(id);
-    }, next.durationMs);
-  }, [removeAlert]);
+  }, []);
 
   useEffect(() => {
     const onAlert = (event) => {
@@ -69,7 +91,7 @@ export const AlertProvider = ({ children }) => {
               <button
                 type="button"
                 onClick={() => removeAlert(alert.id)}
-                className="text-xs font-semibold opacity-70 transition hover:opacity-100"
+                className="text-xs font-semibold opacity-70 transition hover:opacity-100 shrink-0"
               >
                 Cerrar
               </button>
@@ -80,4 +102,3 @@ export const AlertProvider = ({ children }) => {
     </AlertContext.Provider>
   );
 };
-

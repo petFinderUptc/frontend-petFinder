@@ -58,22 +58,42 @@ export const AuthProvider = ({ children }) => {
    * Initialize authentication state
    * Checks for stored tokens and validates them
    */
+  // Lee un token tanto de localStorage como de sessionStorage
+  const getStoredToken = () => {
+    try {
+      const fromLocal = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const fromSession = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const raw = fromLocal || fromSession;
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const getStoredUser = () => {
+    try {
+      const fromLocal = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+      const fromSession = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+      const raw = fromLocal || fromSession;
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
   const initializeAuth = useCallback(async () => {
     try {
       setIsLoading(true);
-      
-      // Check for stored token
-      const token = getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      const storedUser = getItem(STORAGE_KEYS.USER_DATA);
-      
+
+      const token = getStoredToken();
+      const storedUser = getStoredUser();
+
       if (token && storedUser) {
-        // Verify token is still valid by fetching current user
         try {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           setIsAuthenticated(true);
         } catch (error) {
-          // Token is invalid, clear stored data
           console.error('Token validation failed:', error);
           clearAuthData();
         }
@@ -84,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -99,9 +120,9 @@ export const AuthProvider = ({ children }) => {
    * @param {Object} credentials - { email, password }
    * @returns {Promise<Object>} User data
    */
-  const login = useCallback(async (credentials) => {
+  const login = useCallback(async (credentials, rememberMe = false) => {
     try {
-      const data = await authService.login(credentials);
+      const data = await authService.login(credentials, rememberMe);
       setUser(data.user);
       setIsAuthenticated(true);
       return data;
@@ -160,9 +181,17 @@ export const AuthProvider = ({ children }) => {
   const clearAuthData = () => {
     setUser(null);
     setIsAuthenticated(false);
+    // Limpiar tanto localStorage como sessionStorage
     removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     removeItem(STORAGE_KEYS.USER_DATA);
+    try {
+      sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.USER_DATA);
+    } catch {
+      // sessionStorage no disponible
+    }
   };
 
   /**

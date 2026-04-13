@@ -1,43 +1,77 @@
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { PlusCircle, Search, Heart, AlertCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { PlusCircle, Search, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../../constants/routes';
+import { PROTECTED_ROUTES, PUBLIC_ROUTES, generateRoute } from '../../constants/routes';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { getMyReports } from '../../services/petService';
+import { getMyReports, deletePet } from '../../services/petService';
 import { adaptPost } from '../../utils/postAdapter';
+
+const SPECIES_LABEL = {
+  dog: 'Perro',
+  cat: 'Gato',
+  bird: 'Ave',
+  rabbit: 'Conejo',
+  other: 'Otro',
+};
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [myReports, setMyReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
-    const fetchMyReports = async () => {
-      try {
-        setLoading(true);
-        const data = await getMyReports();
-        setMyReports(Array.isArray(data) ? data : []);
-        setError(null);
-      } catch (err) {
-        console.error('Error al cargar reportes:', err);
-        setError('Error al cargar tus reportes');
-        setMyReports([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyReports();
+  const fetchMyReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getMyReports();
+      setMyReports(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      console.error('Error al cargar reportes:', err);
+      setError('Error al cargar tus reportes');
+      setMyReports([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchMyReports();
+  }, [fetchMyReports]);
+
+  const handleEdit = (reportId) => {
+    navigate(generateRoute(PROTECTED_ROUTES.EDIT_REPORT, { id: reportId }));
+  };
+
+  const handleDelete = async (reportId, petName) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar el reporte de "${petName}"? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(reportId);
+    try {
+      await deletePet(reportId);
+      setMyReports((prev) => prev.filter((r) => r.id !== reportId));
+    } catch (err) {
+      console.error('Error al eliminar reporte:', err);
+      alert('No se pudo eliminar el reporte. Inténtalo de nuevo.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const adaptedReports = myReports.map(adaptPost);
+
   const stats = {
-    activeReports: myReports.filter(r => r.status === 'active').length,
-    totalViews: myReports.reduce((sum, r) => sum + (r.views || 0), 0),
-    savedSearches: 0, // TODO: Implementar saved searches
+    total: adaptedReports.length,
+    active: adaptedReports.filter((r) => r.status === 'active').length,
+    resolved: adaptedReports.filter((r) => r.status === 'resolved').length,
   };
 
   return (
@@ -47,7 +81,7 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Hola, {user?.username || 'Usuario'} 👋
+              Hola, {user?.firstName || user?.username || 'Usuario'} 👋
             </h1>
             <p className="text-gray-700 dark:text-slate-300">
               Gestiona tus reportes y ayuda a reunir mascotas con sus familias
@@ -64,11 +98,25 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Reportes Activos</p>
-                    <p className="text-3xl font-bold text-blue-600">{stats.activeReports}</p>
+                    <p className="text-sm text-muted-foreground mb-1">Total Reportes</p>
+                    <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-full">
                     <AlertCircle className="h-8 w-8 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Reportes Activos</p>
+                    <p className="text-3xl font-bold text-amber-600">{stats.active}</p>
+                  </div>
+                  <div className="p-3 bg-amber-100 rounded-full">
+                    <Search className="h-8 w-8 text-amber-600" />
                   </div>
                 </div>
               </CardContent>
@@ -78,25 +126,11 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Visitas</p>
-                    <p className="text-3xl font-bold text-green-600">{stats.totalViews}</p>
+                    <p className="text-sm text-muted-foreground mb-1">Resueltos</p>
+                    <p className="text-3xl font-bold text-green-600">{stats.resolved}</p>
                   </div>
                   <div className="p-3 bg-green-100 rounded-full">
-                    <Eye className="h-8 w-8 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/30">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Búsquedas Guardadas</p>
-                    <p className="text-3xl font-bold text-purple-600">{stats.savedSearches}</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Heart className="h-8 w-8 text-purple-600" />
+                    <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
                 </div>
               </CardContent>
@@ -143,7 +177,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Mis Reportes</CardTitle>
               <CardDescription>
-                Gestiona y actualiza el estado de tus reportes activos
+                Gestiona y actualiza el estado de tus reportes
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -155,12 +189,15 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
                   <p className="text-red-600">{error}</p>
+                  <Button variant="outline" className="mt-4" onClick={fetchMyReports}>
+                    Reintentar
+                  </Button>
                 </div>
-              ) : myReports.length === 0 ? (
+              ) : adaptedReports.length === 0 ? (
                 <div className="text-center py-12">
                   <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No tienes reportes activos
+                    No tienes reportes aún
                   </h3>
                   <p className="text-muted-foreground mb-6">
                     Crea tu primer reporte para ayudar a reunir mascotas
@@ -174,36 +211,71 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {myReports.map(rawReport => {
-                    const report = adaptPost(rawReport);
-                    const statusLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
-                    
+                  {adaptedReports.map((report) => {
+                    const typeLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
+                    const speciesLabel = SPECIES_LABEL[report.species] || report.species || 'Mascota';
+                    const isDeleting = deletingId === report.id;
+
                     return (
                       <div
                         key={report.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-muted rounded-lg"></div>
+                          {report.imageUrl ? (
+                            <img
+                              src={report.imageUrl}
+                              alt={report.petName}
+                              className="w-16 h-16 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className="w-16 h-16 bg-muted rounded-lg items-center justify-center text-muted-foreground text-xs"
+                            style={{ display: report.imageUrl ? 'none' : 'flex' }}
+                          >
+                            Sin foto
+                          </div>
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold">{report.petName}</h4>
-                              <Badge variant={report.type === 'lost' ? 'destructive' : 'success'}>
-                                {statusLabel}
+                              <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
+                                {typeLabel}
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">{report.species} • Publicado el {new Date(report.eventDate).toLocaleDateString('es-ES')}</p>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <Eye className="h-3 w-3" />
-                              {report.views} visitas
+                            <p className="text-sm text-muted-foreground">
+                              {speciesLabel} •{' '}
+                              {new Date(report.eventDate).toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                              })}
                             </p>
+                            {report.location && (
+                              <p className="text-sm text-muted-foreground mt-0.5">{report.location}</p>
+                            )}
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(report.id)}
+                            title="Editar reporte"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:border-red-300"
+                            onClick={() => handleDelete(report.id, report.petName)}
+                            disabled={isDeleting}
+                            title="Eliminar reporte"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
