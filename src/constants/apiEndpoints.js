@@ -53,8 +53,14 @@ export const REPORT_ENDPOINTS = {
   DELETE: (id) => `/reports/${id}`,
   MY_REPORTS: '/reports/my-reports',
   UPLOAD_IMAGE: '/reports/upload-image',
+<<<<<<< Updated upstream
   EXPORT_JSON: '/reports/export',
   EXPORT_CSV: '/reports/export/csv',
+=======
+  EXPORT: '/reports/export',
+  EXPORT_CSV: '/reports/export/csv',
+  BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
+>>>>>>> Stashed changes
 };
 
 /**

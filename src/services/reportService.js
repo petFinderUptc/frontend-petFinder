@@ -6,12 +6,17 @@ export const getReports = async (params = {}) => {
   return response.data;
 };
 
+/**
+ * Búsqueda semántica con IA.
+ * @param {string} query - Descripción libre de la mascota
+ * @param {Object} params - Filtros y paginación
+ * @param {number} [params.lat] - Latitud del usuario (para filtro geográfico)
+ * @param {number} [params.lon] - Longitud del usuario (para filtro geográfico)
+ * @param {number} [params.radiusKm] - Radio de búsqueda en km (default 15)
+ */
 export const searchReports = async (query, params = {}) => {
   const response = await apiClient.get(REPORT_ENDPOINTS.SEARCH, {
-    params: {
-      query,
-      ...params,
-    },
+    params: { query, ...params },
   });
   return response.data;
 };
@@ -46,9 +51,7 @@ export const uploadReportImage = async (file, onUploadProgress) => {
   formData.append('image', file);
 
   const response = await apiClient.post(REPORT_ENDPOINTS.UPLOAD_IMAGE, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress,
   });
 
@@ -56,7 +59,7 @@ export const uploadReportImage = async (file, onUploadProgress) => {
 };
 
 export const exportReportsJson = async () => {
-  const response = await apiClient.get(REPORT_ENDPOINTS.EXPORT_JSON);
+  const response = await apiClient.get(REPORT_ENDPOINTS.EXPORT);
   return response.data;
 };
 
@@ -64,5 +67,14 @@ export const exportReportsCsv = async () => {
   const response = await apiClient.get(REPORT_ENDPOINTS.EXPORT_CSV, {
     responseType: 'text',
   });
+  return response.data;
+};
+
+/**
+ * Dispara el backfill de embeddings para reportes sin vector.
+ * Requiere autenticación.
+ */
+export const backfillEmbeddings = async () => {
+  const response = await apiClient.post(REPORT_ENDPOINTS.BACKFILL_EMBEDDINGS);
   return response.data;
 };
