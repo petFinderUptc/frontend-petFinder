@@ -53,6 +53,9 @@ export const REPORT_ENDPOINTS = {
   DELETE: (id) => `/reports/${id}`,
   MY_REPORTS: '/reports/my-reports',
   UPLOAD_IMAGE: '/reports/upload-image',
+  EXPORT: '/reports/export',
+  EXPORT_CSV: '/reports/export/csv',
+  BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
 };
 
 /**
