@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ChevronLeft, ChevronRight, MapPinned, Rows3 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, ChevronLeft, ChevronRight, MapPinned, Rows3, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { FilterPanel } from '../../components/FilterPanel';
@@ -41,32 +41,55 @@ export default function SearchPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSemanticSearch, setIsSemanticSearch] = useState(false);
+
+  // Coordenadas del usuario para el filtro geográfico
+  const userCoords = useRef(null);
+
+  // Obtener ubicación del usuario al montar (silencioso si deniega)
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userCoords.current = {
+          lat: parseFloat(pos.coords.latitude.toFixed(6)),
+          lon: parseFloat(pos.coords.longitude.toFixed(6)),
+        };
+      },
+      () => {
+        // El usuario denegó o no hay GPS — funciona sin geo
+      },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  }, []);
 
   const fetchReports = useCallback(async (targetPage = 1, activeFilters = filters) => {
     try {
       setLoading(true);
       setError('');
 
-      const queryParams = {
-        page: targetPage,
-        limit: PAGE_SIZE,
-      };
+      const queryParams = { page: targetPage, limit: PAGE_SIZE };
 
-      if (activeFilters.reportType !== 'all') {
-        queryParams.type = activeFilters.reportType;
-      }
-      if (activeFilters.species !== 'all') {
-        queryParams.species = activeFilters.species;
-      }
-      if (activeFilters.size !== 'all') {
-        queryParams.size = activeFilters.size;
-      }
+      if (activeFilters.reportType !== 'all') queryParams.type = activeFilters.reportType;
+      if (activeFilters.species !== 'all') queryParams.species = activeFilters.species;
+      if (activeFilters.size !== 'all') queryParams.size = activeFilters.size;
 
       const searchTerm = activeFilters.searchTerm?.trim() || '';
-      const response =
-        searchTerm.length >= 2
-          ? await searchReports(searchTerm, queryParams)
-          : await getReports(queryParams);
+      let response;
+
+      if (searchTerm.length >= 2) {
+        // Añadir coords del usuario si están disponibles
+        if (userCoords.current) {
+          queryParams.lat = userCoords.current.lat;
+          queryParams.lon = userCoords.current.lon;
+          queryParams.radiusKm = 15;
+        }
+        response = await searchReports(searchTerm, queryParams);
+        setIsSemanticSearch(response?.isSemanticSearch === true);
+      } else {
+        response = await getReports(queryParams);
+        setIsSemanticSearch(false);
+      }
 
       setReports(Array.isArray(response?.data) ? response.data : []);
       setPagination(
@@ -95,10 +118,7 @@ export default function SearchPage() {
     const refreshTimer = window.setInterval(() => {
       void fetchReports(pagination.page, filters);
     }, 45000);
-
-    return () => {
-      window.clearInterval(refreshTimer);
-    };
+    return () => window.clearInterval(refreshTimer);
   }, [fetchReports, filters, pagination.page]);
 
   const title = useMemo(() => {
@@ -107,9 +127,7 @@ export default function SearchPage() {
     return `Reportes activos (${pagination.total})`;
   }, [loading, reports.length, pagination.total]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
+  const handleFilterChange = (newFilters) => setFilters(newFilters);
 
   const handleSearch = (nextFilters = filters) => {
     setFilters(nextFilters);
@@ -121,7 +139,15 @@ export default function SearchPage() {
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Listado de reportes</h1>
-          <p className="text-muted-foreground">{title}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-muted-foreground">{title}</p>
+            {isSemanticSearch && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
+                <Sparkles className="h-3 w-3" />
+                Búsqueda IA activa
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mb-6">
@@ -175,16 +201,15 @@ export default function SearchPage() {
               <PetMap reports={reports} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {reports.map((report) => {
-                  return (
-                    <SearchResultCard
-                      key={report.id}
-                      report={report}
-                      speciesLabel={speciesLabel}
-                      typeLabel={typeLabel}
-                    />
-                  );
-                })}
+                {reports.map((report) => (
+                  <SearchResultCard
+                    key={report.id}
+                    report={report}
+                    speciesLabel={speciesLabel}
+                    typeLabel={typeLabel}
+                    showSimilarity={isSemanticSearch}
+                  />
+                ))}
               </div>
             )}
 
