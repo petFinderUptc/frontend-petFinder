@@ -22,19 +22,38 @@ import { normalizeUserFromBackend } from '../utils/userAdapter';
 /**
  * Iniciar sesión
  * @param {Object} credentials - { email, password }
+ * @param {boolean} rememberMe - Si es true, persiste en localStorage (30 días).
+ *                               Si es false, usa sessionStorage (se borra al cerrar pestaña).
  * @returns {Promise<Object>} Datos de usuario y token
  */
-export const login = async (credentials) => {
+export const login = async (credentials, rememberMe = false) => {
   const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
 
   const { accessToken, refreshToken, user } = response.data;
   const normalizedUser = normalizeUserFromBackend(user);
 
-  setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-  if (refreshToken) {
-    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+  // rememberMe=true → localStorage (persiste entre sesiones)
+  // rememberMe=false → sessionStorage (se borra al cerrar la pestaña)
+  const store = rememberMe ? localStorage : sessionStorage;
+
+  const saveToStore = (key, value) => {
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error('Error guardando sesión:', e);
+    }
+  };
+
+  saveToStore(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+  if (refreshToken) saveToStore(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+  saveToStore(STORAGE_KEYS.USER_DATA, normalizedUser);
+
+  // Si no recuerda, limpiar posibles datos viejos en localStorage
+  if (!rememberMe) {
+    removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    removeItem(STORAGE_KEYS.USER_DATA);
   }
-  setItem(STORAGE_KEYS.USER_DATA, normalizedUser);
 
   return {
     ...response.data,
