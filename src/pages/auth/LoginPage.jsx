@@ -13,11 +13,12 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isLoading } = useAuth();
-  
+
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState('');
@@ -26,23 +27,23 @@ export default function LoginPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
     setLoginError('');
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     const emailValidation = validateEmail(formData.email);
     if (!emailValidation.isValid) newErrors.email = emailValidation.error;
-    
+
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) newErrors.password = passwordValidation.error;
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -50,17 +51,17 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
-    
+
     if (!validateForm()) return;
-    
+
     try {
-      // Pasar objeto con email y password
-      await login({ email: formData.email, password: formData.password });
+      await login({ email: formData.email, password: formData.password }, rememberMe);
       navigate(from, { replace: true });
     } catch (error) {
       setLoginError(
-        error.message || error.response?.data?.message || 
-        'Error al iniciar sesión. Por favor verifica tus credenciales.'
+        error.message ||
+          error.response?.data?.message ||
+          'Error al iniciar sesión. Por favor verifica tus credenciales.',
       );
     }
   };
@@ -69,11 +70,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img 
-            src="/LOGOPNG.png" 
-            alt="PetFinder" 
-            className="h-16 mx-auto mb-4"
-          />
+          <img src="/LOGOPNG.png" alt="PetFinder" className="h-16 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Bienvenido</h1>
           <p className="text-gray-700 dark:text-slate-300 mt-2">Inicia sesión en tu cuenta</p>
         </div>
@@ -81,11 +78,9 @@ export default function LoginPage() {
         <Card className="shadow-xl border-0">
           <CardHeader>
             <CardTitle>Iniciar Sesión</CardTitle>
-            <CardDescription>
-              Ingresa tus credenciales para acceder a tu cuenta
-            </CardDescription>
+            <CardDescription>Ingresa tus credenciales para acceder a tu cuenta</CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             {loginError && (
               <Alert variant="destructive" className="mb-4">
@@ -96,7 +91,10 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Correo Electrónico
                 </label>
                 <Input
@@ -115,7 +113,10 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
                   Contraseña
                 </label>
                 <div className="relative">
@@ -135,11 +136,7 @@ export default function LoginPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {errors.password && (
@@ -148,11 +145,19 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2 rounded" />
-                  <span className="text-muted-foreground">Recordarme</span>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-muted-foreground">
+                    Recordarme{' '}
+                    <span className="text-xs text-muted-foreground/60">(30 días)</span>
+                  </span>
                 </label>
-                <Link 
+                <Link
                   to={PUBLIC_ROUTES.FORGOT_PASSWORD}
                   className="text-blue-600 hover:text-blue-700 hover:underline"
                 >
@@ -172,8 +177,8 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 ¿No tienes una cuenta?{' '}
-                <Link 
-                  to={PUBLIC_ROUTES.REGISTER} 
+                <Link
+                  to={PUBLIC_ROUTES.REGISTER}
                   className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
                 >
                   Regístrate aquí
@@ -184,8 +189,8 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center mt-6">
-          <Link 
-            to={PUBLIC_ROUTES.HOME} 
+          <Link
+            to={PUBLIC_ROUTES.HOME}
             className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
             ← Volver al inicio
