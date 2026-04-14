@@ -6,7 +6,7 @@ import { PROTECTED_ROUTES, PUBLIC_ROUTES, generateRoute } from '../../constants/
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { getMyReports, deletePet } from '../../services/petService';
+import { getMyReports, deleteReport } from '../../services/reportService';
 import { adaptPost } from '../../utils/postAdapter';
 
 const SPECIES_LABEL = {
@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
     setDeletingId(reportId);
     try {
-      await deletePet(reportId);
+      await deleteReport(reportId);
       setMyReports((prev) => prev.filter((r) => r.id !== reportId));
     } catch (err) {
       console.error('Error al eliminar reporte:', err);
