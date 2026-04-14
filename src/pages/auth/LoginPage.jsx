@@ -12,10 +12,11 @@ import { Alert, AlertDescription } from '../../components/ui/alert';
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -54,6 +55,7 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
+    setIsSubmitting(true);
     try {
       await login({ email: formData.email, password: formData.password }, rememberMe);
       navigate(from, { replace: true });
@@ -61,8 +63,10 @@ export default function LoginPage() {
       setLoginError(
         error.message ||
           error.response?.data?.message ||
-          'Error al iniciar sesión. Por favor verifica tus credenciales.',
+          'Error al iniciar sesión. Por favor verifica tus credenciales.'
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -105,7 +109,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className={errors.email ? 'border-red-500' : ''}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -128,13 +132,13 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleChange}
                     className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -168,9 +172,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </Button>
             </form>
 
