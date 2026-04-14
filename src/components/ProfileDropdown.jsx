@@ -7,7 +7,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Heart, Settings, Bell, LogOut, ChevronDown } from 'lucide-react';
+import { User, Heart, Settings, Bell, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../constants/routes';
@@ -102,6 +102,15 @@ export function ProfileDropdown() {
 
           {/* Menu Items */}
           <div className="py-2">
+            <Link
+              to={PROTECTED_ROUTES.DASHBOARD}
+              className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+
             <Link
               to={PROTECTED_ROUTES.PROFILE}
               className="flex items-center gap-3 px-4 py-2 text-foreground hover:bg-muted transition-colors"
