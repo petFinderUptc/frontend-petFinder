@@ -48,11 +48,11 @@ export const login = async (credentials, rememberMe = false) => {
   if (refreshToken) saveToStore(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
   saveToStore(STORAGE_KEYS.USER_DATA, normalizedUser);
 
-  // Si no recuerda, limpiar posibles datos viejos en localStorage
+  // Si no recuerda, limpiar posibles datos viejos en localStorage (sin tocar sessionStorage)
   if (!rememberMe) {
-    removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    removeItem(STORAGE_KEYS.USER_DATA);
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_DATA);
   }
 
   return {
