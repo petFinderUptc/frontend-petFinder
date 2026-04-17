@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
+import { AlertCircle, HelpCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -11,9 +11,18 @@ import { PROTECTED_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
 import { getReportById, updateReport, uploadReportImage } from '../../services/reportService';
 import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
+import {
+  validateContact,
+  validateColor,
+  validateBreed,
+  validateDescription,
+} from '../../utils/validation';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
+const CONTACT_TOOLTIP =
+  'Ingresa un número de teléfono colombiano (ej: 310 123 4567) o un correo electrónico. Este dato será visible para quien encuentre tu reporte.';
 
 const emptyForm = {
   species: 'dog',
@@ -27,17 +36,53 @@ const emptyForm = {
   locationQuery: '',
 };
 
+function FieldError({ message }) {
+  if (!message) return null;
+  return (
+    <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+      <AlertCircle className="h-3 w-3 flex-shrink-0" />
+      {message}
+    </p>
+  );
+}
+
+function ContactTooltip() {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
+        className="ml-1 text-muted-foreground hover:text-foreground focus:outline-none"
+        aria-label="Ayuda sobre el campo contacto"
+      >
+        <HelpCircle className="h-4 w-4" />
+      </button>
+      {visible && (
+        <span className="absolute bottom-full left-1/2 z-30 mb-2 w-64 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+          {CONTACT_TOOLTIP}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function EditReportPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addAlert } = useAlert();
   const [formData, setFormData] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
+  const [imageError, setImageError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [currentImageUrl, setCurrentImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
@@ -73,10 +118,7 @@ export default function EditReportPage() {
           try {
             const reverse = await reverseGeocode(reportLat, reportLon);
             if (reverse?.displayName) {
-              setFormData((prev) => ({
-                ...prev,
-                locationQuery: reverse.displayName,
-              }));
+              setFormData((prev) => ({ ...prev, locationQuery: reverse.displayName }));
             }
           } catch {
             // no-op
@@ -85,7 +127,7 @@ export default function EditReportPage() {
 
         setCurrentImageUrl(toAbsoluteMediaUrl(report.imageUrl));
       } catch (loadError) {
-        setError(loadError?.message || 'No fue posible cargar el reporte.');
+        setSubmitError(loadError?.message || 'No fue posible cargar el reporte.');
       } finally {
         setLoading(false);
       }
@@ -96,26 +138,15 @@ export default function EditReportPage() {
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      if (locationTimerRef.current) {
-        window.clearTimeout(locationTimerRef.current);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (locationTimerRef.current) window.clearTimeout(locationTimerRef.current);
     };
   }, [previewUrl]);
 
   useEffect(() => {
     const query = formData.locationQuery.trim();
-
-    if (locationTimerRef.current) {
-      window.clearTimeout(locationTimerRef.current);
-    }
-
-    if (query.length < 3) {
-      setLocationSuggestions([]);
-      return;
-    }
+    if (locationTimerRef.current) window.clearTimeout(locationTimerRef.current);
+    if (query.length < 3) { setLocationSuggestions([]); return; }
 
     locationTimerRef.current = window.setTimeout(async () => {
       setIsSearchingLocation(true);
@@ -129,6 +160,46 @@ export default function EditReportPage() {
       }
     }, 350);
   }, [formData.locationQuery]);
+
+  const validators = {
+    color: (v) => validateColor(v),
+    breed: (v) => validateBreed(v),
+    description: (v) => validateDescription(v),
+    contact: (v) => validateContact(v),
+  };
+
+  const validateField = (name, value) => {
+    if (!validators[name]) return '';
+    const result = validators[name](value);
+    return result.isValid ? '' : result.error;
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleBlur = (event) => {
+    const { name, value } = event.target;
+    const error = validateField(name, value);
+    setFieldErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  const validateAll = () => {
+    const errors = {};
+    Object.keys(validators).forEach((name) => {
+      const error = validateField(name, formData[name]);
+      if (error) errors[name] = error;
+    });
+    if (!formData.locationQuery.trim() && typeof latitude !== 'number') {
+      errors.locationQuery = 'La ubicación es obligatoria.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const canSubmit = useMemo(() => {
     return (
@@ -145,55 +216,40 @@ export default function EditReportPage() {
     );
   }, [formData, latitude, longitude]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setError('Tipo de imagen no permitido. Usa JPG, PNG o WEBP.');
+      setImageError('Tipo de imagen no permitido. Usa JPG, PNG o WEBP.');
       return;
     }
-
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setError('La imagen no debe superar 5MB.');
+      setImageError('La imagen no debe superar 5 MB.');
       return;
     }
-
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-    setError('');
+    setImageError('');
   };
 
   const selectSuggestion = (suggestion) => {
-    setFormData((prev) => ({
-      ...prev,
-      locationQuery: suggestion.displayName || '',
-    }));
+    setFormData((prev) => ({ ...prev, locationQuery: suggestion.displayName || '' }));
     setLatitude(Number(suggestion.lat));
     setLongitude(Number(suggestion.lon));
     setLocationSuggestions([]);
+    setFieldErrors((prev) => ({ ...prev, locationQuery: '' }));
   };
 
   const updateLocationFromMap = async ({ lat, lon }) => {
     setLatitude(lat);
     setLongitude(lon);
-
+    setFieldErrors((prev) => ({ ...prev, locationQuery: '' }));
     try {
       const reverse = await reverseGeocode(lat, lon);
       if (reverse?.displayName) {
-        setFormData((prev) => ({
-          ...prev,
-          locationQuery: reverse.displayName,
-        }));
+        setFormData((prev) => ({ ...prev, locationQuery: reverse.displayName }));
       }
     } catch {
       // no-op
@@ -202,26 +258,22 @@ export default function EditReportPage() {
 
   const useCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      setError('Tu navegador no soporta geolocalizacion.');
+      setSubmitError('Tu navegador no soporta geolocalización.');
       return;
     }
-
     setIsLocating(true);
-
+    setSubmitError('');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const nextLat = Number(position.coords.latitude.toFixed(6));
         const nextLon = Number(position.coords.longitude.toFixed(6));
         setLatitude(nextLat);
         setLongitude(nextLon);
-
+        setFieldErrors((prev) => ({ ...prev, locationQuery: '' }));
         try {
           const reverse = await reverseGeocode(nextLat, nextLon);
           if (reverse?.displayName) {
-            setFormData((prev) => ({
-              ...prev,
-              locationQuery: reverse.displayName,
-            }));
+            setFormData((prev) => ({ ...prev, locationQuery: reverse.displayName }));
           }
         } catch {
           // no-op
@@ -230,22 +282,19 @@ export default function EditReportPage() {
         }
       },
       () => {
-        setError('No se pudo obtener tu ubicacion actual.');
+        setSubmitError('No se pudo obtener tu ubicación actual.');
         setIsLocating(false);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setSubmitError('');
 
-    if (!canSubmit) {
-      setError('Completa los datos obligatorios antes de guardar.');
+    if (!validateAll()) {
+      setSubmitError('Corrige los errores antes de guardar.');
       return;
     }
 
@@ -260,7 +309,6 @@ export default function EditReportPage() {
           const total = progressEvent.total || 1;
           setUploadProgress(Math.round((progressEvent.loaded * 100) / total));
         });
-
         nextImageUrl = uploadResult?.imageUrl;
       }
 
@@ -286,18 +334,17 @@ export default function EditReportPage() {
 
       await updateReport(id, payload);
 
-      addAlert({
-        type: 'success',
-        message: 'Reporte actualizado correctamente.',
-      });
-
+      addAlert({ type: 'success', message: 'Reporte actualizado correctamente.' });
       navigate(PROTECTED_ROUTES.MY_REPORTS);
-    } catch (submitError) {
-      setError(submitError?.message || 'No fue posible actualizar el reporte.');
+    } catch (submitErr) {
+      setSubmitError(submitErr?.message || 'No fue posible actualizar el reporte.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const inputClass = (name) =>
+    fieldErrors[name] ? 'border-red-500 focus-visible:ring-red-400' : '';
 
   if (loading) {
     return (
@@ -318,19 +365,21 @@ export default function EditReportPage() {
           <Card>
             <CardHeader>
               <CardTitle>Editar reporte</CardTitle>
-              <CardDescription>Actualiza la informacion y guarda los cambios.</CardDescription>
+              <CardDescription>Actualiza la información y guarda los cambios. Los campos con * son obligatorios.</CardDescription>
             </CardHeader>
             <CardContent>
-              {error && (
+              {submitError && (
                 <Alert variant="destructive" className="mb-6">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>{submitError}</AlertDescription>
                 </Alert>
               )}
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+
+                {/* Imagen */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Imagen</label>
+                  <label className="mb-2 block text-sm font-medium">Imagen <span className="text-muted-foreground text-xs">(opcional — deja vacío para conservar la actual)</span></label>
                   <div className="rounded-lg border-2 border-dashed p-4">
                     <input
                       id="edit-report-image"
@@ -342,7 +391,7 @@ export default function EditReportPage() {
                     <label htmlFor="edit-report-image" className="block cursor-pointer text-center">
                       <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">
-                        {imageFile ? imageFile.name : 'Selecciona una nueva imagen (opcional)'}
+                        {imageFile ? imageFile.name : 'Haz clic para cambiar la imagen (JPG, PNG, WEBP · máx. 5 MB)'}
                       </p>
                     </label>
                   </div>
@@ -353,11 +402,18 @@ export default function EditReportPage() {
                       className="mt-3 h-64 w-full rounded-lg border object-cover"
                     />
                   )}
+                  <FieldError message={imageError} />
                   {isSubmitting && uploadProgress > 0 && (
-                    <p className="mt-2 text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
+                      <div className="mt-1 h-1.5 rounded-full bg-muted">
+                        <div className="h-1.5 rounded-full bg-cyan-500 transition-all" style={{ width: `${uploadProgress}%` }} />
+                      </div>
+                    </div>
                   )}
                 </div>
 
+                {/* Especie / Tipo / Estado */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Especie *</label>
@@ -366,7 +422,6 @@ export default function EditReportPage() {
                       value={formData.species}
                       onChange={handleChange}
                       className="h-9 w-full rounded-md border bg-background px-3"
-                      required
                     >
                       <option value="dog">Perro</option>
                       <option value="cat">Gato</option>
@@ -386,7 +441,6 @@ export default function EditReportPage() {
                       value={formData.status}
                       onChange={handleChange}
                       className="h-9 w-full rounded-md border bg-background px-3"
-                      required
                     >
                       <option value="active">Activo</option>
                       <option value="resolved">Resuelto</option>
@@ -395,58 +449,103 @@ export default function EditReportPage() {
                   </div>
                 </div>
 
+                {/* Color / Raza / Tamaño */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Color *</label>
-                    <Input name="color" value={formData.color} onChange={handleChange} required />
+                    <Input
+                      name="color"
+                      value={formData.color}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="ej: negro, blanco y café"
+                      maxLength={50}
+                      className={inputClass('color')}
+                    />
+                    <FieldError message={fieldErrors.color} />
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium">Raza *</label>
-                    <Input name="breed" value={formData.breed} onChange={handleChange} required />
+                    <Input
+                      name="breed"
+                      value={formData.breed}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="ej: mestizo, labrador"
+                      maxLength={60}
+                      className={inputClass('breed')}
+                    />
+                    <FieldError message={fieldErrors.breed} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Tamano *</label>
+                    <label className="mb-1 block text-sm font-medium">Tamaño *</label>
                     <select
                       name="size"
                       value={formData.size}
                       onChange={handleChange}
                       className="h-9 w-full rounded-md border bg-background px-3"
-                      required
                     >
-                      <option value="small">Pequeno</option>
+                      <option value="small">Pequeño</option>
                       <option value="medium">Mediano</option>
                       <option value="large">Grande</option>
                     </select>
                   </div>
                 </div>
 
+                {/* Descripción */}
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Descripcion *</label>
+                  <label className="mb-1 block text-sm font-medium">Descripción *</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    minLength={10}
-                    required
+                    onBlur={handleBlur}
+                    placeholder="Describe rasgos distintivos: collar, cicatrices, comportamiento, zona donde se perdió..."
+                    maxLength={500}
                     rows={4}
-                    className="min-h-[96px] w-full rounded-md border bg-background px-3 py-2"
+                    className={`min-h-[96px] w-full rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${fieldErrors.description ? 'border-red-500' : ''}`}
                   />
+                  <div className="mt-1 flex items-center justify-between">
+                    <FieldError message={fieldErrors.description} />
+                    <span className={`text-xs ${formData.description.length > 450 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                      {formData.description.length}/500
+                    </span>
+                  </div>
                 </div>
 
+                {/* Contacto */}
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Contacto *</label>
-                  <Input name="contact" value={formData.contact} onChange={handleChange} required />
+                  <label className="mb-1 flex items-center text-sm font-medium">
+                    Contacto *
+                    <ContactTooltip />
+                  </label>
+                  <Input
+                    name="contact"
+                    value={formData.contact}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="310 123 4567 o tu@correo.com"
+                    maxLength={100}
+                    className={inputClass('contact')}
+                  />
+                  <FieldError message={fieldErrors.contact} />
                 </div>
 
+                {/* Ubicación */}
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium">Ubicacion *</label>
+                  <label className="block text-sm font-medium">Ubicación *</label>
                   <div className="relative">
                     <Input
                       name="locationQuery"
                       value={formData.locationQuery}
                       onChange={handleChange}
-                      placeholder="Direccion o referencia"
-                      required
+                      onBlur={(e) => {
+                        if (!e.target.value.trim() && typeof latitude !== 'number') {
+                          setFieldErrors((prev) => ({ ...prev, locationQuery: 'La ubicación es obligatoria.' }));
+                        }
+                      }}
+                      placeholder="Dirección o referencia del lugar"
+                      className={inputClass('locationQuery')}
                     />
                     {isSearchingLocation && (
                       <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
@@ -467,6 +566,7 @@ export default function EditReportPage() {
                       </div>
                     )}
                   </div>
+                  <FieldError message={fieldErrors.locationQuery} />
 
                   <Button
                     type="button"
@@ -477,16 +577,19 @@ export default function EditReportPage() {
                     className="gap-2"
                   >
                     {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-                    Usar mi ubicacion actual
+                    Usar mi ubicación actual
                   </Button>
 
-                  <LocationPicker
-                    latitude={latitude}
-                    longitude={longitude}
-                    onLocationChange={updateLocationFromMap}
-                  />
+                  <LocationPicker latitude={latitude} longitude={longitude} onLocationChange={updateLocationFromMap} />
+
+                  {typeof latitude === 'number' && typeof longitude === 'number' && (
+                    <p className="text-xs text-muted-foreground">
+                      Coordenadas: {latitude}, {longitude}
+                    </p>
+                  )}
                 </div>
 
+                {/* Acciones */}
                 <div className="flex gap-3">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
                     Cancelar
