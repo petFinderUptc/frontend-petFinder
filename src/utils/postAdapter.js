@@ -57,8 +57,8 @@ export function adaptPost(backendPost) {
     location = `${backendPost.location.neighborhood || ''}, ${backendPost.location.city || ''}`.trim();
   }
 
-  // Normalizar tipo y especie
-  const type = backendPost.type || backendPost.status; // lost/found
+  // Normalizar tipo y especie (type es 'lost'|'found'; nunca usar status como fallback)
+  const type = backendPost.type || 'lost';
   const species = backendPost.species; // dog/cat/bird/rabbit/other
   const petType = backendPost.petType || species; // Para compatibilidad
 

@@ -56,6 +56,7 @@ export const REPORT_ENDPOINTS = {
   EXPORT: '/reports/export',
   EXPORT_CSV: '/reports/export/csv',
   BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
+  STATS: '/reports/stats',
 };
 
 /**
