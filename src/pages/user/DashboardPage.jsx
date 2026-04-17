@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Badge } from '../../components/ui/badge';
 import { getMyReports, deleteReport } from '../../services/reportService';
 import { adaptPost } from '../../utils/postAdapter';
+import { useMediaUrl } from '../../hooks/useSignedUrl';
 
 const SPECIES_LABEL = {
   dog: 'Perro',
@@ -16,6 +17,29 @@ const SPECIES_LABEL = {
   rabbit: 'Conejo',
   other: 'Otro',
 };
+
+// ─── Miniatura con signed URL renovada automáticamente ────────────────────────
+function ReportThumbnail({ url, alt }) {
+  const src = useMediaUrl(url);
+  const [err, setErr] = useState(false);
+
+  if (!src || err) {
+    return (
+      <div className="w-16 h-16 shrink-0 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
+        Sin foto
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-16 h-16 shrink-0 rounded-lg object-cover"
+      onError={() => setErr(true)}
+    />
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -44,11 +68,15 @@ export default function DashboardPage() {
     fetchMyReports();
   }, [fetchMyReports]);
 
-  const handleEdit = (reportId) => {
+  const handleEdit = (e, reportId) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate(generateRoute(PROTECTED_ROUTES.EDIT_REPORT, { id: reportId }));
   };
 
-  const handleDelete = async (reportId, petName) => {
+  const handleDelete = async (e, reportId, petName) => {
+    e.preventDefault();
+    e.stopPropagation();
     const confirmed = window.confirm(
       `¿Estás seguro de que deseas eliminar el reporte de "${petName}"? Esta acción no se puede deshacer.`,
     );
@@ -177,7 +205,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Mis Reportes</CardTitle>
               <CardDescription>
-                Gestiona y actualiza el estado de tus reportes
+                Haz clic en un reporte para verlo en detalle
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -210,38 +238,31 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {adaptedReports.map((report) => {
                     const typeLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
                     const speciesLabel = SPECIES_LABEL[report.species] || report.species || 'Mascota';
                     const isDeleting = deletingId === report.id;
+                    const detailUrl = PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id);
 
                     return (
                       <div
                         key={report.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
+                        className="relative flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition-colors group"
                       >
-                        <div className="flex items-center gap-4">
-                          {report.imageUrl ? (
-                            <img
-                              src={report.imageUrl}
-                              alt={report.petName}
-                              className="w-16 h-16 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div
-                            className="w-16 h-16 bg-muted rounded-lg items-center justify-center text-muted-foreground text-xs"
-                            style={{ display: report.imageUrl ? 'none' : 'flex' }}
-                          >
-                            Sin foto
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold">{report.petName}</h4>
+                        {/* Overlay — cubre todo el card excepto los botones */}
+                        <Link
+                          to={detailUrl}
+                          className="absolute inset-0 z-0 rounded-lg"
+                          aria-label={`Ver detalle de ${report.petName}`}
+                        />
+
+                        {/* Contenido del card */}
+                        <div className="relative z-10 flex items-center gap-4 min-w-0">
+                          <ReportThumbnail url={report.imageUrl} alt={report.petName} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h4 className="font-semibold truncate">{report.petName}</h4>
                               <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
                                 {typeLabel}
                               </Badge>
@@ -255,15 +276,19 @@ export default function DashboardPage() {
                               })}
                             </p>
                             {report.location && (
-                              <p className="text-sm text-muted-foreground mt-0.5">{report.location}</p>
+                              <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                                {report.location}
+                              </p>
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-2 shrink-0">
+
+                        {/* Botones de acción */}
+                        <div className="relative z-10 flex gap-2 shrink-0 ml-3">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleEdit(report.id)}
+                            onClick={(e) => handleEdit(e, report.id)}
                             title="Editar reporte"
                           >
                             <Edit className="h-4 w-4" />
@@ -272,7 +297,7 @@ export default function DashboardPage() {
                             variant="outline"
                             size="sm"
                             className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            onClick={() => handleDelete(report.id, report.petName)}
+                            onClick={(e) => handleDelete(e, report.id, report.petName)}
                             disabled={isDeleting}
                             title="Eliminar reporte"
                           >

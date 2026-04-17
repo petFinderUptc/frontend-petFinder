@@ -11,6 +11,7 @@ import { PROTECTED_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
 import { getReportById, updateReport, uploadReportImage } from '../../services/reportService';
 import { toAbsoluteMediaUrl } from '../../utils/userAdapter';
+import { useMediaUrl } from '../../hooks/useSignedUrl';
 import {
   validateContact,
   validateColor,
@@ -82,6 +83,8 @@ export default function EditReportPage() {
   const [currentImageUrl, setCurrentImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Renueva la SAS si la URL del blob ya expiró
+  const signedCurrentImageUrl = useMediaUrl(currentImageUrl);
   const [submitError, setSubmitError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -395,9 +398,9 @@ export default function EditReportPage() {
                       </p>
                     </label>
                   </div>
-                  {(previewUrl || currentImageUrl) && (
+                  {(previewUrl || signedCurrentImageUrl) && (
                     <img
-                      src={previewUrl || currentImageUrl}
+                      src={previewUrl || signedCurrentImageUrl}
                       alt="Vista previa"
                       className="mt-3 h-64 w-full rounded-lg border object-cover"
                     />

@@ -14,6 +14,14 @@
  * - especie: species (dog/cat/bird/rabbit/other)
  */
 
+const SPECIES_DISPLAY = {
+  dog: 'Perro',
+  cat: 'Gato',
+  bird: 'Ave',
+  rabbit: 'Conejo',
+  other: 'Animal',
+};
+
 /**
  * Convierte un post/report del backend a formato UI estándar
  * @param {Object} backendPost - Post o Report del backend
@@ -68,7 +76,11 @@ export function adaptPost(backendPost) {
     userId: backendPost.userId,
 
     // Información del reporte
-    petName: backendPost.petName || backendPost.name || 'Sin nombre',
+    // Los Reports del backend no tienen campo "name"; se genera un título descriptivo
+    petName: backendPost.petName || backendPost.name ||
+      (backendPost.species
+        ? `${SPECIES_DISPLAY[backendPost.species] || 'Mascota'} ${backendPost.type === 'found' ? 'encontrada' : 'perdida'}`
+        : 'Sin nombre'),
     title: backendPost.petName || backendPost.name, // Alias para title
     description: backendPost.description || '',
     status: backendPost.status || 'active',
