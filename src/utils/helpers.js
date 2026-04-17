@@ -30,7 +30,7 @@ export const formatDate = (date, locale = 'en-US') => {
  */
 export const formatRelativeTime = (date) => {
   if (!date) return '';
-  
+
   const dateObj = date instanceof Date ? date : new Date(date);
   const now = new Date();
   const diffMs = now - dateObj;
@@ -38,21 +38,22 @@ export const formatRelativeTime = (date) => {
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
-  
-  if (diffSec < 60) return 'just now';
-  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
-  if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+
+  if (diffSec < 60) return 'hace un momento';
+  if (diffMin < 60) return diffMin === 1 ? 'hace 1 minuto' : `hace ${diffMin} minutos`;
+  if (diffHour < 24) return diffHour === 1 ? 'hace 1 hora' : `hace ${diffHour} horas`;
+  if (diffDay === 1) return 'ayer';
+  if (diffDay < 7) return `hace ${diffDay} días`;
   if (diffDay < 30) {
     const weeks = Math.floor(diffDay / 7);
-    return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+    return weeks === 1 ? 'hace 1 semana' : `hace ${weeks} semanas`;
   }
   if (diffDay < 365) {
     const months = Math.floor(diffDay / 30);
-    return `${months} month${months !== 1 ? 's' : ''} ago`;
+    return months === 1 ? 'hace 1 mes' : `hace ${months} meses`;
   }
   const years = Math.floor(diffDay / 365);
-  return `${years} year${years !== 1 ? 's' : ''} ago`;
+  return years === 1 ? 'hace 1 año' : `hace ${years} años`;
 };
 
 /**

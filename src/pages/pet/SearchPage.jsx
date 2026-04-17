@@ -28,6 +28,8 @@ export default function SearchPage() {
     reportType: 'all',
     species: 'all',
     size: 'all',
+    color: '',
+    breed: '',
     searchTerm: '',
   });
   const [viewMode, setViewMode] = useState('cards');
@@ -73,6 +75,8 @@ export default function SearchPage() {
       if (activeFilters.reportType !== 'all') queryParams.type = activeFilters.reportType;
       if (activeFilters.species !== 'all') queryParams.species = activeFilters.species;
       if (activeFilters.size !== 'all') queryParams.size = activeFilters.size;
+      if (activeFilters.color?.trim()) queryParams.color = activeFilters.color.trim();
+      if (activeFilters.breed?.trim()) queryParams.breed = activeFilters.breed.trim();
 
       const searchTerm = activeFilters.searchTerm?.trim() || '';
       let response;
