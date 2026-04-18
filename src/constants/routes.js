@@ -18,6 +18,7 @@ export const PUBLIC_ROUTES = {
   REGISTER: '/register',
   SEARCH: '/search',
   PET_DETAIL: '/pet/:id',
+  STATS: '/statistics',
   ABOUT: '/about',
   CONTACT: '/contact',
   FORGOT_PASSWORD: '/forgot-password',

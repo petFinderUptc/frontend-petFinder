@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { ArrowRight } from 'lucide-react';
+import { PUBLIC_ROUTES } from '../constants/routes';
 
 // ─── Colores orgánicos ────────────────────────────────────────────────────────
 const PALETTE = {
@@ -135,19 +138,19 @@ export function StatsSection({ stats, loading }) {
             {/* Tarjetas de stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-lg">
               <StatCard
-                label="Perdidas"
+                label="Perdidos"
                 count={lost}
                 palette={PALETTE.lost}
                 delay={0}
               />
               <StatCard
-                label="Encontradas"
+                label="Hallados"
                 count={found}
                 palette={PALETTE.found}
                 delay={80}
               />
               <StatCard
-                label="Resueltas"
+                label="Reunificados"
                 count={resolved}
                 palette={PALETTE.resolved}
                 delay={160}
@@ -158,9 +161,9 @@ export function StatsSection({ stats, loading }) {
             {hasData && (
               <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
                 {[
-                  { label: 'Perdidas',     fill: PALETTE.lost.fill     },
-                  { label: 'Encontradas',  fill: PALETTE.found.fill    },
-                  { label: 'Resueltas',    fill: PALETTE.resolved.fill },
+                  { label: 'Perdidos',     fill: PALETTE.lost.fill     },
+                  { label: 'Hallados',     fill: PALETTE.found.fill    },
+                  { label: 'Reunificados', fill: PALETTE.resolved.fill },
                 ].map(({ label, fill }) => (
                   <span key={label} className="flex items-center gap-1.5">
                     <span
@@ -172,6 +175,15 @@ export function StatsSection({ stats, loading }) {
                 ))}
               </div>
             )}
+
+            {/* Link a estadísticas detalladas */}
+            <Link
+              to={PUBLIC_ROUTES.STATS}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+            >
+              Ver estadísticas detalladas
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
         )}
       </div>
