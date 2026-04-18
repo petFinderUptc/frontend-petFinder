@@ -120,7 +120,9 @@ export default function SearchPage() {
 
   useEffect(() => {
     const refreshTimer = window.setInterval(() => {
-      void fetchReports(pagination.page, filters);
+      if (document.visibilityState === 'visible') {
+        void fetchReports(pagination.page, filters);
+      }
     }, 45000);
     return () => window.clearInterval(refreshTimer);
   }, [fetchReports, filters, pagination.page]);

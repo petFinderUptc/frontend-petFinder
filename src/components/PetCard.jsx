@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -7,9 +7,9 @@ import { PUBLIC_ROUTES } from '../constants/routes';
 import { useMediaUrl } from '../hooks/useSignedUrl';
 import { adaptPost } from '../utils/postAdapter';
 
-export function PetCard({ pet }) {
+export const PetCard = memo(function PetCard({ pet }) {
   const [imgError, setImgError] = useState(false);
-  const adapted = adaptPost(pet);
+  const adapted = useMemo(() => adaptPost(pet), [pet]);
   
   const statusColors = {
     lost: 'bg-red-100 text-red-800 border-red-200',
@@ -98,6 +98,6 @@ export function PetCard({ pet }) {
       </Card>
     </Link>
   );
-}
+});
 
 export default PetCard;
