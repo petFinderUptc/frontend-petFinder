@@ -90,7 +90,9 @@ export function LocationPicker({
   }, [latitude, longitude]);
 
   return (
-    <div className="space-y-2">
+    // isolation: isolate crea un nuevo contexto de apilamiento para que
+    // los z-indices internos de Leaflet (400-700) no se escapen al resto del DOM.
+    <div className="space-y-2" style={{ isolation: 'isolate' }}>
       <div ref={containerRef} className="h-56 w-full overflow-hidden rounded-lg border" />
       <p className="text-xs text-muted-foreground">
         Haz clic en el mapa o arrastra el pin para ajustar la ubicación exacta.
