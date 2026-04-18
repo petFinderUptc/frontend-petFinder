@@ -83,7 +83,12 @@ export default function MyReportsPage() {
       setLoading(true);
       setError('');
       const response = await getMyReports();
-      setReports(Array.isArray(response) ? response : []);
+      // Ocultar reportes inactivos (eliminados): el usuario ya los borró,
+      // no tiene sentido mostrarlos ni permitir acciones sobre ellos.
+      const visible = Array.isArray(response)
+        ? response.filter((r) => r.status !== 'inactive')
+        : [];
+      setReports(visible);
     } catch (err) {
       setError(err?.message || 'No fue posible cargar tus reportes.');
       setReports([]);
@@ -127,11 +132,12 @@ export default function MyReportsPage() {
     try {
       setBusyId(report.id);
       await deleteReport(report.id);
+      // Quitar de la lista inmediatamente sin refetch
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
       addAlert({
         type: 'success',
         message: 'Reporte eliminado correctamente.',
       });
-      await loadReports();
     } catch (err) {
       addAlert({
         type: 'error',

@@ -71,7 +71,7 @@ function ContactTooltip() {
         <HelpCircle className="h-4 w-4" />
       </button>
       {visible && (
-        <span className="absolute bottom-full left-1/2 z-30 mb-2 w-64 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+        <span className="absolute bottom-full left-1/2 z-[60] mb-2 w-64 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
           {CONTACT_TOOLTIP}
         </span>
       )}
