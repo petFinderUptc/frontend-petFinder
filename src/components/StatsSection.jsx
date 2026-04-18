@@ -107,7 +107,7 @@ export function StatsSection({ stats, loading }) {
           <div className="flex flex-col items-center gap-8">
             {/* Donut chart */}
             <div className="relative h-44 w-44 sm:h-56 sm:w-56 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
                   <Pie
                     data={chartData}

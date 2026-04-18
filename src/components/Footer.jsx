@@ -30,7 +30,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-3">Contacto</h3>
             <p className="text-sm text-muted-foreground">
-              Email: <a href="mailto:petfinder.noreply@gmail.com" className="hover:text-blue-600">petfinder.noreply@gmail.com</a><br />
+              Email: <a href="mailto:notificacions.petfinder@gmail.com" className="hover:text-blue-600">notificacions.petfinder@gmail.com</a><br />
               Tunja, Boyacá, Colombia
             </p>
           </div>
