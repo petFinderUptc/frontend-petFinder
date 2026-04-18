@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { memo, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -16,12 +17,18 @@ function getSimilarityVariant(score) {
   return { bg: 'bg-gray-100 text-gray-600 border-gray-200' };
 }
 
-export function SearchResultCard({ report, speciesLabel, typeLabel, showSimilarity = false }) {
+export const SearchResultCard = memo(function SearchResultCard({ report, speciesLabel, typeLabel, showSimilarity = false }) {
   const imageUrl = useMediaUrl(report.imageUrl);
 
   const hasSimilarity = showSimilarity && report.similarityScore !== undefined;
-  const similarityPct = hasSimilarity ? Math.round(report.similarityScore * 100) : null;
-  const similarityStyle = hasSimilarity ? getSimilarityVariant(report.similarityScore) : null;
+  const similarityPct = useMemo(
+    () => (hasSimilarity ? Math.round(report.similarityScore * 100) : null),
+    [hasSimilarity, report.similarityScore],
+  );
+  const similarityStyle = useMemo(
+    () => (hasSimilarity ? getSimilarityVariant(report.similarityScore) : null),
+    [hasSimilarity, report.similarityScore],
+  );
 
   return (
     <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)}>
@@ -68,4 +75,4 @@ export function SearchResultCard({ report, speciesLabel, typeLabel, showSimilari
       </Card>
     </Link>
   );
-}
+});

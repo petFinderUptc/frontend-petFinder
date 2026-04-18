@@ -197,9 +197,12 @@ export const AuthProvider = ({ children }) => {
   /**
    * Context value object
    */
+  const isAdmin = user?.role === 'admin';
+
   const value = {
     user,
     isAuthenticated,
+    isAdmin,
     isLoading,
     login,
     register,

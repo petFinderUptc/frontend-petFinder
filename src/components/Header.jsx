@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlusCircle, LogIn, Heart, Bell } from 'lucide-react';
+import { Home, Search, PlusCircle, LogIn, Heart, Bell, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -8,7 +8,7 @@ import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 
 export function Header() {
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const { unreadCount } = useNotifications();
   
   const isActive = (path) => location.pathname === path;
@@ -59,6 +59,20 @@ export function Header() {
               <PlusCircle className="h-4 w-4" />
               <span>Publicar</span>
             </Link>
+
+            {isAdmin && (
+              <Link
+                to={PROTECTED_ROUTES.ADMIN}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
+                  isActive(PROTECTED_ROUTES.ADMIN)
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                    : 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20'
+                }`}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>Admin</span>
+              </Link>
+            )}
 
             {isAuthenticated && (
               <Link
@@ -155,13 +169,26 @@ export function Header() {
             <Link
               to={PROTECTED_ROUTES.MY_REPORTS}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg whitespace-nowrap text-sm ${
-                isActive(PROTECTED_ROUTES.MY_REPORTS) 
-                  ? 'bg-blue-50 text-blue-600' 
+                isActive(PROTECTED_ROUTES.MY_REPORTS)
+                  ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-600'
               }`}
             >
               <Heart className="h-4 w-4" />
               <span>Mis Reportes</span>
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to={PROTECTED_ROUTES.ADMIN}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg whitespace-nowrap text-sm ${
+                isActive(PROTECTED_ROUTES.ADMIN)
+                  ? 'bg-amber-50 text-amber-600'
+                  : 'text-amber-600'
+              }`}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              <span>Admin</span>
             </Link>
           )}
         </nav>

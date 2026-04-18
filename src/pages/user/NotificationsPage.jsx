@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Bell, Check, CheckCheck, Trash2, Mail, MessageSquare,
   AlertCircle, Clock, RefreshCw, HelpCircle, Info,
@@ -60,11 +60,10 @@ function iconBg(type) {
 function NotifCard({ notification, onRead, onDelete }) {
   const [visible, setVisible] = useState(false);
 
-  // Trigger de fade-in al montar
-  // Se activa en el siguiente frame para que la transición sea visible
-  useState(() => {
-    requestAnimationFrame(() => setVisible(true));
-  });
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   return (
     <div
