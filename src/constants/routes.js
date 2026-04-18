@@ -37,6 +37,7 @@ export const PROTECTED_ROUTES = {
   PROFILE: '/profile',
   SETTINGS: '/settings',
   NOTIFICATIONS: '/notifications',
+  ADMIN: '/admin',
 };
 
 /**

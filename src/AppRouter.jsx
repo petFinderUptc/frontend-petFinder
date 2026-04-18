@@ -18,6 +18,7 @@ import MainLayout from './layouts/MainLayout';
 
 // Auth Components
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Public Pages
 import HomePage from './pages/HomePage';
@@ -37,6 +38,7 @@ import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 import EditReportPage from './pages/pet/EditReportPage';
 import MyReportsPage from './pages/user/MyReportsPage';
+import AdminPage from './pages/admin/AdminPage';
 
 /**
  * NotFoundPage - Página 404 simple
@@ -151,6 +153,18 @@ const AppRouter = () => {
               <NotificationsPage />
             </MainLayout>
           </ProtectedRoute>
+        }
+      />
+
+      {/* Admin */}
+      <Route
+        path={PROTECTED_ROUTES.ADMIN}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminPage />
+            </MainLayout>
+          </AdminRoute>
         }
       />
 

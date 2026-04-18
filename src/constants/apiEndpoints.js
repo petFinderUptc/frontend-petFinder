@@ -57,11 +57,18 @@ export const REPORT_ENDPOINTS = {
   EXPORT_CSV: '/reports/export/csv',
   BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
   STATS: '/reports/stats',
+  ADMIN_ALL: '/reports/admin/all',
+  ADMIN_DELETE: (id) => `/reports/admin/${id}`,
 };
 
 /**
  * User related endpoints
  */
+export const ADMIN_ENDPOINTS = {
+  GET_ALL_USERS: '/users',
+  DELETE_USER: (id) => `/users/${id}`,
+};
+
 export const USER_ENDPOINTS = {
   GET_PROFILE: '/users/profile/me',
   UPDATE_PROFILE: '/users/profile/me',

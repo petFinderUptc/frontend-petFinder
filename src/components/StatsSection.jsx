@@ -55,10 +55,10 @@ function StatCard({ label, count, palette, delay = 0 }) {
   const n = useCountUp(count, 1100 + delay);
   return (
     <div
-      className={`flex flex-col items-center gap-1.5 rounded-2xl px-6 py-5 ring-1 ${palette.bg} ${palette.ring} transition-shadow hover:shadow-md`}
+      className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-4 sm:px-6 sm:py-5 ring-1 ${palette.bg} ${palette.ring} transition-shadow hover:shadow-md`}
     >
-      <span className={`text-3xl font-bold tabular-nums ${palette.text}`}>{n}</span>
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <span className={`text-2xl sm:text-3xl font-bold tabular-nums ${palette.text}`}>{n}</span>
+      <span className="text-xs sm:text-sm font-medium text-muted-foreground text-center">{label}</span>
     </div>
   );
 }
@@ -106,7 +106,7 @@ export function StatsSection({ stats, loading }) {
         ) : (
           <div className="flex flex-col items-center gap-8">
             {/* Donut chart */}
-            <div className="relative h-56 w-56 flex-shrink-0">
+            <div className="relative h-44 w-44 sm:h-56 sm:w-56 flex-shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -136,7 +136,7 @@ export function StatsSection({ stats, loading }) {
             </div>
 
             {/* Tarjetas de stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-lg">
+            <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
               <StatCard
                 label="Perdidos"
                 count={lost}
