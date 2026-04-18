@@ -9,6 +9,42 @@ import { ReportCardItem } from '../../components/ReportCardItem';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 
+// ─── Modal de confirmación ────────────────────────────────────────────────────
+function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl bg-background border shadow-xl p-6 animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
+            <Trash2 className="h-5 w-5 text-red-600" />
+          </div>
+          <h2 className="text-base font-semibold">{title}</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-6">{description}</p>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={onConfirm}
+          >
+            Eliminar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const typeLabels = {
   lost: 'Perdido',
   found: 'Encontrado',
@@ -40,6 +76,7 @@ export default function MyReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const loadReports = async () => {
     try {
@@ -80,12 +117,13 @@ export default function MyReportsPage() {
     }
   };
 
-  const removeReport = async (report) => {
-    const confirmed = window.confirm('Se eliminara este reporte. Deseas continuar?');
-    if (!confirmed) {
-      return;
-    }
+  const removeReport = (report) => {
+    setPendingDelete(report);
+  };
 
+  const confirmDelete = async () => {
+    const report = pendingDelete;
+    setPendingDelete(null);
     try {
       setBusyId(report.id);
       await deleteReport(report.id);
@@ -105,6 +143,14 @@ export default function MyReportsPage() {
   };
 
   return (
+    <>
+    <ConfirmModal
+      open={!!pendingDelete}
+      title="Eliminar reporte"
+      description="Esta acción no se puede deshacer. ¿Deseas eliminar este reporte permanentemente?"
+      onConfirm={confirmDelete}
+      onCancel={() => setPendingDelete(null)}
+    />
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
@@ -176,5 +222,6 @@ export default function MyReportsPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
