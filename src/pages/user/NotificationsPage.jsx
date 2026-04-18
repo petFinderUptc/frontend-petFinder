@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Bell, Check, CheckCheck, Trash2, Mail, MessageSquare,
   AlertCircle, Clock, RefreshCw, HelpCircle, Info,
