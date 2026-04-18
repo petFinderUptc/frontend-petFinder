@@ -83,3 +83,37 @@ export const backfillEmbeddings = async () => {
   const response = await apiClient.post(REPORT_ENDPOINTS.BACKFILL_EMBEDDINGS);
   return response.data;
 };
+
+/**
+ * Analiza una foto de mascota con Gemini Vision.
+ * @param {File} file - Archivo de imagen (JPG, PNG, WEBP)
+ * @returns {{ species, breed, color, size, description }}
+ */
+export const analyzePhoto = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await apiClient.post(REPORT_ENDPOINTS.ANALYZE_PHOTO, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+/**
+ * Busca coincidencias para un reporte publicado (tipo opuesto, semánticamente similares).
+ * @param {string} reportId
+ * @returns {{ data: Report[], total: number }}
+ */
+export const getReportMatches = async (reportId) => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.MATCHES(reportId));
+  return response.data;
+};
+
+/**
+ * Genera un resumen IA de un reporte para compartir en redes.
+ * @param {string} reportId
+ * @returns {{ summary: string | null }}
+ */
+export const getReportSummary = async (reportId) => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.SUMMARY(reportId));
+  return response.data;
+};

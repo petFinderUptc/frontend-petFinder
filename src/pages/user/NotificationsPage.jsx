@@ -141,7 +141,7 @@ function HelpTooltip() {
         <HelpCircle className="h-4 w-4" />
       </button>
       {open && (
-        <span className="absolute bottom-full right-0 z-30 mb-2 w-64 rounded-xl border bg-popover px-4 py-3 text-xs text-popover-foreground shadow-lg">
+        <span className="absolute bottom-full right-0 z-[60] mb-2 w-64 rounded-xl border bg-popover px-4 py-3 text-xs text-popover-foreground shadow-lg">
           <p className="font-semibold mb-1.5">Recibirás notificaciones cuando:</p>
           <ul className="space-y-1 text-muted-foreground">
             <li>• Alguien contacte tu reporte de mascota</li>

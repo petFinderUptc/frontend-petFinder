@@ -140,7 +140,8 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchReports(); }, [fetchReports]);
 
-  const adapted = reports.map(adaptPost);
+  // Excluir reportes inactivos (eliminados) de todas las vistas
+  const adapted = reports.map(adaptPost).filter((r) => r.status !== 'inactive');
 
   const total    = adapted.length;
   const active   = adapted.filter((r) => r.status === 'active').length;
