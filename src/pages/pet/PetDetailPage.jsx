@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone, Sparkles } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { getReportById } from '../../services/reportService';
+import { getReportById, getReportSummary } from '../../services/reportService';
 import { getPetById } from '../../services/petService';
 import { reverseGeocode } from '../../services/locationService';
 import { adaptPost } from '../../utils/postAdapter';
@@ -41,6 +41,8 @@ export default function PetDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [locationLabel, setLocationLabel] = useState('');
+  const [aiSummary, setAiSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -77,6 +79,15 @@ export default function PetDetailPage() {
           } catch {
             setLocationLabel('Ubicacion aproximada');
           }
+        }
+
+        // Cargar resumen IA en paralelo (no bloquea el render)
+        if (!id?.startsWith('post_') && normalizedReport?.id) {
+          setSummaryLoading(true);
+          getReportSummary(normalizedReport.id)
+            .then(({ summary }) => setAiSummary(summary || null))
+            .catch(() => {})
+            .finally(() => setSummaryLoading(false));
         }
       } catch (err) {
         const statusCode = err?.status || err?.response?.status;
@@ -143,6 +154,27 @@ export default function PetDetailPage() {
             ) : (
               <div className="w-full h-96 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                 Sin imagen disponible
+              </div>
+            )}
+
+            {/* Resumen IA */}
+            {(summaryLoading || aiSummary) && (
+              <div className="rounded-xl border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30 px-4 py-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                    Resumen generado por IA
+                  </span>
+                </div>
+                {summaryLoading ? (
+                  <div className="space-y-1.5 mt-1">
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-full" />
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-4/5" />
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-3/5" />
+                  </div>
+                ) : (
+                  <p className="text-sm text-violet-900 dark:text-violet-200 leading-relaxed">{aiSummary}</p>
+                )}
               </div>
             )}
 

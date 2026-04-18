@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, HelpCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
+import { AlertCircle, HelpCircle, Loader2, MapPin, Navigation, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { LocationPicker } from '../../components/LocationPicker';
+import { MatchesModal } from '../../components/MatchesModal';
 import { useAlert } from '../../context/AlertContext';
 import { PUBLIC_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
-import { createReport, uploadReportImage } from '../../services/reportService';
+import { analyzePhoto, createReport, getReportMatches, uploadReportImage } from '../../services/reportService';
 import {
   validateContact,
   validateColor,
@@ -42,6 +43,15 @@ function FieldError({ message }) {
       <AlertCircle className="h-3 w-3 flex-shrink-0" />
       {message}
     </p>
+  );
+}
+
+function AiBadge() {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-violet-600 dark:text-violet-400">
+      <Sparkles className="h-2.5 w-2.5" />
+      IA
+    </span>
   );
 }
 
@@ -80,6 +90,9 @@ export default function PublishReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiFields, setAiFields] = useState(null); // campos que la IA llenó
+  const [matches, setMatches] = useState(null);   // coincidencias post-publicación
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
@@ -170,7 +183,7 @@ export default function PublishReportPage() {
     );
   }, [formData, imageFile, latitude, longitude]);
 
-  const handleImageChange = (event) => {
+  const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -187,6 +200,35 @@ export default function PublishReportPage() {
     setPreviewUrl(URL.createObjectURL(file));
     setImageError('');
     setFieldErrors((prev) => ({ ...prev, image: '' }));
+
+    // Análisis IA — rellenar campos automáticamente
+    setIsAnalyzing(true);
+    setAiFields(null);
+    try {
+      const result = await analyzePhoto(file);
+      if (result) {
+        setAiFields(result);
+        setFormData((prev) => ({
+          ...prev,
+          species:     result.species     || prev.species,
+          breed:       result.breed       || prev.breed,
+          color:       result.color       || prev.color,
+          size:        result.size        || prev.size,
+          description: result.description || prev.description,
+        }));
+        // Limpiar errores de campos que la IA rellenó
+        setFieldErrors((prev) => ({
+          ...prev,
+          breed: '',
+          color: '',
+          description: '',
+        }));
+      }
+    } catch {
+      // Silencioso — la IA es un helper, no bloqueante
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const selectSuggestion = (suggestion) => {
@@ -278,8 +320,19 @@ export default function PublishReportPage() {
         payload.lat = latitude;
         payload.lon = longitude;
       }
-      await createReport(payload);
+      const created = await createReport(payload);
       addAlert({ type: 'success', message: 'Reporte publicado correctamente.' });
+
+      // Buscar coincidencias IA (no bloquea la navegación si falla)
+      if (created?.id) {
+        try {
+          const { data } = await getReportMatches(created.id);
+          if (data?.length) {
+            setMatches({ items: data, type: payload.type });
+            return; // mantener en la página hasta que cierre el modal
+          }
+        } catch { /* no-op */ }
+      }
       navigate(PUBLIC_ROUTES.SEARCH);
     } catch (err) {
       setSubmitError(err?.message || err?.data?.message || 'No fue posible crear el reporte.');
@@ -291,7 +344,19 @@ export default function PublishReportPage() {
   const inputClass = (name) =>
     fieldErrors[name] ? 'border-red-500 focus-visible:ring-red-400' : '';
 
+  // true si la IA rellenó ese campo y el usuario no lo ha modificado aún
+  const isAiField = (name) =>
+    aiFields?.[name] && formData[name] === aiFields[name];
+
   return (
+    <>
+    {matches && (
+      <MatchesModal
+        matches={matches.items}
+        reportType={matches.type}
+        onClose={() => { setMatches(null); navigate(PUBLIC_ROUTES.SEARCH); }}
+      />
+    )}
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
@@ -334,6 +399,24 @@ export default function PublishReportPage() {
                     <img src={previewUrl} alt="Vista previa" className="mt-3 h-64 w-full rounded-lg border object-cover" />
                   )}
                   <FieldError message={imageError || fieldErrors.image} />
+
+                  {/* Banner de análisis IA */}
+                  {isAnalyzing && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30 px-3 py-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-violet-500 flex-shrink-0" />
+                      <span className="text-xs text-violet-700 dark:text-violet-300 font-medium">
+                        Analizando imagen con IA…
+                      </span>
+                    </div>
+                  )}
+                  {!isAnalyzing && aiFields && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30 px-3 py-2">
+                      <Sparkles className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                      <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                        Campos completados por IA. Revisa y corrige si es necesario.
+                      </span>
+                    </div>
+                  )}
                   {isSubmitting && uploadProgress > 0 && (
                     <div className="mt-2">
                       <p className="text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
@@ -379,7 +462,10 @@ export default function PublishReportPage() {
                 {/* Color / Raza / Tamaño */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Color *</label>
+                    <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+                      Color *
+                      {isAiField('color') && <AiBadge />}
+                    </label>
                     <Input
                       name="color"
                       value={formData.color}
@@ -392,7 +478,10 @@ export default function PublishReportPage() {
                     <FieldError message={fieldErrors.color} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Raza *</label>
+                    <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+                      Raza *
+                      {isAiField('breed') && <AiBadge />}
+                    </label>
                     <Input
                       name="breed"
                       value={formData.breed}
@@ -417,7 +506,10 @@ export default function PublishReportPage() {
 
                 {/* Descripción */}
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Descripción *</label>
+                  <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+                    Descripción *
+                    {isAiField('description') && <AiBadge />}
+                  </label>
                   <textarea
                     name="description"
                     value={formData.description}
@@ -525,5 +617,6 @@ export default function PublishReportPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -59,6 +59,9 @@ export const REPORT_ENDPOINTS = {
   STATS: '/reports/stats',
   ADMIN_ALL: '/reports/admin/all',
   ADMIN_DELETE: (id) => `/reports/admin/${id}`,
+  ANALYZE_PHOTO: '/reports/analyze-photo',
+  MATCHES: (id) => `/reports/${id}/matches`,
+  SUMMARY: (id) => `/reports/${id}/summary`,
 };
 
 /**
