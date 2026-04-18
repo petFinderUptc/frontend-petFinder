@@ -1,291 +1,287 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import { PlusCircle, Search, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { PlusCircle, Search, CheckCircle, AlertCircle, ArrowRight, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { PROTECTED_ROUTES, PUBLIC_ROUTES, generateRoute } from '../../constants/routes';
+import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../../constants/routes';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { getMyReports, deleteReport } from '../../services/reportService';
+import { getMyReports } from '../../services/reportService';
 import { adaptPost } from '../../utils/postAdapter';
+import { useMediaUrl } from '../../hooks/useSignedUrl';
 
-const SPECIES_LABEL = {
-  dog: 'Perro',
-  cat: 'Gato',
-  bird: 'Ave',
-  rabbit: 'Conejo',
-  other: 'Otro',
-};
+const SPECIES_LABEL = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' };
 
+// ─── Contador animado ─────────────────────────────────────────────────────────
+function useCountUp(target, duration = 900) {
+  const [value, setValue] = useState(0);
+  const raf = useRef(null);
+  const t0 = useRef(null);
+
+  useEffect(() => {
+    if (target === 0) { setValue(0); return; }
+    t0.current = null;
+    const tick = (ts) => {
+      if (!t0.current) t0.current = ts;
+      const pct = Math.min((ts - t0.current) / duration, 1);
+      const ease = 1 - Math.pow(1 - pct, 3);
+      setValue(Math.round(ease * target));
+      if (pct < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [target, duration]);
+
+  return value;
+}
+
+// ─── Tarjeta de estadística con barra de progreso ─────────────────────────────
+function StatCard({ label, sublabel, value, total, icon: Icon, colorClass, barColor }) {
+  const animated = useCountUp(value);
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
+  return (
+    <Card className={`border-2 ${colorClass}`}>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{label}</p>
+            <p className={`text-4xl font-bold tabular-nums ${barColor.replace('bg-', 'text-')}`}>{animated}</p>
+          </div>
+          <div className={`p-3 rounded-xl ${barColor} bg-opacity-15`}>
+            <Icon className={`h-6 w-6 ${barColor.replace('bg-', 'text-')}`} />
+          </div>
+        </div>
+
+        {total > 0 && value !== total ? (
+          <>
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
+              <div
+                className={`h-full rounded-full ${barColor} transition-all duration-1000`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{pct}% — {sublabel}</p>
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">{sublabel}</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Miniatura con SAS renovada ───────────────────────────────────────────────
+function ReportThumb({ url, alt }) {
+  const src = useMediaUrl(url);
+  const [err, setErr] = useState(false);
+  if (!src || err) {
+    return (
+      <div className="w-12 h-12 shrink-0 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
+        Sin foto
+      </div>
+    );
+  }
+  return (
+    <img src={src} alt={alt} className="w-12 h-12 shrink-0 rounded-lg object-cover" onError={() => setErr(true)} />
+  );
+}
+
+// ─── Fila de reporte reciente (solo lectura, clickeable) ──────────────────────
+function RecentReportRow({ report }) {
+  const typeLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
+  const species = SPECIES_LABEL[report.species] || report.species || 'Mascota';
+  const detailUrl = PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id);
+
+  return (
+    <Link
+      to={detailUrl}
+      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 transition-colors group"
+    >
+      <ReportThumb url={report.imageUrl} alt={report.petName} />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate group-hover:text-blue-600 transition-colors">
+          {report.petName}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {species} · {new Date(report.eventDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+        </p>
+      </div>
+      <Badge
+        variant={report.type === 'lost' ? 'destructive' : 'default'}
+        className="shrink-0 text-xs"
+      >
+        {typeLabel}
+      </Badge>
+    </Link>
+  );
+}
+
+// ─── Página principal ─────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [myReports, setMyReports] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
 
-  const fetchMyReports = useCallback(async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getMyReports();
-      setMyReports(Array.isArray(data) ? data : []);
+      setReports(Array.isArray(data) ? data : []);
       setError(null);
-    } catch (err) {
-      console.error('Error al cargar reportes:', err);
-      setError('Error al cargar tus reportes');
-      setMyReports([]);
+    } catch {
+      setError('No fue posible cargar tus reportes.');
+      setReports([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchMyReports();
-  }, [fetchMyReports]);
+  useEffect(() => { fetchReports(); }, [fetchReports]);
 
-  const handleEdit = (reportId) => {
-    navigate(generateRoute(PROTECTED_ROUTES.EDIT_REPORT, { id: reportId }));
-  };
+  const adapted = reports.map(adaptPost);
 
-  const handleDelete = async (reportId, petName) => {
-    const confirmed = window.confirm(
-      `¿Estás seguro de que deseas eliminar el reporte de "${petName}"? Esta acción no se puede deshacer.`,
-    );
-    if (!confirmed) return;
-
-    setDeletingId(reportId);
-    try {
-      await deleteReport(reportId);
-      setMyReports((prev) => prev.filter((r) => r.id !== reportId));
-    } catch (err) {
-      console.error('Error al eliminar reporte:', err);
-      alert('No se pudo eliminar el reporte. Inténtalo de nuevo.');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const adaptedReports = myReports.map(adaptPost);
-
-  const stats = {
-    total: adaptedReports.length,
-    active: adaptedReports.filter((r) => r.status === 'active').length,
-    resolved: adaptedReports.filter((r) => r.status === 'resolved').length,
-  };
+  const total    = adapted.length;
+  const active   = adapted.filter((r) => r.status === 'active').length;
+  const resolved = adapted.filter((r) => r.status === 'resolved').length;
+  const recent   = adapted.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <div className="max-w-5xl mx-auto">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
               Hola, {user?.firstName || user?.username || 'Usuario'} 👋
             </h1>
-            <p className="text-gray-700 dark:text-slate-300">
-              Gestiona tus reportes y ayuda a reunir mascotas con sus familias
+            <p className="text-gray-600 dark:text-slate-400 text-sm">
+              Aquí tienes un resumen de tu actividad en PetFinder
             </p>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="border-2 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Reportes</p>
-                    <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <AlertCircle className="h-8 w-8 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="max-w-5xl mx-auto space-y-8">
 
-            <Card className="border-2 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Reportes Activos</p>
-                    <p className="text-3xl font-bold text-amber-600">{stats.active}</p>
-                  </div>
-                  <div className="p-3 bg-amber-100 rounded-full">
-                    <Search className="h-8 w-8 text-amber-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Resueltos</p>
-                    <p className="text-3xl font-bold text-green-600">{stats.resolved}</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Métricas */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <StatCard
+              label="Total publicados"
+              sublabel="reportes en total"
+              value={total}
+              total={total}
+              icon={ClipboardList}
+              colorClass="border-blue-200 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/20"
+              barColor="bg-blue-500"
+            />
+            <StatCard
+              label="Activos ahora"
+              sublabel="del total están activos"
+              value={active}
+              total={total}
+              icon={Search}
+              colorClass="border-amber-200 bg-amber-50/40 dark:border-amber-800 dark:bg-amber-950/20"
+              barColor="bg-amber-500"
+            />
+            <StatCard
+              label="Resueltos"
+              sublabel="mascotas reunidas"
+              value={resolved}
+              total={total}
+              icon={CheckCircle}
+              colorClass="border-emerald-200 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
+              barColor="bg-emerald-500"
+            />
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-              <CardContent className="p-6">
+          {/* Acciones rápidas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Card className="hover:shadow-md transition-shadow group">
+              <CardContent className="p-5">
                 <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="flex items-start gap-4">
-                  <div className="p-4 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-lg group-hover:scale-110 transition-transform">
-                    <PlusCircle className="h-8 w-8 text-blue-600" />
+                  <div className="p-3 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40 rounded-xl group-hover:scale-105 transition-transform">
+                    <PlusCircle className="h-7 w-7 text-blue-600" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1">Publicar Nuevo Reporte</h3>
-                    <p className="text-muted-foreground text-sm">
-                      ¿Perdiste o encontraste una mascota? Crea un reporte ahora
-                    </p>
+                  <div>
+                    <h3 className="font-semibold mb-0.5">Publicar Nuevo Reporte</h3>
+                    <p className="text-sm text-muted-foreground">¿Perdiste o encontraste una mascota?</p>
                   </div>
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-              <CardContent className="p-6">
+            <Card className="hover:shadow-md transition-shadow group">
+              <CardContent className="p-5">
                 <Link to={PUBLIC_ROUTES.SEARCH} className="flex items-start gap-4">
-                  <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg group-hover:scale-110 transition-transform">
-                    <Search className="h-8 w-8 text-green-600" />
+                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 rounded-xl group-hover:scale-105 transition-transform">
+                    <Search className="h-7 w-7 text-emerald-600" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1">Buscar Mascotas</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Explora reportes de mascotas perdidas o encontradas
-                    </p>
+                  <div>
+                    <h3 className="font-semibold mb-0.5">Explorar Reportes</h3>
+                    <p className="text-sm text-muted-foreground">Busca mascotas perdidas o encontradas</p>
                   </div>
                 </Link>
               </CardContent>
             </Card>
           </div>
 
-          {/* My Reports */}
+          {/* Actividad reciente */}
           <Card>
-            <CardHeader>
-              <CardTitle>Mis Reportes</CardTitle>
-              <CardDescription>
-                Gestiona y actualiza el estado de tus reportes
-              </CardDescription>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Actividad reciente</CardTitle>
+                  <CardDescription>Tus últimos reportes publicados</CardDescription>
+                </div>
+                <Link to={PROTECTED_ROUTES.MY_REPORTS}>
+                  <Button variant="ghost" size="sm" className="gap-1 text-blue-600 hover:text-blue-700">
+                    Ver todos <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {loading ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">Cargando reportes...</p>
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      <div className="w-12 h-12 rounded-lg bg-muted animate-pulse shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
+                        <div className="h-2.5 bg-muted animate-pulse rounded w-1/3" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : error ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                  <p className="text-red-600">{error}</p>
-                  <Button variant="outline" className="mt-4" onClick={fetchMyReports}>
+                <div className="py-6 text-center">
+                  <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                  <p className="text-sm text-red-600">{error}</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={fetchReports}>
                     Reintentar
                   </Button>
                 </div>
-              ) : adaptedReports.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No tienes reportes aún
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Crea tu primer reporte para ayudar a reunir mascotas
-                  </p>
+              ) : recent.length === 0 ? (
+                <div className="py-8 text-center">
+                  <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">Aún no has publicado ningún reporte.</p>
                   <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Crear Reporte
+                    <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                      <PlusCircle className="h-4 w-4 mr-2" /> Crear primer reporte
                     </Button>
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {adaptedReports.map((report) => {
-                    const typeLabel = report.type === 'lost' ? 'Perdido' : 'Encontrado';
-                    const speciesLabel = SPECIES_LABEL[report.species] || report.species || 'Mascota';
-                    const isDeleting = deletingId === report.id;
-
-                    return (
-                      <div
-                        key={report.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          {report.imageUrl ? (
-                            <img
-                              src={report.imageUrl}
-                              alt={report.petName}
-                              className="w-16 h-16 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div
-                            className="w-16 h-16 bg-muted rounded-lg items-center justify-center text-muted-foreground text-xs"
-                            style={{ display: report.imageUrl ? 'none' : 'flex' }}
-                          >
-                            Sin foto
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold">{report.petName}</h4>
-                              <Badge variant={report.type === 'lost' ? 'destructive' : 'default'}>
-                                {typeLabel}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {speciesLabel} •{' '}
-                              {new Date(report.eventDate).toLocaleDateString('es-ES', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                              })}
-                            </p>
-                            {report.location && (
-                              <p className="text-sm text-muted-foreground mt-0.5">{report.location}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(report.id)}
-                            title="Editar reporte"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            onClick={() => handleDelete(report.id, report.petName)}
-                            disabled={isDeleting}
-                            title="Eliminar reporte"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="divide-y">
+                  {recent.map((r) => <RecentReportRow key={r.id} report={r} />)}
                 </div>
               )}
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>

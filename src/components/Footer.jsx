@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 
 export function Footer() {
   return (
@@ -14,27 +15,27 @@ export function Footer() {
               Plataforma de reencuentro de mascotas en Tunja y alrededores.
             </p>
           </div>
-          
+
           {/* Links rápidos */}
           <div>
             <h3 className="font-semibold mb-3">Enlaces Rápidos</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/" className="hover:text-blue-600">Inicio</Link></li>
-              <li><Link to="/buscar" className="hover:text-blue-600">Buscar</Link></li>
-              <li><Link to="/publicar" className="hover:text-blue-600">Publicar</Link></li>
+              <li><Link to={PUBLIC_ROUTES.HOME} className="hover:text-blue-600">Inicio</Link></li>
+              <li><Link to={PUBLIC_ROUTES.SEARCH} className="hover:text-blue-600">Buscar mascotas</Link></li>
+              <li><Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="hover:text-blue-600">Publicar reporte</Link></li>
             </ul>
           </div>
-          
+
           {/* Contacto */}
           <div>
             <h3 className="font-semibold mb-3">Contacto</h3>
             <p className="text-sm text-muted-foreground">
-              Email: info@petfinder.com<br />
+              Email: <a href="mailto:nsparra@uniboyaca.edu.co" className="hover:text-blue-600">nsparra@uniboyaca.edu.co</a><br />
               Tunja, Boyacá, Colombia
             </p>
           </div>
         </div>
-        
+
         <div className="border-t pt-6 text-center text-sm text-muted-foreground">
           <p>© 2026 PetFinder. Todos los derechos reservados.</p>
         </div>

@@ -2,46 +2,54 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Search, PlusCircle, Heart, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
 import PetCard from '../components/PetCard';
+import { StatsSection } from '../components/StatsSection';
 import { useAuth } from '../context/AuthContext';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
-import { getReports } from '../services/reportService';
+import { getReports, getReportStats } from '../services/reportService';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
-  const [pets, setPets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  const [recentPets, setRecentPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(true);
+  const [petsError, setPetsError] = useState(null);
+
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPets = async () => {
-      try {
-        setLoading(true);
-        const response = await getReports({ page: 1, limit: 12 });
+    const fetchData = async () => {
+      // Fetch recent reports and stats in parallel
+      const [reportsResult, statsResult] = await Promise.allSettled([
+        getReports({ page: 1, limit: 3 }),
+        getReportStats(),
+      ]);
+
+      // Recent pets
+      if (reportsResult.status === 'fulfilled') {
+        const response = reportsResult.value;
         const reports = Array.isArray(response?.data)
           ? response.data
           : Array.isArray(response)
             ? response
             : [];
-        setPets(reports);
-        setError(null);
-      } catch (err) {
-        console.error('Error al cargar mascotas:', err);
-        setError('Error al cargar las mascotas');
-        setPets([]);
-      } finally {
-        setLoading(false);
+        setRecentPets(reports.slice(0, 3));
+      } else {
+        setPetsError('No fue posible cargar los reportes recientes.');
       }
+      setPetsLoading(false);
+
+      // Stats
+      if (statsResult.status === 'fulfilled') {
+        setStats(statsResult.value);
+      }
+      setStatsLoading(false);
     };
 
-    fetchPets();
+    void fetchData();
   }, []);
 
-  const recentPets = pets.slice(0, 3);
-  const lostPetsCount = pets.filter(p => p.type === 'lost').length;
-  const foundPetsCount = pets.filter(p => p.type === 'found').length;
-  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -55,10 +63,10 @@ export default function HomePage() {
               Ayudamos a reunir familias con sus mascotas
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 dark:text-slate-300 mb-8">
-              Busca, publica y encuentra mascotas perdidas en Tunja y alrededores. 
+              Busca, publica y encuentra mascotas perdidas en Tunja y alrededores.
               Una comunidad unida para ayudar a nuestros mejores amigos.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={PUBLIC_ROUTES.SEARCH}>
                 <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white gap-2 w-full sm:w-auto shadow-lg">
@@ -76,44 +84,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      
-      {/* Stats Section */}
-      <section className="py-12 bg-background border-b">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <Card className="border-2 border-red-200 bg-red-50">
-              <CardContent className="p-6 text-center">
-                <div className="inline-block p-3 bg-red-100 rounded-full mb-3">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
-                </div>
-                <div className="text-3xl font-bold text-red-600 mb-1">{lostPetsCount}</div>
-                <div className="text-sm text-muted-foreground">Mascotas Perdidas</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-2 border-green-200 bg-green-50">
-              <CardContent className="p-6 text-center">
-                <div className="inline-block p-3 bg-green-100 rounded-full mb-3">
-                  <Heart className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="text-3xl font-bold text-green-600 mb-1">{foundPetsCount}</div>
-                <div className="text-sm text-muted-foreground">Mascotas Encontradas</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-2 border-blue-200 bg-blue-50">
-              <CardContent className="p-6 text-center">
-                <div className="inline-block p-3 bg-blue-100 rounded-full mb-3">
-                  <Search className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="text-3xl font-bold text-blue-600 mb-1">{pets.length}</div>
-                <div className="text-sm text-muted-foreground">Reportes Activos</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      
+
+      {/* Stats Section — donut chart con datos reales */}
+      <StatsSection stats={stats} loading={statsLoading} />
+
       {/* Recent Reports */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -121,14 +95,14 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-3">Reportes Recientes</h2>
             <p className="text-muted-foreground">Las mascotas reportadas más recientemente en nuestra plataforma</p>
           </div>
-          
-          {loading ? (
+
+          {petsLoading ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Cargando mascotas...</p>
             </div>
-          ) : error ? (
+          ) : petsError ? (
             <div className="text-center py-12">
-              <p className="text-red-600">{error}</p>
+              <p className="text-red-600">{petsError}</p>
             </div>
           ) : recentPets.length === 0 ? (
             <div className="text-center py-12">
@@ -147,7 +121,7 @@ export default function HomePage() {
                   <PetCard key={pet.id} pet={pet} />
                 ))}
               </div>
-              
+
               <div className="text-center">
                 <Link to={PUBLIC_ROUTES.SEARCH}>
                   <Button size="lg" variant="outline" className="gap-2">
@@ -160,7 +134,7 @@ export default function HomePage() {
           )}
         </div>
       </section>
-      
+
       {/* How it Works */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
@@ -168,7 +142,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-3">¿Cómo Funciona?</h2>
             <p className="text-muted-foreground">Tres simples pasos para ayudar a reunir mascotas con sus familias</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="text-center">
               <div className="inline-block p-6 bg-blue-100 rounded-full mb-4">
@@ -179,7 +153,7 @@ export default function HomePage() {
                 Crea un reporte con foto, descripción y ubicación de la mascota perdida o encontrada.
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="inline-block p-6 bg-cyan-100 rounded-full mb-4">
                 <Search className="h-12 w-12 text-cyan-600" />
@@ -189,7 +163,7 @@ export default function HomePage() {
                 Explora los reportes activos y comparte aquellos que puedan ayudar a otros.
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="inline-block p-6 bg-green-100 rounded-full mb-4">
                 <Heart className="h-12 w-12 text-green-600" />
@@ -202,7 +176,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      
+
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-cyan-400 to-blue-500 text-white">
         <div className="container mx-auto px-4 text-center">
