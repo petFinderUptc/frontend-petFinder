@@ -7,6 +7,30 @@ import { getReports, searchReports } from '../../services/reportService';
 import { SearchResultCard } from '../../components/SearchResultCard';
 import { PetMap } from '../../components/PetMap';
 
+// ─── Skeleton de SearchResultCard ─────────────────────────────────────────────
+function SearchResultCardSkeleton() {
+  return (
+    <Card className="overflow-hidden h-full">
+      {/* imagen */}
+      <div className="w-full h-48 bg-muted animate-pulse" />
+      <CardContent className="p-4 space-y-3">
+        {/* badges */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="h-5 w-16 rounded-full bg-muted animate-pulse" />
+          <div className="h-5 w-20 rounded-full bg-muted animate-pulse" />
+        </div>
+        {/* descripción */}
+        <div className="space-y-1.5">
+          <div className="h-3 w-full rounded bg-muted animate-pulse" />
+          <div className="h-3 w-4/5 rounded bg-muted animate-pulse" />
+        </div>
+        {/* estado */}
+        <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+      </CardContent>
+    </Card>
+  );
+}
+
 const PAGE_SIZE = 9;
 
 const typeLabel = {
@@ -188,7 +212,11 @@ export default function SearchPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-muted-foreground">Cargando...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <SearchResultCardSkeleton key={i} />
+            ))}
+          </div>
         ) : error ? (
           <div className="text-center py-16">
             <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-3" />
