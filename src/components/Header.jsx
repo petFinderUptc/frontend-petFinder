@@ -46,10 +46,11 @@ export function Header() {
           </Link>
 
           {/* Desktop — pill agrupado */}
-          <div
-            className="hidden md:flex items-center overflow-hidden rounded-2xl flex-shrink-0"
-            style={{ border: '1.5px solid rgba(0, 76, 34, 0.18)', boxShadow: '0 2px 12px rgba(0,76,34,0.08)' }}
-          >
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <div
+              className="flex items-center overflow-hidden rounded-2xl"
+              style={{ border: '1.5px solid rgba(0, 76, 34, 0.18)', boxShadow: '0 2px 12px rgba(0,76,34,0.08)' }}
+            >
             {/* Inicio */}
             <Link
               to="/"
@@ -116,20 +117,14 @@ export function Header() {
             <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
 
             {isAuthenticated ? (
-              <>
-                <Link
-                  to={PROTECTED_ROUTES.PUBLISH_REPORT}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  Publicar
-                </Link>
-                <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
-                <div className="px-2">
-                  <ProfileDropdown />
-                </div>
-              </>
+              <Link
+                to={PROTECTED_ROUTES.PUBLISH_REPORT}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
+              >
+                <PlusCircle className="h-4 w-4" />
+                Publicar
+              </Link>
             ) : (
               <>
                 <Link
@@ -153,6 +148,9 @@ export function Header() {
                 </Link>
               </>
             )}
+            </div>
+
+            {isAuthenticated && <ProfileDropdown />}
           </div>
 
           {/* Mobile controls */}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { resetPassword } from '../../services/authService';
 import { PUBLIC_ROUTES } from '../../constants/routes';
@@ -62,15 +63,48 @@ export default function ResetPasswordPage() {
     }
   };
 
+  const fieldVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.09, delayChildren: 0.35 } },
+  };
+  const fieldItem = {
+    hidden: { opacity: 0, y: 18 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#faf9f5' }}>
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <motion.div
+      className="min-h-screen flex items-center justify-center py-12 px-4 overflow-hidden relative"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
+      {/* Blob decorativo */}
+      <motion.div
+        className="pointer-events-none absolute rounded-full"
+        style={{ width: 350, height: 350, background: 'radial-gradient(circle, rgba(0,76,34,0.08) 0%, transparent 70%)', bottom: '-8%', left: '-8%' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="w-full max-w-md relative z-10">
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <img src="/LOGOPNG.png" alt="PetFinder" className="h-14 mx-auto mb-4" />
           <h1 className="text-3xl font-bold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Nueva contraseña</h1>
           <p className="mt-2" style={{ color: '#555f70' }}>Configura una contraseña segura para tu cuenta</p>
-        </div>
+        </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, x: 45, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
         <Card className="shadow-xl border-0">
           <CardHeader>
             <CardTitle>Restablecer contraseña</CardTitle>
@@ -87,14 +121,26 @@ export default function ResetPasswordPage() {
             )}
 
             {success && (
-              <Alert className="mb-4 border-green-300 text-green-700">
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+              >
+                <Alert className="mb-4 border-green-300 text-green-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              </motion.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            <motion.form
+              onSubmit={handleSubmit}
+              className="space-y-4"
+              variants={fieldVariants}
+              initial="hidden"
+              animate="show"
+            >
+              <motion.div variants={fieldItem}>
                 <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-1">
                   Nueva contraseña
                 </label>
@@ -107,9 +153,9 @@ export default function ResetPasswordPage() {
                   onChange={handleChange}
                   disabled={loading}
                 />
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={fieldItem}>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
                   Confirmar contraseña
                 </label>
@@ -122,16 +168,18 @@ export default function ResetPasswordPage() {
                   onChange={handleChange}
                   disabled={loading}
                 />
-              </div>
+              </motion.div>
 
-              <Button
-                type="submit"
-                className="w-full text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
-                disabled={loading}
-              >
-                {loading ? 'Actualizando...' : 'Actualizar contraseña'}
-              </Button>
-            </form>
+              <motion.div variants={fieldItem} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  type="submit"
+                  className="w-full text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
+                  disabled={loading}
+                >
+                  {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+                </Button>
+              </motion.div>
+            </motion.form>
 
             <div className="mt-6 text-center">
               <Link
@@ -143,7 +191,8 @@ export default function ResetPasswordPage() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
