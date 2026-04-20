@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -134,19 +135,37 @@ export default function RegisterPage() {
 
   const inputClass = (name) => (errors[name] ? 'border-red-500' : '');
 
+  const fieldV = {
+    hidden: { opacity: 0, x: -24 },
+    show:   { opacity: 1, x: 0 },
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 relative overflow-hidden" style={{ background: '#faf9f5' }}>
+      <motion.div aria-hidden className="pointer-events-none absolute top-0 right-0 h-[420px] w-[420px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(0,76,34,0.09) 0%, transparent 70%)' }}
+        animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
+      <motion.div aria-hidden className="pointer-events-none absolute bottom-0 left-0 h-[320px] w-[320px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(22,101,52,0.07) 0%, transparent 70%)' }}
+        animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 3 }} />
+
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <img
-            src="/LOGOPNG.png"
-            alt="PetFinder"
-            className="h-16 mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Crear Cuenta</h1>
-          <p className="text-gray-700 dark:text-slate-300 mt-2">Únete a nuestra comunidad</p>
+          <motion.img src="/LOGOPNG.png" alt="PetFinder" className="h-14 mx-auto mb-4"
+            initial={{ opacity: 0, scale: 1.3 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.22,1,0.36,1] }} />
+          <motion.h1 className="text-3xl font-bold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: [0.22,1,0.36,1] }}>
+            Crear Cuenta
+          </motion.h1>
+          <motion.p style={{ color: '#555f70' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+            Únete a nuestra comunidad
+          </motion.p>
         </div>
 
+        <motion.div initial={{ opacity: 0, y: 36, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 240, damping: 26, delay: 0.2 }}>
         <Card className="shadow-xl border-0">
           <CardHeader>
             <CardTitle>Registro</CardTitle>
@@ -323,7 +342,8 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                className="w-full text-white"
+                style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -341,7 +361,7 @@ export default function RegisterPage() {
                 ¿Ya tienes una cuenta?{' '}
                 <Link
                   to={PUBLIC_ROUTES.LOGIN}
-                  className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                  className="font-semibold hover:underline" style={{ color: '#004c22' }}
                 >
                   Inicia sesión aquí
                 </Link>
@@ -349,15 +369,13 @@ export default function RegisterPage() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
-        <div className="text-center mt-6">
-          <Link
-            to={PUBLIC_ROUTES.HOME}
-            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-          >
+        <motion.div className="text-center mt-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}>
+          <Link to={PUBLIC_ROUTES.HOME} className="text-sm text-muted-foreground hover:text-foreground hover:underline">
             ← Volver al inicio
           </Link>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

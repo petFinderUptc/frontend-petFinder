@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Eye, Pencil, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
@@ -157,7 +158,13 @@ export default function MyReportsPage() {
       onConfirm={confirmDelete}
       onCancel={() => setPendingDelete(null)}
     />
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -170,7 +177,7 @@ export default function MyReportsPage() {
                 <RefreshCw className="h-4 w-4" /> Actualizar
               </Button>
               <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                <Button className="text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Publicar reporte
                 </Button>
               </Link>
@@ -227,7 +234,7 @@ export default function MyReportsPage() {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
     </>
   );
 }

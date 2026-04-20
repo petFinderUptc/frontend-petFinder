@@ -73,7 +73,7 @@ export function ProfileDropdown() {
               className="h-10 w-10 rounded-full object-cover border-2 border-gray-300"
             />
           ) : (
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold border-2 border-gray-300">
+            <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
               {getInitials()}
             </div>
           )}

@@ -4,14 +4,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ArrowRight } from 'lucide-react';
 import { PUBLIC_ROUTES } from '../constants/routes';
 
-// ─── Colores orgánicos ────────────────────────────────────────────────────────
 const PALETTE = {
-  lost:     { fill: '#f97316', bg: 'bg-orange-50  dark:bg-orange-950/30', text: 'text-orange-500', ring: 'ring-orange-200 dark:ring-orange-800' },
-  found:    { fill: '#10b981', bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-500', ring: 'ring-emerald-200 dark:ring-emerald-800' },
-  resolved: { fill: '#8b5cf6', bg: 'bg-violet-50  dark:bg-violet-950/30', text: 'text-violet-500', ring: 'ring-violet-200 dark:ring-violet-800' },
+  lost:     { fill: '#f97316', bg: '#fff7ed', text: '#ea580c', ring: '#fed7aa' },
+  found:    { fill: '#004c22', bg: '#e6efe9', text: '#004c22', ring: '#bbf7d0' },
+  resolved: { fill: '#8b5cf6', bg: '#f5f3ff', text: '#7c3aed', ring: '#ddd6fe' },
 };
 
-const EMPTY_COLOR = '#e2e8f0';
+const EMPTY_COLOR = '#e8e6e0';
 
 // ─── Hook: contador animado con easing ────────────────────────────────────────
 function useCountUp(target, duration = 1100) {
@@ -44,8 +43,15 @@ function DonutCenter({ total }) {
   const n = useCountUp(total);
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-      <span className="text-4xl font-bold tracking-tight text-foreground leading-none">{n}</span>
-      <span className="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-widest">reportes</span>
+      <span
+        className="text-4xl font-bold tracking-tight leading-none"
+        style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      >
+        {n}
+      </span>
+      <span className="mt-1 text-xs font-medium uppercase tracking-widest" style={{ color: '#555f70' }}>
+        reportes
+      </span>
     </div>
   );
 }
@@ -55,10 +61,16 @@ function StatCard({ label, count, palette, delay = 0 }) {
   const n = useCountUp(count, 1100 + delay);
   return (
     <div
-      className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-4 sm:px-6 sm:py-5 ring-1 ${palette.bg} ${palette.ring} transition-shadow hover:shadow-md`}
+      className="flex flex-col items-center gap-1 rounded-2xl px-3 py-4 sm:px-6 sm:py-5 transition-shadow hover:shadow-md"
+      style={{ background: palette.bg, outline: `1px solid ${palette.ring}` }}
     >
-      <span className={`text-2xl sm:text-3xl font-bold tabular-nums ${palette.text}`}>{n}</span>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground text-center">{label}</span>
+      <span
+        className="text-2xl sm:text-3xl font-bold tabular-nums"
+        style={{ color: palette.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      >
+        {n}
+      </span>
+      <span className="text-xs sm:text-sm font-medium text-center" style={{ color: '#555f70' }}>{label}</span>
     </div>
   );
 }
@@ -81,14 +93,19 @@ export function StatsSection({ stats, loading }) {
     : [{ key: 'empty', value: 1, fill: EMPTY_COLOR }];
 
   return (
-    <section className="py-14 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/60 dark:to-background border-b">
+    <section className="py-14" style={{ background: '#ffffff', borderBottom: '1px solid rgba(27,28,26,0.07)' }}>
       <div className="container mx-auto px-4">
-        {/* Encabezado */}
         <div className="mb-10 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#004c22' }}>
+            Estadísticas
+          </p>
+          <h2
+            className="text-2xl md:text-3xl font-extrabold"
+            style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
             Actividad en la comunidad
           </h2>
-          <p className="mt-2 text-muted-foreground text-sm">
+          <p className="mt-2 text-sm" style={{ color: '#555f70' }}>
             Mascotas rastreadas en Tunja y alrededores
           </p>
         </div>
@@ -96,10 +113,10 @@ export function StatsSection({ stats, loading }) {
         {loading ? (
           /* Skeleton */
           <div className="flex flex-col items-center gap-8">
-            <div className="h-56 w-56 rounded-full bg-muted animate-pulse" />
+            <div className="h-56 w-56 rounded-full animate-pulse" style={{ background: '#f4f4f0' }} />
             <div className="grid grid-cols-3 gap-4 w-full max-w-lg">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />
+                <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: '#f4f4f0' }} />
               ))}
             </div>
           </div>
@@ -159,7 +176,7 @@ export function StatsSection({ stats, loading }) {
 
             {/* Leyenda del donut (puntos de color) */}
             {hasData && (
-              <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center gap-5 text-xs" style={{ color: '#555f70' }}>
                 {[
                   { label: 'Perdidos',     fill: PALETTE.lost.fill     },
                   { label: 'Hallados',     fill: PALETTE.found.fill    },
@@ -179,7 +196,8 @@ export function StatsSection({ stats, loading }) {
             {/* Link a estadísticas detalladas */}
             <Link
               to={PUBLIC_ROUTES.STATS}
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors group"
+              style={{ color: '#004c22' }}
             >
               Ver estadísticas detalladas
               <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />

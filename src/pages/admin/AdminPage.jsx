@@ -348,9 +348,9 @@ export default function AdminPage() {
   const [tab, setTab] = useState('reports');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
       {/* Header */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-10 border-b">
+      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center gap-3 mb-1">
             <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40">

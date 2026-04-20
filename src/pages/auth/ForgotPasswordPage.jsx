@@ -38,16 +38,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#faf9f5' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img
-            src="/LOGOPNG.png"
-            alt="PetFinder"
-            className="h-16 mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Recuperar contraseña</h1>
-          <p className="text-gray-700 dark:text-slate-300 mt-2">Te enviaremos un enlace para recuperar tu acceso</p>
+          <img src="/LOGOPNG.png" alt="PetFinder" className="h-14 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Recuperar contraseña</h1>
+          <p className="mt-2" style={{ color: '#555f70' }}>Te enviaremos un enlace para recuperar tu acceso</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -90,7 +86,7 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                className="w-full text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
                 disabled={loading}
               >
                 {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
@@ -100,7 +96,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center">
               <Link
                 to={PUBLIC_ROUTES.LOGIN}
-                className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                className="text-sm font-semibold hover:underline" style={{ color: '#004c22' }}
               >
                 Volver a iniciar sesión
               </Link>
