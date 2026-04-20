@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone, Sparkles } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
@@ -118,7 +119,7 @@ export default function PetDetailPage() {
 
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#faf9f5' }}>
         <Card className="max-w-lg w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
@@ -131,7 +132,13 @@ export default function PetDetailPage() {
   }
 
   return (
-    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4 max-w-4xl">
         <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" /> Volver
@@ -247,6 +254,6 @@ export default function PetDetailPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }

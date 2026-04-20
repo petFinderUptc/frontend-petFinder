@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { PlusCircle, Search, CheckCircle, AlertCircle, ArrowRight, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../../constants/routes';
@@ -149,7 +150,13 @@ export default function DashboardPage() {
   const recent   = adapted.slice(0, 3);
 
   return (
-    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       {/* Header */}
       <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
         <div className="container mx-auto px-4">
@@ -171,66 +178,52 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto space-y-8">
 
           {/* Métricas */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <StatCard
-              label="Total publicados"
-              sublabel="reportes en total"
-              value={total}
-              total={total}
-              icon={ClipboardList}
-              colorClass="border-[#c8e6d4] bg-[#f0f7f2]"
-              barColor="bg-[#004c22]"
-            />
-            <StatCard
-              label="Activos ahora"
-              sublabel="del total están activos"
-              value={active}
-              total={total}
-              icon={Search}
-              colorClass="border-amber-200 bg-amber-50/60"
-              barColor="bg-amber-500"
-            />
-            <StatCard
-              label="Resueltos"
-              sublabel="mascotas reunidas"
-              value={resolved}
-              total={total}
-              icon={CheckCircle}
-              colorClass="border-emerald-200 bg-emerald-50/60"
-              barColor="bg-emerald-500"
-            />
-          </div>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+          >
+            {[
+              { label: 'Total publicados', sublabel: 'reportes en total', value: total, icon: ClipboardList, colorClass: 'border-[#c8e6d4] bg-[#f0f7f2]', barColor: 'bg-[#004c22]' },
+              { label: 'Activos ahora', sublabel: 'del total están activos', value: active, icon: Search, colorClass: 'border-amber-200 bg-amber-50/60', barColor: 'bg-amber-500' },
+              { label: 'Resueltos', sublabel: 'mascotas reunidas', value: resolved, icon: CheckCircle, colorClass: 'border-emerald-200 bg-emerald-50/60', barColor: 'bg-emerald-500' },
+            ].map((s) => (
+              <motion.div key={s.label} variants={{ hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22,1,0.36,1] } } }}>
+                <StatCard label={s.label} sublabel={s.sublabel} value={s.value} total={total} icon={s.icon} colorClass={s.colorClass} barColor={s.barColor} />
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* Acciones rápidas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Card className="hover:shadow-md transition-shadow group">
-              <CardContent className="p-5">
-                <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
-                    <PlusCircle className="h-7 w-7" style={{ color: '#004c22' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-0.5">Publicar Nuevo Reporte</h3>
-                    <p className="text-sm text-muted-foreground">¿Perdiste o encontraste una mascota?</p>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow group">
-              <CardContent className="p-5">
-                <Link to={PUBLIC_ROUTES.SEARCH} className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
-                    <Search className="h-7 w-7" style={{ color: '#166534' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-0.5">Explorar Reportes</h3>
-                    <p className="text-sm text-muted-foreground">Busca mascotas perdidas o encontradas</p>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            initial="hidden" animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.45 } } }}
+          >
+            {[
+              { to: PROTECTED_ROUTES.PUBLISH_REPORT, icon: PlusCircle, color: '#004c22', title: 'Publicar Nuevo Reporte', sub: '¿Perdiste o encontraste una mascota?' },
+              { to: PUBLIC_ROUTES.SEARCH, icon: Search, color: '#166534', title: 'Explorar Reportes', sub: 'Busca mascotas perdidas o encontradas' },
+            ].map(({ to, icon: Icon, color, title, sub }) => (
+              <motion.div key={to} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: [0.22,1,0.36,1] } } }}>
+                <motion.div whileHover={{ y: -3, boxShadow: '0 8px 28px rgba(0,76,34,0.1)' }} transition={{ duration: 0.2 }}>
+                  <Card className="transition-shadow group cursor-pointer">
+                    <CardContent className="p-5">
+                      <Link to={to} className="flex items-start gap-4">
+                        <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
+                          <Icon className="h-7 w-7" style={{ color }} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-0.5">{title}</h3>
+                          <p className="text-sm text-muted-foreground">{sub}</p>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* Actividad reciente */}
           <Card>
@@ -288,6 +281,6 @@ export default function DashboardPage() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   Bell, Check, CheckCheck, Trash2, Mail, MessageSquare,
   AlertCircle, Clock, RefreshCw, HelpCircle, Info,
@@ -162,7 +163,13 @@ export default function NotificationsPage() {
   const groups = groupNotifications(notifications);
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto">
 
@@ -243,6 +250,6 @@ export default function NotificationsPage() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

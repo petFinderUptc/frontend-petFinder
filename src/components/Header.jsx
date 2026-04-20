@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, PlusCircle, LogIn, Heart, Bell, ShieldCheck, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { ProfileDropdown } from './ProfileDropdown';
@@ -11,96 +11,147 @@ export function Header() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { unreadCount } = useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
   const isActive = (path) => location.pathname === path;
 
-  const navLinkClass = (path) =>
-    `relative flex items-center gap-2 px-3 py-2 text-sm font-semibold transition-colors duration-150 ${
-      isActive(path)
-        ? 'text-[#004c22]'
-        : 'text-[#555f70] hover:text-[#1b1c1a]'
-    }`;
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const progress   = Math.min(scrollY / 100, 1);
+  const bgOpacity  = (0.08 + progress * 0.88).toFixed(2);
+  const shadowOp   = (0.0  + progress * 0.12).toFixed(2);
 
   return (
     <header
       className="sticky top-0 z-50 w-full"
       style={{
-        background: 'rgba(250, 249, 245, 0.9)',
+        background: `rgba(250, 249, 245, ${bgOpacity})`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(27, 28, 26, 0.07)',
-        boxShadow: '0 1px 16px rgba(0, 76, 34, 0.05)',
+        borderBottom: 'none',
+        boxShadow: `0 8px 32px rgba(0, 76, 34, ${shadowOp})`,
+        transition: 'background 0.3s ease, box-shadow 0.3s ease',
       }}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between gap-6">
+      <div className="mx-auto px-8 max-w-screen-2xl">
+        <div className="flex h-20 items-center justify-between">
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0" onClick={() => setMobileOpen(false)}>
-            <img src="/LOGOPNG.png" alt="PetFinder" className="h-10 w-auto" />
+            <img src="/LOGOPNG.png" alt="PetFinder" className="h-12 w-auto" />
           </Link>
 
-          {/* Desktop nav — centrado */}
-          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            <Link to="/" className={navLinkClass('/')}>
+          {/* Desktop — pill agrupado */}
+          <div
+            className="hidden md:flex items-center overflow-hidden rounded-2xl flex-shrink-0"
+            style={{ border: '1.5px solid rgba(0, 76, 34, 0.18)', boxShadow: '0 2px 12px rgba(0,76,34,0.08)' }}
+          >
+            {/* Inicio */}
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
+              style={{ color: isActive('/') ? '#004c22' : '#555f70', background: isActive('/') ? '#f0f7f2' : 'transparent' }}
+              onMouseEnter={(e) => { if (!isActive('/')) e.currentTarget.style.background = '#f9fdf9'; }}
+              onMouseLeave={(e) => { if (!isActive('/')) e.currentTarget.style.background = 'transparent'; }}
+            >
               <Home className="h-4 w-4" />
               Inicio
             </Link>
-            <Link to={PUBLIC_ROUTES.SEARCH} className={navLinkClass(PUBLIC_ROUTES.SEARCH)}>
+
+            <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
+
+            {/* Buscar */}
+            <Link
+              to={PUBLIC_ROUTES.SEARCH}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
+              style={{ color: isActive(PUBLIC_ROUTES.SEARCH) ? '#004c22' : '#555f70', background: isActive(PUBLIC_ROUTES.SEARCH) ? '#f0f7f2' : 'transparent' }}
+              onMouseEnter={(e) => { if (!isActive(PUBLIC_ROUTES.SEARCH)) e.currentTarget.style.background = '#f9fdf9'; }}
+              onMouseLeave={(e) => { if (!isActive(PUBLIC_ROUTES.SEARCH)) e.currentTarget.style.background = 'transparent'; }}
+            >
               <Search className="h-4 w-4" />
               Buscar
             </Link>
-            {isAuthenticated && (
-              <Link to={PROTECTED_ROUTES.NOTIFICATIONS} className={`${navLinkClass(PROTECTED_ROUTES.NOTIFICATIONS)} relative`}>
-                <Bell className="h-4 w-4" />
-                Notificaciones
-                {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
-            {isAdmin && (
-              <Link
-                to={PROTECTED_ROUTES.ADMIN}
-                className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold transition-colors duration-150 ${
-                  isActive(PROTECTED_ROUTES.ADMIN) ? 'text-amber-600' : 'text-amber-500 hover:text-amber-700'
-                }`}
-              >
-                <ShieldCheck className="h-4 w-4" />
-                Admin
-              </Link>
-            )}
-          </nav>
 
-          {/* Desktop actions */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            <Link
-              to={isAuthenticated ? PROTECTED_ROUTES.PUBLISH_REPORT : PUBLIC_ROUTES.LOGIN}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-              style={{
-                background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)',
-                boxShadow: '0 2px 10px rgba(0, 76, 34, 0.3)',
-              }}
-            >
-              <PlusCircle className="h-4 w-4" />
-              Publicar
-            </Link>
+            {isAuthenticated && (
+              <>
+                <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
+                <Link
+                  to={PROTECTED_ROUTES.NOTIFICATIONS}
+                  className="relative flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
+                  style={{ color: isActive(PROTECTED_ROUTES.NOTIFICATIONS) ? '#004c22' : '#555f70', background: isActive(PROTECTED_ROUTES.NOTIFICATIONS) ? '#f0f7f2' : 'transparent' }}
+                  onMouseEnter={(e) => { if (!isActive(PROTECTED_ROUTES.NOTIFICATIONS)) e.currentTarget.style.background = '#f9fdf9'; }}
+                  onMouseLeave={(e) => { if (!isActive(PROTECTED_ROUTES.NOTIFICATIONS)) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <Bell className="h-4 w-4" />
+                  Notificaciones
+                  {unreadCount > 0 && (
+                    <span className="ml-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
+
+            {isAdmin && (
+              <>
+                <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
+                <Link
+                  to={PROTECTED_ROUTES.ADMIN}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
+                  style={{ color: isActive(PROTECTED_ROUTES.ADMIN) ? '#b45309' : '#d97706' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#fffbeb')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Admin
+                </Link>
+              </>
+            )}
+
+            <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
 
             {isAuthenticated ? (
-              <ProfileDropdown />
+              <>
+                <Link
+                  to={PROTECTED_ROUTES.PUBLISH_REPORT}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Publicar
+                </Link>
+                <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
+                <div className="px-2">
+                  <ProfileDropdown />
+                </div>
+              </>
             ) : (
-              <Link
-                to={PUBLIC_ROUTES.LOGIN}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-150"
-                style={{ color: '#555f70' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#1b1c1a')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#555f70')}
-              >
-                <LogIn className="h-4 w-4" />
-                Iniciar sesión
-              </Link>
+              <>
+                <Link
+                  to={PUBLIC_ROUTES.LOGIN}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
+                  style={{ color: '#004c22' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f7f2')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <LogIn className="h-4 w-4" />
+                  Iniciar sesión
+                </Link>
+                <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(0,76,34,0.12)' }} />
+                <Link
+                  to={PUBLIC_ROUTES.LOGIN}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white transition-all duration-150 hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Publicar
+                </Link>
+              </>
             )}
           </div>
 

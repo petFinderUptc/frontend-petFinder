@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Moon, Sun, Bell, BellOff, Monitor, Check, Globe, Shield, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -52,7 +53,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -314,6 +321,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
