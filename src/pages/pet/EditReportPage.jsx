@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AlertCircle, HelpCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -349,22 +350,47 @@ export default function EditReportPage() {
   const inputClass = (name) =>
     fieldErrors[name] ? 'border-red-500 focus-visible:ring-red-400' : '';
 
+  const fieldVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.07, delayChildren: 0.3 } },
+  };
+  const fieldItem = {
+    hidden: { opacity: 0, y: 18 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-background py-8">
+      <motion.div
+        className="min-h-screen py-8"
+        style={{ background: '#faf9f5' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <div className="container mx-auto px-4">
           <Card className="mx-auto max-w-3xl">
             <CardContent className="py-12 text-center text-muted-foreground">Cargando reporte...</CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, x: 50, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
           <Card>
             <CardHeader>
               <CardTitle>Editar reporte</CardTitle>
@@ -378,10 +404,10 @@ export default function EditReportPage() {
                 </Alert>
               )}
 
-              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+              <motion.form className="space-y-6" onSubmit={handleSubmit} noValidate variants={fieldVariants} initial="hidden" animate="show">
 
                 {/* Imagen */}
-                <div>
+                <motion.div variants={fieldItem}>
                   <label className="mb-2 block text-sm font-medium">Imagen <span className="text-muted-foreground text-xs">(opcional — deja vacío para conservar la actual)</span></label>
                   <div className="rounded-lg border-2 border-dashed p-4">
                     <input
@@ -414,10 +440,10 @@ export default function EditReportPage() {
                       </div>
                     </div>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Especie / Tipo / Estado */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <motion.div variants={fieldItem} className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Especie *</label>
                     <select
@@ -450,10 +476,10 @@ export default function EditReportPage() {
                       <option value="inactive">Inactivo</option>
                     </select>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Color / Raza / Tamaño */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <motion.div variants={fieldItem} className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Color *</label>
                     <Input
@@ -493,10 +519,10 @@ export default function EditReportPage() {
                       <option value="large">Grande</option>
                     </select>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Descripción */}
-                <div>
+                <motion.div variants={fieldItem}>
                   <label className="mb-1 block text-sm font-medium">Descripción *</label>
                   <textarea
                     name="description"
@@ -514,10 +540,10 @@ export default function EditReportPage() {
                       {formData.description.length}/500
                     </span>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Contacto */}
-                <div>
+                <motion.div variants={fieldItem}>
                   <label className="mb-1 flex items-center text-sm font-medium">
                     Contacto *
                     <ContactTooltip />
@@ -532,10 +558,10 @@ export default function EditReportPage() {
                     className={inputClass('contact')}
                   />
                   <FieldError message={fieldErrors.contact} />
-                </div>
+                </motion.div>
 
                 {/* Ubicación */}
-                <div className="space-y-3">
+                <motion.div variants={fieldItem} className="space-y-3">
                   <label className="block text-sm font-medium">Ubicación *</label>
                   <div className="relative">
                     <Input
@@ -590,28 +616,30 @@ export default function EditReportPage() {
                       Coordenadas: {latitude}, {longitude}
                     </p>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Acciones */}
-                <div className="flex gap-3">
+                <motion.div variants={fieldItem} className="flex gap-3">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={isSubmitting || !canSubmit}>
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Guardando...
-                      </span>
-                    ) : (
-                      'Guardar cambios'
-                    )}
-                  </Button>
-                </div>
-              </form>
+                  <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !canSubmit}
+                      style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
+                      {isSubmitting ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Guardando...
+                        </span>
+                      ) : 'Guardar cambios'}
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </motion.form>
             </CardContent>
           </Card>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

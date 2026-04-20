@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, ChevronLeft, ChevronRight, MapPinned, Rows3, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -160,10 +161,30 @@ export default function SearchPage() {
     void fetchReports(1, nextFilters);
   };
 
+  const cardVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
+  };
+  const cardItem = {
+    hidden: { opacity: 0, y: 28, scale: 0.97 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  };
+
   return (
-    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
       <div className="container mx-auto px-4">
-        <div className="mb-8">
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: -24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h1
             className="text-3xl md:text-4xl font-extrabold mb-2"
             style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
@@ -173,26 +194,39 @@ export default function SearchPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <p style={{ color: '#555f70' }}>{title}</p>
             {isSemanticSearch && (
-              <span
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"
                 style={{ background: '#e6efe9', color: '#004c22' }}
               >
                 <Sparkles className="h-3 w-3" />
                 Búsqueda IA activa
-              </span>
+              </motion.span>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mb-6">
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <FilterPanel
             filters={filters}
             onFilterChange={handleFilterChange}
             onSearch={handleSearch}
           />
-        </div>
+        </motion.div>
 
-        <div className="mb-6 flex items-center justify-end gap-2">
+        <motion.div
+          className="mb-6 flex items-center justify-end gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
           <Button
             type="button"
             variant={viewMode === 'cards' ? 'default' : 'outline'}
@@ -213,66 +247,98 @@ export default function SearchPage() {
             <MapPinned className="h-4 w-4" />
             Mapa
           </Button>
-        </div>
+        </motion.div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-              <SearchResultCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-3" />
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => void fetchReports(pagination.page)}>Reintentar</Button>
-          </div>
-        ) : reports.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center text-muted-foreground">
-              No hay reportes para mostrar en esta pagina.
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {viewMode === 'map' ? (
-              <PetMap reports={reports} />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {reports.map((report) => (
-                  <SearchResultCard
-                    key={report.id}
-                    report={report}
-                    speciesLabel={speciesLabel}
-                    typeLabel={typeLabel}
-                    showSimilarity={isSemanticSearch}
-                  />
-                ))}
-              </div>
-            )}
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="skeleton"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                <SearchResultCardSkeleton key={i} />
+              ))}
+            </motion.div>
+          ) : error ? (
+            <motion.div
+              key="error"
+              className="text-center py-16"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-3" />
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => void fetchReports(pagination.page)}>Reintentar</Button>
+            </motion.div>
+          ) : reports.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Card>
+                <CardContent className="p-12 text-center text-muted-foreground">
+                  No hay reportes para mostrar en esta pagina.
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            <motion.div key={`page-${pagination.page}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+              {viewMode === 'map' ? (
+                <PetMap reports={reports} />
+              ) : (
+                <motion.div
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {reports.map((report) => (
+                    <motion.div key={report.id} variants={cardItem}>
+                      <SearchResultCard
+                        report={report}
+                        speciesLabel={speciesLabel}
+                        typeLabel={typeLabel}
+                        showSimilarity={isSemanticSearch}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
 
-            <div className="flex items-center justify-center gap-3 mt-8">
-              <Button
-                variant="outline"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => void fetchReports(pagination.page - 1, filters)}
+              <motion.div
+                className="flex items-center justify-center gap-3 mt-8"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
               >
-                <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Pagina {pagination.page} de {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                disabled={!pagination.hasNextPage}
-                onClick={() => void fetchReports(pagination.page + 1, filters)}
-              >
-                Siguiente <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </>
-        )}
+                <Button
+                  variant="outline"
+                  disabled={!pagination.hasPrevPage}
+                  onClick={() => void fetchReports(pagination.page - 1, filters)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Pagina {pagination.page} de {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={!pagination.hasNextPage}
+                  onClick={() => void fetchReports(pagination.page + 1, filters)}
+                >
+                  Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

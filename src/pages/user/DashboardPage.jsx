@@ -37,38 +37,39 @@ function useCountUp(target, duration = 900) {
 }
 
 // ─── Tarjeta de estadística con barra de progreso ─────────────────────────────
-function StatCard({ label, sublabel, value, total, icon: Icon, colorClass, barColor }) {
+function StatCard({ label, sublabel, value, total, icon: Icon, iconColor, iconBg, accentColor }) {
   const animated = useCountUp(value);
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
 
   return (
-    <Card className={`border-2 ${colorClass}`}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{label}</p>
-            <p className={`text-4xl font-bold tabular-nums ${barColor.replace('bg-', 'text-')}`}>{animated}</p>
-          </div>
-          <div className={`p-3 rounded-xl ${barColor} bg-opacity-15`}>
-            <Icon className={`h-6 w-6 ${barColor.replace('bg-', 'text-')}`} />
-          </div>
-        </div>
-
-        {total > 0 && value !== total ? (
-          <>
-            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
-              <div
-                className={`h-full rounded-full ${barColor} transition-all duration-1000`}
-                style={{ width: `${pct}%` }}
-              />
+    <motion.div
+      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.08)' }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="border-0" style={{ boxShadow: '0 2px 16px rgba(0,76,34,0.07)' }}>
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#a0abb8' }}>{label}</p>
+              <p className="text-5xl font-extrabold tabular-nums leading-none" style={{ color: accentColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{animated}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{pct}% — {sublabel}</p>
-          </>
-        ) : (
-          <p className="text-xs text-muted-foreground">{sublabel}</p>
-        )}
-      </CardContent>
-    </Card>
+            <div className="p-3 rounded-2xl" style={{ background: iconBg }}>
+              <Icon className="h-6 w-6" style={{ color: iconColor }} />
+            </div>
+          </div>
+          <div className="h-1.5 w-full rounded-full overflow-hidden mb-2" style={{ background: 'rgba(0,0,0,0.06)' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: accentColor }}
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            />
+          </div>
+          <p className="text-xs" style={{ color: '#a0abb8' }}>{pct}% — {sublabel}</p>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -185,12 +186,12 @@ export default function DashboardPage() {
             variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
           >
             {[
-              { label: 'Total publicados', sublabel: 'reportes en total', value: total, icon: ClipboardList, colorClass: 'border-[#c8e6d4] bg-[#f0f7f2]', barColor: 'bg-[#004c22]' },
-              { label: 'Activos ahora', sublabel: 'del total están activos', value: active, icon: Search, colorClass: 'border-amber-200 bg-amber-50/60', barColor: 'bg-amber-500' },
-              { label: 'Resueltos', sublabel: 'mascotas reunidas', value: resolved, icon: CheckCircle, colorClass: 'border-emerald-200 bg-emerald-50/60', barColor: 'bg-emerald-500' },
+              { label: 'Total publicados', sublabel: 'reportes en total', value: total, icon: ClipboardList, iconColor: '#004c22', iconBg: '#e6efe9', accentColor: '#004c22' },
+              { label: 'Activos ahora', sublabel: 'del total están activos', value: active, icon: Search, iconColor: '#b45309', iconBg: '#fef3c7', accentColor: '#d97706' },
+              { label: 'Resueltos', sublabel: 'mascotas reunidas', value: resolved, icon: CheckCircle, iconColor: '#166534', iconBg: '#dcfce7', accentColor: '#16a34a' },
             ].map((s) => (
               <motion.div key={s.label} variants={{ hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22,1,0.36,1] } } }}>
-                <StatCard label={s.label} sublabel={s.sublabel} value={s.value} total={total} icon={s.icon} colorClass={s.colorClass} barColor={s.barColor} />
+                <StatCard label={s.label} sublabel={s.sublabel} value={s.value} total={total} icon={s.icon} iconColor={s.iconColor} iconBg={s.iconBg} accentColor={s.accentColor} />
               </motion.div>
             ))}
           </motion.div>

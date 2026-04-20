@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
   Search, TrendingUp, Heart, AlertTriangle, HelpCircle, ArrowRight,
@@ -165,11 +166,30 @@ export default function StatsPage() {
 
   const speciesTotal = SPECIES_ORDER.reduce((s, k) => s + (speciesCounts[k] ?? 0), 0);
 
+  const statCards = [
+    { label: 'Total reportes', value: total,    description: 'Histórico acumulado',          icon: TrendingUp,    palette: PALETTE.total,    delay: 0   },
+    { label: 'Perdidos',       value: lost,     description: 'Mascotas buscando hogar',       icon: AlertTriangle, palette: PALETTE.lost,     delay: 80  },
+    { label: 'Hallados',       value: found,    description: 'Encontrados por la comunidad',  icon: Search,        palette: PALETTE.found,    delay: 160 },
+    { label: 'Reunificados',   value: resolved, description: 'Casos cerrados con éxito',      icon: Heart,         palette: PALETTE.resolved, delay: 240 },
+  ];
+
   return (
-    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
 
       {/* Header */}
-      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
+      <motion.div
+        className="py-10 border-b"
+        style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="flex items-center gap-2 text-sm mb-3" style={{ color: '#555f70' }}>
             <Link to={PUBLIC_ROUTES.HOME} className="hover:text-foreground transition-colors">Inicio</Link>
@@ -177,36 +197,60 @@ export default function StatsPage() {
             <span>Estadísticas</span>
           </div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl" style={{ background: '#e6efe9' }}>
+            <motion.div
+              className="p-2.5 rounded-xl"
+              style={{ background: '#e6efe9' }}
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.15 }}
+            >
               <TrendingUp className="h-6 w-6" style={{ color: '#004c22' }} />
-            </div>
+            </motion.div>
             <h1 className="text-3xl font-extrabold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Estadísticas de la comunidad
             </h1>
           </div>
           <p style={{ color: '#555f70' }}>Actividad de mascotas reportadas en Tunja y alrededores</p>
         </div>
-      </div>
+      </motion.div>
 
       <div className="container mx-auto px-4 max-w-5xl py-10 space-y-10">
 
         {/* ── 4 tarjetas de resumen ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-50px' }}
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } } }}
+        >
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)
           ) : (
-            <>
-              <SummaryCard label="Total reportes" value={total}    description="Histórico acumulado"             icon={TrendingUp}    palette={PALETTE.total}    delay={0}   />
-              <SummaryCard label="Perdidos"        value={lost}     description="Mascotas buscando hogar"         icon={AlertTriangle} palette={PALETTE.lost}     delay={80}  />
-              <SummaryCard label="Hallados"        value={found}    description="Encontrados por la comunidad"    icon={Search}        palette={PALETTE.found}    delay={160} />
-              <SummaryCard label="Reunificados"    value={resolved} description="Casos cerrados con éxito"        icon={Heart}         palette={PALETTE.resolved} delay={240} />
-            </>
+            statCards.map((s) => (
+              <motion.div
+                key={s.label}
+                variants={{
+                  hidden: { opacity: 0, y: 32 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+                }}
+              >
+                <SummaryCard {...s} />
+              </motion.div>
+            ))
           )}
-        </div>
+        </motion.div>
 
         {/* ── Donut + tasa de resolución ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-60px' }}
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.15 } } }}
+        >
 
+          <motion.div variants={{ hidden: { opacity: 0, x: -40 }, show: { opacity: 1, x: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Distribución de reportes</CardTitle>
@@ -268,8 +312,10 @@ export default function StatsPage() {
               )}
             </CardContent>
           </Card>
+          </motion.div>
 
           {/* Tasa de resolución */}
+          <motion.div variants={{ hidden: { opacity: 0, x: 40 }, show: { opacity: 1, x: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Tasa de reunificación</CardTitle>
@@ -325,9 +371,16 @@ export default function StatsPage() {
               )}
             </CardContent>
           </Card>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* ── Desglose por especie ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Reportes por especie</CardTitle>
@@ -349,8 +402,15 @@ export default function StatsPage() {
             })}
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* ── Glosario ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
         <Card className="border-dashed">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
@@ -385,19 +445,28 @@ export default function StatsPage() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
 
         {/* ── CTA ── */}
-        <div className="text-center py-4">
+        <motion.div
+          className="text-center py-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Link to={PUBLIC_ROUTES.SEARCH}>
-            <Button className="text-white gap-2" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
-              <Search className="h-4 w-4" />
-              Explorar reportes activos
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} style={{ display: 'inline-block' }}>
+              <Button className="text-white gap-2" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
+                <Search className="h-4 w-4" />
+                Explorar reportes activos
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
           </Link>
-        </div>
+        </motion.div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

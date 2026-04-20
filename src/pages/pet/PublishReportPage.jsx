@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AlertCircle, HelpCircle, Loader2, MapPin, Navigation, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -348,6 +349,15 @@ export default function PublishReportPage() {
   const isAiField = (name) =>
     aiFields?.[name] && formData[name] === aiFields[name];
 
+  const sectionVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } },
+  };
+  const sectionItem = {
+    hidden: { opacity: 0, y: 22 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+  };
+
   return (
     <>
     {matches && (
@@ -357,9 +367,20 @@ export default function PublishReportPage() {
         onClose={() => { setMatches(null); navigate(PUBLIC_ROUTES.SEARCH); }}
       />
     )}
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
           <Card>
             <CardHeader>
               <CardTitle>Crear reporte</CardTitle>
@@ -375,10 +396,17 @@ export default function PublishReportPage() {
                 </Alert>
               )}
 
-              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+              <motion.form
+                className="space-y-6"
+                onSubmit={handleSubmit}
+                noValidate
+                variants={sectionVariants}
+                initial="hidden"
+                animate="show"
+              >
 
                 {/* Imagen */}
-                <div>
+                <motion.div variants={sectionItem}>
                   <label className="mb-2 block text-sm font-medium">Imagen *</label>
                   <div className={`rounded-lg border-2 border-dashed p-4 ${fieldErrors.image ? 'border-red-400' : ''}`}>
                     <input
@@ -425,10 +453,10 @@ export default function PublishReportPage() {
                       </div>
                     </div>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Especie / Tipo / Estado */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <motion.div variants={sectionItem} className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium">Especie *</label>
                     <select name="species" value={formData.species} onChange={handleChange}
@@ -457,10 +485,10 @@ export default function PublishReportPage() {
                       <option value="inactive">Inactivo</option>
                     </select>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Color / Raza / Tamaño */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <motion.div variants={sectionItem} className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
                       Color *
@@ -502,10 +530,10 @@ export default function PublishReportPage() {
                       <option value="large">Grande</option>
                     </select>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Descripción */}
-                <div>
+                <motion.div variants={sectionItem}>
                   <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
                     Descripción *
                     {isAiField('description') && <AiBadge />}
@@ -526,10 +554,10 @@ export default function PublishReportPage() {
                       {formData.description.length}/500
                     </span>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Contacto */}
-                <div>
+                <motion.div variants={sectionItem}>
                   <label className="mb-1 flex items-center text-sm font-medium">
                     Contacto *
                     <ContactTooltip />
@@ -544,10 +572,10 @@ export default function PublishReportPage() {
                     className={inputClass('contact')}
                   />
                   <FieldError message={fieldErrors.contact} />
-                </div>
+                </motion.div>
 
                 {/* Ubicación */}
-                <div className="space-y-3">
+                <motion.div variants={sectionItem} className="space-y-3">
                   <label className="block text-sm font-medium">Ubicación *</label>
                   <div className="relative">
                     <Input
@@ -596,27 +624,31 @@ export default function PublishReportPage() {
                       Coordenadas: {latitude}, {longitude}
                     </p>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Acciones */}
-                <div className="flex gap-3">
+                <motion.div variants={sectionItem} className="flex gap-3">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={isSubmitting || !canSubmit}>
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Publicando...
-                      </span>
-                    ) : 'Publicar reporte'}
-                  </Button>
-                </div>
-              </form>
+                  <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !canSubmit}
+                      style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
+                      {isSubmitting ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Publicando...
+                        </span>
+                      ) : 'Publicar reporte'}
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </motion.form>
             </CardContent>
           </Card>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
     </>
   );
 }
