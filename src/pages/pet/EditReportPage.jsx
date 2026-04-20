@@ -410,7 +410,7 @@ export default function EditReportPage() {
                     <div className="mt-2">
                       <p className="text-xs text-muted-foreground">Subiendo imagen: {uploadProgress}%</p>
                       <div className="mt-1 h-1.5 rounded-full bg-muted">
-                        <div className="h-1.5 rounded-full bg-cyan-500 transition-all" style={{ width: `${uploadProgress}%` }} />
+                        <div className="h-1.5 rounded-full bg-[#004c22] transition-all" style={{ width: `${uploadProgress}%` }} />
                       </div>
                     </div>
                   )}
@@ -562,7 +562,7 @@ export default function EditReportPage() {
                             onClick={() => selectSuggestion(suggestion)}
                             className="flex w-full items-start gap-2 border-b px-3 py-2 text-left text-sm transition hover:bg-muted"
                           >
-                            <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-600" />
+                            <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#004c22]" />
                             <span>{suggestion.displayName}</span>
                           </button>
                         ))}

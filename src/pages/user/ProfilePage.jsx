@@ -194,7 +194,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                           className="h-24 w-24 rounded-full object-cover border-4 border-gray-200"
                         />
                       ) : (
-                        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-2xl font-semibold border-4 border-gray-200">
+                        <div className="h-24 w-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
                           {getInitials()}
                         </div>
                       )}
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-lg transition-colors"
+                          className="absolute bottom-0 right-0 p-2 text-white rounded-full shadow-lg transition-opacity hover:opacity-90" style={{ background: '#004c22' }}
                         >
                           <Camera className="h-4 w-4" />
                         </button>
@@ -380,7 +380,7 @@ export default function ProfilePage() {
                       <Button
                         type="submit"
                         disabled={loading || isProfileLoading}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="text-white" style={{ background: '#004c22' }}
                       >
                         <Save className="h-4 w-4 mr-2" />
                         {loading ? 'Guardando...' : 'Guardar Cambios'}
@@ -410,25 +410,22 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                    <p className="text-3xl font-bold text-blue-600">{stats.reportsPublished}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Reportes Publicados</p>
+                  <div className="text-center p-4 rounded-xl" style={{ background: '#e6efe9' }}>
+                    <p className="text-3xl font-bold" style={{ color: '#004c22', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stats.reportsPublished}</p>
+                    <p className="text-sm mt-1" style={{ color: '#555f70' }}>Reportes Publicados</p>
                   </div>
-                  
-                  <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                    <p className="text-3xl font-bold text-green-600">{stats.successfulReunions}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Reuniones Exitosas</p>
+                  <div className="text-center p-4 rounded-xl" style={{ background: '#ecfdf5' }}>
+                    <p className="text-3xl font-bold" style={{ color: '#166534', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stats.successfulReunions}</p>
+                    <p className="text-sm mt-1" style={{ color: '#555f70' }}>Reuniones Exitosas</p>
                   </div>
-                  
-                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-                    <p className="text-3xl font-bold text-purple-600">{stats.helpedPets}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Mascotas Ayudadas</p>
+                  <div className="text-center p-4 rounded-xl" style={{ background: '#f5f3ff' }}>
+                    <p className="text-3xl font-bold" style={{ color: '#7c3aed', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stats.helpedPets}</p>
+                    <p className="text-sm mt-1" style={{ color: '#555f70' }}>Mascotas Ayudadas</p>
                   </div>
-                  
-                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
-                    <Calendar className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">{stats.memberSince}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Miembro desde</p>
+                  <div className="text-center p-4 rounded-xl" style={{ background: '#fff7ed' }}>
+                    <Calendar className="h-6 w-6 mx-auto mb-2" style={{ color: '#ea580c' }} />
+                    <p className="text-sm font-semibold" style={{ color: '#1b1c1a' }}>{stats.memberSince}</p>
+                    <p className="text-xs mt-1" style={{ color: '#555f70' }}>Miembro desde</p>
                   </div>
                 </div>
               </CardContent>
@@ -438,7 +435,7 @@ export default function ProfilePage() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-cyan-600" />
+                    <Bell className="h-5 w-5" style={{ color: '#004c22' }} />
                     Notificaciones recientes
                   </CardTitle>
                   <CardDescription>
@@ -462,7 +459,7 @@ export default function ProfilePage() {
                         <div className="mb-1 flex items-start justify-between gap-2">
                           <p className="text-sm font-medium text-foreground">{notification.title}</p>
                           {!notification.read && (
-                            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-700">
+                            <span className="rounded-lg px-2 py-0.5 text-xs font-semibold" style={{ background: '#e6efe9', color: '#004c22' }}>
                               Nuevo
                             </span>
                           )}

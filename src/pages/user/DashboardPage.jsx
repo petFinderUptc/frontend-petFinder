@@ -100,7 +100,7 @@ function RecentReportRow({ report }) {
     >
       <ReportThumb url={report.imageUrl} alt={report.petName} />
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate group-hover:text-blue-600 transition-colors">
+        <p className="font-medium text-sm truncate transition-colors group-hover:text-[#004c22]">
           {report.petName}
         </p>
         <p className="text-xs text-muted-foreground">
@@ -149,15 +149,18 @@ export default function DashboardPage() {
   const recent   = adapted.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
       {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
+      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+            <h1
+              className="text-3xl font-extrabold mb-1"
+              style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
               Hola, {user?.firstName || user?.username || 'Usuario'} 👋
             </h1>
-            <p className="text-gray-600 dark:text-slate-400 text-sm">
+            <p className="text-sm" style={{ color: '#555f70' }}>
               Aquí tienes un resumen de tu actividad en PetFinder
             </p>
           </div>
@@ -175,8 +178,8 @@ export default function DashboardPage() {
               value={total}
               total={total}
               icon={ClipboardList}
-              colorClass="border-blue-200 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/20"
-              barColor="bg-blue-500"
+              colorClass="border-[#c8e6d4] bg-[#f0f7f2]"
+              barColor="bg-[#004c22]"
             />
             <StatCard
               label="Activos ahora"
@@ -184,7 +187,7 @@ export default function DashboardPage() {
               value={active}
               total={total}
               icon={Search}
-              colorClass="border-amber-200 bg-amber-50/40 dark:border-amber-800 dark:bg-amber-950/20"
+              colorClass="border-amber-200 bg-amber-50/60"
               barColor="bg-amber-500"
             />
             <StatCard
@@ -193,7 +196,7 @@ export default function DashboardPage() {
               value={resolved}
               total={total}
               icon={CheckCircle}
-              colorClass="border-emerald-200 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
+              colorClass="border-emerald-200 bg-emerald-50/60"
               barColor="bg-emerald-500"
             />
           </div>
@@ -203,8 +206,8 @@ export default function DashboardPage() {
             <Card className="hover:shadow-md transition-shadow group">
               <CardContent className="p-5">
                 <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40 rounded-xl group-hover:scale-105 transition-transform">
-                    <PlusCircle className="h-7 w-7 text-blue-600" />
+                  <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
+                    <PlusCircle className="h-7 w-7" style={{ color: '#004c22' }} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-0.5">Publicar Nuevo Reporte</h3>
@@ -217,8 +220,8 @@ export default function DashboardPage() {
             <Card className="hover:shadow-md transition-shadow group">
               <CardContent className="p-5">
                 <Link to={PUBLIC_ROUTES.SEARCH} className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 rounded-xl group-hover:scale-105 transition-transform">
-                    <Search className="h-7 w-7 text-emerald-600" />
+                  <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
+                    <Search className="h-7 w-7" style={{ color: '#166534' }} />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-0.5">Explorar Reportes</h3>
@@ -238,7 +241,7 @@ export default function DashboardPage() {
                   <CardDescription>Tus últimos reportes publicados</CardDescription>
                 </div>
                 <Link to={PROTECTED_ROUTES.MY_REPORTS}>
-                  <Button variant="ghost" size="sm" className="gap-1 text-blue-600 hover:text-blue-700">
+                  <Button variant="ghost" size="sm" className="gap-1" style={{ color: '#004c22' }}>
                     Ver todos <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </Link>
@@ -270,7 +273,7 @@ export default function DashboardPage() {
                   <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground mb-4">Aún no has publicado ningún reporte.</p>
                   <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                    <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                    <Button size="sm" className="text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
                       <PlusCircle className="h-4 w-4 mr-2" /> Crear primer reporte
                     </Button>
                   </Link>

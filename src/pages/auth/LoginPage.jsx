@@ -71,12 +71,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#faf9f5' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/LOGOPNG.png" alt="PetFinder" className="h-16 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Bienvenido</h1>
-          <p className="text-gray-700 dark:text-slate-300 mt-2">Inicia sesión en tu cuenta</p>
+          <img src="/LOGOPNG.png" alt="PetFinder" className="h-14 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Bienvenido</h1>
+          <p className="mt-2" style={{ color: '#555f70' }}>Inicia sesión en tu cuenta</p>
         </div>
 
         <Card className="shadow-xl border-0">
@@ -163,7 +163,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   to={PUBLIC_ROUTES.FORGOT_PASSWORD}
-                  className="text-blue-600 hover:text-blue-700 hover:underline"
+                  className="font-semibold hover:underline" style={{ color: '#004c22' }}
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -171,7 +171,8 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                className="w-full text-white"
+                style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
@@ -183,7 +184,7 @@ export default function LoginPage() {
                 ¿No tienes una cuenta?{' '}
                 <Link
                   to={PUBLIC_ROUTES.REGISTER}
-                  className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                  className="font-semibold hover:underline" style={{ color: '#004c22' }}
                 >
                   Regístrate aquí
                 </Link>

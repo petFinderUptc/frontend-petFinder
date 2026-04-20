@@ -110,7 +110,7 @@ export default function PetDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#faf9f5' }}>
         <p className="text-muted-foreground">Cargando reporte...</p>
       </div>
     );
@@ -131,7 +131,7 @@ export default function PetDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
       <div className="container mx-auto px-4 max-w-4xl">
         <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" /> Volver
@@ -212,14 +212,14 @@ export default function PetDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-500" />
+                <Phone className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Contacto</p>
                   <p className="font-medium">{report.contactPhone || report.contact || 'No disponible'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-500" />
+                <MapPin className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Ubicacion</p>
                   <p className="font-medium">{locationLabel || `${latitude ?? 'N/A'}, ${longitude ?? 'N/A'}`}</p>
@@ -227,7 +227,7 @@ export default function PetDetailPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <Calendar className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Publicado</p>
                   <p className="font-medium">

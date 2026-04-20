@@ -8,9 +8,6 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           {/* Logo y descripción */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <img src="/LOGOPNG.png" alt="PetFinder" className="h-10 w-auto" />
-            </div>
             <p className="text-sm text-muted-foreground">
               Plataforma de reencuentro de mascotas en Tunja y alrededores.
             </p>
