@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, ClipboardList, Trash2, RefreshCw, ShieldCheck,
   AlertCircle, Search, UserX,
@@ -348,25 +349,47 @@ export default function AdminPage() {
   const [tab, setTab] = useState('reports');
 
   return (
-    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
+    <motion.div
+      className="min-h-screen"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Header */}
-      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
+      <motion.div
+        className="py-10 border-b"
+        style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}
+        initial={{ opacity: 0, y: -28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40">
+            <motion.div
+              className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40"
+              initial={{ scale: 0, rotate: 15 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.2 }}
+            >
               <ShieldCheck className="h-6 w-6 text-amber-600" />
-            </div>
+            </motion.div>
             <h1 className="text-2xl sm:text-3xl font-bold">Panel de Administración</h1>
           </div>
           <p className="text-muted-foreground text-sm ml-14">
             Gestión de reportes y usuarios de la plataforma
           </p>
         </div>
-      </div>
+      </motion.div>
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-muted rounded-xl w-fit mb-6">
+        <motion.div
+          className="flex gap-1 p-1 bg-muted rounded-xl w-fit mb-6"
+          initial={{ opacity: 0, x: -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.45, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        >
           {[
             { key: 'reports', label: 'Reportes', icon: ClipboardList },
             { key: 'users',   label: 'Usuarios', icon: Users },
@@ -384,19 +407,35 @@ export default function AdminPage() {
               {label}
             </button>
           ))}
-        </div>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">
-              {tab === 'reports' ? 'Todos los reportes' : 'Todos los usuarios'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {tab === 'reports' ? <ReportsTab /> : <UsersTab />}
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">
+                {tab === 'reports' ? 'Todos los reportes' : 'Todos los usuarios'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tab}
+                  initial={{ opacity: 0, x: tab === 'reports' ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: tab === 'reports' ? 20 : -20 }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {tab === 'reports' ? <ReportsTab /> : <UsersTab />}
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
