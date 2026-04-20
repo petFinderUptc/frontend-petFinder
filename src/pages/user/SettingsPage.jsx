@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Moon, Sun, Bell, BellOff, Monitor, Check, Globe, Shield, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -52,7 +53,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -87,7 +94,7 @@ export default function SettingsPage() {
                   {/* Light Theme */}
                   <button
                     onClick={() => handleThemeChange('light')}
-                    className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
+                    className={`p-4 border-2 rounded-lg transition-all hover:border-[#004c22] ${
                       theme === 'light' 
                         ? 'border-primary bg-accent' 
                         : 'border bg-card'
@@ -97,7 +104,7 @@ export default function SettingsPage() {
                       <Sun className="h-8 w-8 text-yellow-500" />
                       <span className="font-medium text-sm">Claro</span>
                       {theme === 'light' && (
-                        <Check className="h-4 w-4 text-blue-600" />
+                        <Check className="h-4 w-4 text-[#004c22]" />
                       )}
                     </div>
                   </button>
@@ -105,7 +112,7 @@ export default function SettingsPage() {
                   {/* Dark Theme */}
                   <button
                     onClick={() => handleThemeChange('dark')}
-                    className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
+                    className={`p-4 border-2 rounded-lg transition-all hover:border-[#004c22] ${
                       theme === 'dark' 
                         ? 'border-primary bg-accent' 
                         : 'border bg-card'
@@ -115,7 +122,7 @@ export default function SettingsPage() {
                       <Moon className="h-8 w-8 text-indigo-500" />
                       <span className="font-medium text-sm">Oscuro</span>
                       {theme === 'dark' && (
-                        <Check className="h-4 w-4 text-blue-600" />
+                        <Check className="h-4 w-4 text-[#004c22]" />
                       )}
                     </div>
                   </button>
@@ -123,7 +130,7 @@ export default function SettingsPage() {
                   {/* System Theme */}
                   <button
                     onClick={() => handleThemeChange('system')}
-                    className={`p-4 border-2 rounded-lg transition-all hover:border-blue-400 ${
+                    className={`p-4 border-2 rounded-lg transition-all hover:border-[#004c22] ${
                       theme === 'system' 
                         ? 'border-primary bg-accent' 
                         : 'border bg-card'
@@ -133,7 +140,7 @@ export default function SettingsPage() {
                       <Monitor className="h-8 w-8 text-muted-foreground" />
                       <span className="font-medium text-sm">Sistema</span>
                       {theme === 'system' && (
-                        <Check className="h-4 w-4 text-blue-600" />
+                        <Check className="h-4 w-4 text-[#004c22]" />
                       )}
                     </div>
                   </button>
@@ -314,6 +321,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

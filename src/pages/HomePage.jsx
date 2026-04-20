@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Search, PlusCircle, Heart, AlertCircle } from 'lucide-react';
+import { Search, PlusCircle, Heart, AlertCircle, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import PetCard from '../components/PetCard';
 import { StatsSection } from '../components/StatsSection';
@@ -8,125 +9,273 @@ import { useAuth } from '../context/AuthContext';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 import { getReports, getReportStats } from '../services/reportService';
 
+// ─── Variantes de animación reutilizables ─────────────────────────────────────
+const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const stagger = {
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.12 } },
+};
+
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
-
-  const [recentPets, setRecentPets] = useState([]);
-  const [petsLoading, setPetsLoading] = useState(true);
-  const [petsError, setPetsError] = useState(null);
-
-  const [stats, setStats] = useState(null);
+  const [recentPets, setRecentPets]     = useState([]);
+  const [petsLoading, setPetsLoading]   = useState(true);
+  const [petsError, setPetsError]       = useState(null);
+  const [stats, setStats]               = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch recent reports and stats in parallel
       const [reportsResult, statsResult] = await Promise.allSettled([
         getReports({ page: 1, limit: 3 }),
         getReportStats(),
       ]);
-
-      // Recent pets
       if (reportsResult.status === 'fulfilled') {
-        const response = reportsResult.value;
-        const reports = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response)
-            ? response
-            : [];
+        const r = reportsResult.value;
+        const reports = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
         setRecentPets(reports.slice(0, 3));
       } else {
         setPetsError('No fue posible cargar los reportes recientes.');
       }
       setPetsLoading(false);
-
-      // Stats
-      if (statsResult.status === 'fulfilled') {
-        setStats(statsResult.value);
-      }
+      if (statsResult.status === 'fulfilled') setStats(statsResult.value);
       setStatsLoading(false);
     };
-
     void fetchData();
   }, []);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block mb-4 px-4 py-2 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-100 rounded-full text-sm font-medium">
-              🐾 Plataforma de Reencuentro de Mascotas
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-slate-900 dark:text-white">
-              Ayudamos a reunir familias con sus mascotas
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-700 dark:text-slate-300 mb-8">
-              Busca, publica y encuentra mascotas perdidas en Tunja y alrededores.
-              Una comunidad unida para ayudar a nuestros mejores amigos.
-            </p>
+    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden pt-20 pb-24 md:pt-28 md:pb-36">
+        {/* Blobs ambientales */}
+        <div aria-hidden className="pointer-events-none absolute -top-40 -left-40 h-[560px] w-[560px] rounded-full opacity-[0.15]"
+          style={{ background: 'radial-gradient(circle, #004c22 0%, transparent 70%)' }} />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 -right-32 h-[400px] w-[400px] rounded-full opacity-[0.08]"
+          style={{ background: 'radial-gradient(circle, #166534 0%, transparent 70%)' }} />
+
+        <div className="container relative mx-auto px-4">
+          <motion.div
+            className="max-w-3xl mx-auto text-center"
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.h1
+              variants={fadeUp}
+              className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight"
+              style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
+              Reunimos familias{' '}
+              <span style={{ color: '#004c22' }}>con sus mascotas</span>
+            </motion.h1>
+
+            <motion.p
+              variants={fadeUp}
+              className="text-lg md:text-xl mb-10 leading-relaxed"
+              style={{ color: '#555f70', maxWidth: '560px', margin: '0 auto 2.5rem' }}
+            >
+              Busca, publica y encuentra el peludito en cuestión.
+              Sabemos lo angustiante que puede ser, ayúdanos y te ayudaremos.
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={PUBLIC_ROUTES.SEARCH}>
-                <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white gap-2 w-full sm:w-auto shadow-lg">
+                <button
+                  className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold text-white w-full sm:w-auto transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)',
+                    boxShadow: '0 4px 20px rgba(0, 76, 34, 0.4)',
+                  }}
+                >
                   <Search className="h-5 w-5" />
                   Buscar Mascotas
-                </Button>
+                </button>
               </Link>
               <Link to={isAuthenticated ? PROTECTED_ROUTES.PUBLISH_REPORT : PUBLIC_ROUTES.LOGIN}>
-                <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto border-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-900/30">
+                <button
+                  className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold w-full sm:w-auto transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                  style={{
+                    background: '#ffffff',
+                    color: '#004c22',
+                    border: '2px solid rgba(0, 76, 34, 0.2)',
+                    boxShadow: '0 2px 12px rgba(0, 76, 34, 0.08)',
+                  }}
+                >
                   <PlusCircle className="h-5 w-5" />
                   Publicar Reporte
-                </Button>
+                </button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Stats Section — donut chart con datos reales */}
+      {/* ── Stats ────────────────────────────────────────────────── */}
       <StatsSection stats={stats} loading={statsLoading} />
 
-      {/* Recent Reports */}
-      <section className="py-16 bg-muted/30">
+      {/* ── How it Works ─────────────────────────────────────────── */}
+      <section className="py-20" style={{ background: '#004c22' }}>
         <div className="container mx-auto px-4">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold mb-3">Reportes Recientes</h2>
-            <p className="text-muted-foreground">Las mascotas reportadas más recientemente en nuestra plataforma</p>
-          </div>
+          <motion.div
+            className="mb-14 text-center"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3 opacity-60 text-white">
+              Proceso
+            </p>
+            <h2
+              className="text-3xl md:text-4xl font-extrabold text-white"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
+              ¿Cómo funciona?
+            </h2>
+            <p className="mt-3 text-base opacity-70 text-white">
+              Tres pasos simples para reunir mascotas con sus familias
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-60px' }}
+          >
+            {[
+              {
+                step: '01',
+                icon: <PlusCircle className="h-7 w-7" style={{ color: '#004c22' }} />,
+                iconBg: '#ffffff',
+                cardBg: '#faf9f5',
+                stepColor: '#004c22',
+                titleColor: '#1b1c1a',
+                descColor: '#555f70',
+                title: 'Publica un Reporte',
+                desc: 'Sube una foto y nuestra IA extrae automáticamente la raza, color y características del animal.',
+              },
+              {
+                step: '02',
+                icon: <Search className="h-7 w-7" style={{ color: '#e6efe9' }} />,
+                iconBg: 'rgba(255,255,255,0.12)',
+                cardBg: '#0d2e1a',
+                stepColor: 'rgba(255,255,255,0.2)',
+                titleColor: '#ffffff',
+                descColor: 'rgba(255,255,255,0.6)',
+                title: 'Detección de Coincidencias',
+                desc: 'El sistema compara tu reporte con todos los activos usando similitud semántica y geolocalización.',
+              },
+              {
+                step: '03',
+                icon: <Heart className="h-7 w-7" style={{ color: '#004c22' }} />,
+                iconBg: '#ffffff',
+                cardBg: '#e6efe9',
+                stepColor: '#166534',
+                titleColor: '#1b1c1a',
+                descColor: '#3d5247',
+                title: '¡Reencuéntrate!',
+                desc: 'Recibe una alerta con los mejores matches y contacta directamente con quien encontró a tu mascota.',
+              },
+            ].map(({ step, icon, iconBg, cardBg, stepColor, titleColor, descColor, title, desc }) => (
+              <motion.div
+                key={step}
+                variants={fadeUp}
+                className="relative p-8 rounded-2xl"
+                style={{ background: cardBg }}
+              >
+                <span
+                  className="absolute top-6 right-6 text-4xl font-extrabold select-none"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: stepColor }}
+                >
+                  {step}
+                </span>
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5" style={{ background: iconBg }}>
+                  {icon}
+                </div>
+                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: titleColor }}>
+                  {title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: descColor }}>{desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Recent Reports ────────────────────────────────────────── */}
+      <section className="py-20" style={{ background: '#faf9f5' }}>
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="flex items-end justify-between mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#004c22' }}>
+                Comunidad
+              </p>
+              <h2
+                className="text-3xl md:text-4xl font-extrabold"
+                style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Reportes Recientes
+              </h2>
+            </div>
+            <Link
+              to={PUBLIC_ROUTES.SEARCH}
+              className="hidden sm:flex items-center gap-1.5 text-sm font-semibold group"
+              style={{ color: '#004c22' }}
+            >
+              Ver todos
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </motion.div>
 
           {petsLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Cargando mascotas...</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-80 rounded-2xl animate-pulse" style={{ background: '#f4f4f0' }} />
+              ))}
             </div>
           ) : petsError ? (
-            <div className="text-center py-12">
-              <p className="text-red-600">{petsError}</p>
-            </div>
+            <div className="text-center py-12" style={{ color: '#555f70' }}>{petsError}</div>
           ) : recentPets.length === 0 ? (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-muted-foreground">No hay reportes disponibles aún.</p>
+            <div className="text-center py-16">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4" style={{ color: '#c8cdc6' }} />
+              <p className="text-base mb-6" style={{ color: '#555f70' }}>No hay reportes disponibles aún.</p>
               {isAuthenticated && (
-                <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="mt-4 inline-block">
-                  <Button>Publicar el primer reporte</Button>
-                </Link>
+                <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}><Button>Publicar el primer reporte</Button></Link>
               )}
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+                variants={stagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: '-40px' }}
+              >
                 {recentPets.map((pet) => (
-                  <PetCard key={pet.id} pet={pet} />
+                  <motion.div key={pet.id} variants={fadeUp}>
+                    <PetCard pet={pet} />
+                  </motion.div>
                 ))}
-              </div>
-
-              <div className="text-center">
+              </motion.div>
+              <div className="text-center sm:hidden">
                 <Link to={PUBLIC_ROUTES.SEARCH}>
-                  <Button size="lg" variant="outline" className="gap-2">
-                    Ver Todos los Reportes
-                    <Search className="h-4 w-4" />
+                  <Button variant="outline" className="gap-2">
+                    Ver Todos los Reportes <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
@@ -135,61 +284,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How it Works */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold mb-3">¿Cómo Funciona?</h2>
-            <p className="text-muted-foreground">Tres simples pasos para ayudar a reunir mascotas con sus familias</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="inline-block p-6 bg-blue-100 rounded-full mb-4">
-                <PlusCircle className="h-12 w-12 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">1. Publica un Reporte</h3>
-              <p className="text-muted-foreground">
-                Crea un reporte con foto, descripción y ubicación de la mascota perdida o encontrada.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="inline-block p-6 bg-cyan-100 rounded-full mb-4">
-                <Search className="h-12 w-12 text-cyan-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">2. Busca y Comparte</h3>
-              <p className="text-muted-foreground">
-                Explora los reportes activos y comparte aquellos que puedan ayudar a otros.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="inline-block p-6 bg-green-100 rounded-full mb-4">
-                <Heart className="h-12 w-12 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">3. ¡Reencuéntrate!</h3>
-              <p className="text-muted-foreground">
-                Contacta directamente con quien reportó y ayuda a reunir a la mascota con su familia.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-cyan-400 to-blue-500 text-white">
+      {/* ── CTA Banner ───────────────────────────────────────────── */}
+      <motion.section
+        className="py-20"
+        style={{ background: 'linear-gradient(135deg, #004c22 0%, #0a3d1f 50%, #052e14 100%)' }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.7 }}
+      >
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">¿Has perdido o encontrado una mascota?</h2>
-          <p className="text-xl mb-8 opacity-90">No esperes más. Cada minuto cuenta.</p>
+          <h2
+            className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            ¿Has perdido o encontrado<br className="hidden md:block" /> una mascota?
+          </h2>
+          <p className="text-lg mb-10 opacity-75 text-white">
+            No esperes más — cada minuto cuenta para un reencuentro.
+          </p>
           <Link to={isAuthenticated ? PROTECTED_ROUTES.PUBLISH_REPORT : PUBLIC_ROUTES.LOGIN}>
-            <Button size="lg" variant="secondary" className="gap-2 bg-white text-blue-600 hover:bg-gray-100">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold"
+              style={{ background: '#ffffff', color: '#004c22', boxShadow: '0 4px 24px rgba(0,0,0,0.25)' }}
+            >
               <PlusCircle className="h-5 w-5" />
               Publicar Reporte Ahora
-            </Button>
+            </motion.button>
           </Link>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }

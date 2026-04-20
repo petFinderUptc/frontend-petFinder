@@ -11,21 +11,17 @@ import { PetMap } from '../../components/PetMap';
 function SearchResultCardSkeleton() {
   return (
     <Card className="overflow-hidden h-full">
-      {/* imagen */}
-      <div className="w-full h-48 bg-muted animate-pulse" />
+      <div className="w-full h-48 animate-pulse" style={{ background: '#f4f4f0' }} />
       <CardContent className="p-4 space-y-3">
-        {/* badges */}
         <div className="flex items-center justify-between gap-2">
-          <div className="h-5 w-16 rounded-full bg-muted animate-pulse" />
-          <div className="h-5 w-20 rounded-full bg-muted animate-pulse" />
+          <div className="h-5 w-16 rounded-lg animate-pulse" style={{ background: '#f4f4f0' }} />
+          <div className="h-5 w-20 rounded-lg animate-pulse" style={{ background: '#f4f4f0' }} />
         </div>
-        {/* descripción */}
         <div className="space-y-1.5">
-          <div className="h-3 w-full rounded bg-muted animate-pulse" />
-          <div className="h-3 w-4/5 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-full rounded animate-pulse" style={{ background: '#f4f4f0' }} />
+          <div className="h-3 w-4/5 rounded animate-pulse" style={{ background: '#f4f4f0' }} />
         </div>
-        {/* estado */}
-        <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+        <div className="h-3 w-1/3 rounded animate-pulse" style={{ background: '#f4f4f0' }} />
       </CardContent>
     </Card>
   );
@@ -165,14 +161,22 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen py-8" style={{ background: '#faf9f5' }}>
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Listado de reportes</h1>
+          <h1
+            className="text-3xl md:text-4xl font-extrabold mb-2"
+            style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            Reportes activos
+          </h1>
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-muted-foreground">{title}</p>
+            <p style={{ color: '#555f70' }}>{title}</p>
             {isSemanticSearch && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
+              <span
+                className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                style={{ background: '#e6efe9', color: '#004c22' }}
+              >
                 <Sparkles className="h-3 w-3" />
                 Búsqueda IA activa
               </span>

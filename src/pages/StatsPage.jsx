@@ -14,7 +14,7 @@ const PALETTE = {
   lost:     { fill: '#f97316', bg: 'bg-orange-50  dark:bg-orange-950/30', text: 'text-orange-500', border: 'border-orange-200 dark:border-orange-800' },
   found:    { fill: '#10b981', bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
   resolved: { fill: '#8b5cf6', bg: 'bg-violet-50  dark:bg-violet-950/30', text: 'text-violet-500', border: 'border-violet-200 dark:border-violet-800' },
-  total:    { fill: '#3b82f6', bg: 'bg-blue-50    dark:bg-blue-950/30',   text: 'text-blue-500',   border: 'border-blue-200   dark:border-blue-800'   },
+  total:    { fill: '#004c22', bg: 'bg-[#e6efe9]',                        text: 'text-[#004c22]',  border: 'border-[#c8e6d4]'                         },
 };
 
 const SPECIES_META = {
@@ -166,25 +166,25 @@ export default function StatsPage() {
   const speciesTotal = SPECIES_ORDER.reduce((s, k) => s + (speciesCounts[k] ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#faf9f5' }}>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
+      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
         <div className="container mx-auto px-4 max-w-5xl">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+          <div className="flex items-center gap-2 text-sm mb-3" style={{ color: '#555f70' }}>
             <Link to={PUBLIC_ROUTES.HOME} className="hover:text-foreground transition-colors">Inicio</Link>
             <span>/</span>
             <span>Estadísticas</span>
           </div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/40">
-              <TrendingUp className="h-6 w-6 text-blue-600" />
+            <div className="p-2.5 rounded-xl" style={{ background: '#e6efe9' }}>
+              <TrendingUp className="h-6 w-6" style={{ color: '#004c22' }} />
             </div>
-            <h1 className="text-3xl font-bold">Estadísticas de la comunidad</h1>
+            <h1 className="text-3xl font-extrabold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Estadísticas de la comunidad
+            </h1>
           </div>
-          <p className="text-muted-foreground">
-            Actividad de mascotas reportadas en Tunja y alrededores
-          </p>
+          <p style={{ color: '#555f70' }}>Actividad de mascotas reportadas en Tunja y alrededores</p>
         </div>
       </div>
 
@@ -311,7 +311,7 @@ export default function StatsPage() {
                   {/* Métricas secundarias */}
                   <div className="space-y-2 text-sm">
                     {[
-                      { label: 'Reportes activos ahora', value: active,   color: 'text-blue-500'    },
+                      { label: 'Reportes activos ahora', value: active,   color: 'text-[#004c22]'  },
                       { label: 'Casos resueltos',        value: resolved, color: 'text-violet-500'  },
                       { label: 'Total histórico',        value: total,    color: 'text-foreground'  },
                     ].map(({ label, value, color }) => (
@@ -389,7 +389,7 @@ export default function StatsPage() {
         {/* ── CTA ── */}
         <div className="text-center py-4">
           <Link to={PUBLIC_ROUTES.SEARCH}>
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 gap-2">
+            <Button className="text-white gap-2" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
               <Search className="h-4 w-4" />
               Explorar reportes activos
               <ArrowRight className="h-4 w-4" />

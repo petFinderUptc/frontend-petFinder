@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { PlusCircle, Search, CheckCircle, AlertCircle, ArrowRight, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../../constants/routes';
@@ -100,7 +101,7 @@ function RecentReportRow({ report }) {
     >
       <ReportThumb url={report.imageUrl} alt={report.petName} />
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate group-hover:text-blue-600 transition-colors">
+        <p className="font-medium text-sm truncate transition-colors group-hover:text-[#004c22]">
           {report.petName}
         </p>
         <p className="text-xs text-muted-foreground">
@@ -149,15 +150,24 @@ export default function DashboardPage() {
   const recent   = adapted.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      className="min-h-screen"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black py-12 border-b">
+      <div className="py-10 border-b" style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}>
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+            <h1
+              className="text-3xl font-extrabold mb-1"
+              style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
               Hola, {user?.firstName || user?.username || 'Usuario'} 👋
             </h1>
-            <p className="text-gray-600 dark:text-slate-400 text-sm">
+            <p className="text-sm" style={{ color: '#555f70' }}>
               Aquí tienes un resumen de tu actividad en PetFinder
             </p>
           </div>
@@ -168,66 +178,52 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto space-y-8">
 
           {/* Métricas */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <StatCard
-              label="Total publicados"
-              sublabel="reportes en total"
-              value={total}
-              total={total}
-              icon={ClipboardList}
-              colorClass="border-blue-200 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/20"
-              barColor="bg-blue-500"
-            />
-            <StatCard
-              label="Activos ahora"
-              sublabel="del total están activos"
-              value={active}
-              total={total}
-              icon={Search}
-              colorClass="border-amber-200 bg-amber-50/40 dark:border-amber-800 dark:bg-amber-950/20"
-              barColor="bg-amber-500"
-            />
-            <StatCard
-              label="Resueltos"
-              sublabel="mascotas reunidas"
-              value={resolved}
-              total={total}
-              icon={CheckCircle}
-              colorClass="border-emerald-200 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
-              barColor="bg-emerald-500"
-            />
-          </div>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+            initial="hidden"
+            animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+          >
+            {[
+              { label: 'Total publicados', sublabel: 'reportes en total', value: total, icon: ClipboardList, colorClass: 'border-[#c8e6d4] bg-[#f0f7f2]', barColor: 'bg-[#004c22]' },
+              { label: 'Activos ahora', sublabel: 'del total están activos', value: active, icon: Search, colorClass: 'border-amber-200 bg-amber-50/60', barColor: 'bg-amber-500' },
+              { label: 'Resueltos', sublabel: 'mascotas reunidas', value: resolved, icon: CheckCircle, colorClass: 'border-emerald-200 bg-emerald-50/60', barColor: 'bg-emerald-500' },
+            ].map((s) => (
+              <motion.div key={s.label} variants={{ hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22,1,0.36,1] } } }}>
+                <StatCard label={s.label} sublabel={s.sublabel} value={s.value} total={total} icon={s.icon} colorClass={s.colorClass} barColor={s.barColor} />
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* Acciones rápidas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Card className="hover:shadow-md transition-shadow group">
-              <CardContent className="p-5">
-                <Link to={PROTECTED_ROUTES.PUBLISH_REPORT} className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40 rounded-xl group-hover:scale-105 transition-transform">
-                    <PlusCircle className="h-7 w-7 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-0.5">Publicar Nuevo Reporte</h3>
-                    <p className="text-sm text-muted-foreground">¿Perdiste o encontraste una mascota?</p>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow group">
-              <CardContent className="p-5">
-                <Link to={PUBLIC_ROUTES.SEARCH} className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 rounded-xl group-hover:scale-105 transition-transform">
-                    <Search className="h-7 w-7 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-0.5">Explorar Reportes</h3>
-                    <p className="text-sm text-muted-foreground">Busca mascotas perdidas o encontradas</p>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            initial="hidden" animate="show"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.45 } } }}
+          >
+            {[
+              { to: PROTECTED_ROUTES.PUBLISH_REPORT, icon: PlusCircle, color: '#004c22', title: 'Publicar Nuevo Reporte', sub: '¿Perdiste o encontraste una mascota?' },
+              { to: PUBLIC_ROUTES.SEARCH, icon: Search, color: '#166534', title: 'Explorar Reportes', sub: 'Busca mascotas perdidas o encontradas' },
+            ].map(({ to, icon: Icon, color, title, sub }) => (
+              <motion.div key={to} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: [0.22,1,0.36,1] } } }}>
+                <motion.div whileHover={{ y: -3, boxShadow: '0 8px 28px rgba(0,76,34,0.1)' }} transition={{ duration: 0.2 }}>
+                  <Card className="transition-shadow group cursor-pointer">
+                    <CardContent className="p-5">
+                      <Link to={to} className="flex items-start gap-4">
+                        <div className="p-3 rounded-xl group-hover:scale-105 transition-transform" style={{ background: '#e6efe9' }}>
+                          <Icon className="h-7 w-7" style={{ color }} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-0.5">{title}</h3>
+                          <p className="text-sm text-muted-foreground">{sub}</p>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
 
           {/* Actividad reciente */}
           <Card>
@@ -238,7 +234,7 @@ export default function DashboardPage() {
                   <CardDescription>Tus últimos reportes publicados</CardDescription>
                 </div>
                 <Link to={PROTECTED_ROUTES.MY_REPORTS}>
-                  <Button variant="ghost" size="sm" className="gap-1 text-blue-600 hover:text-blue-700">
+                  <Button variant="ghost" size="sm" className="gap-1" style={{ color: '#004c22' }}>
                     Ver todos <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </Link>
@@ -270,7 +266,7 @@ export default function DashboardPage() {
                   <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground mb-4">Aún no has publicado ningún reporte.</p>
                   <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                    <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                    <Button size="sm" className="text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
                       <PlusCircle className="h-4 w-4 mr-2" /> Crear primer reporte
                     </Button>
                   </Link>
@@ -285,6 +281,6 @@ export default function DashboardPage() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
