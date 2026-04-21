@@ -177,3 +177,179 @@ export const validatePasswordMatch = (password, confirmPassword) => {
 
   return { isValid: true, error: '' };
 };
+
+/**
+ * Valida número de teléfono colombiano.
+ * Acepta:
+ *   - Celular: 3XXXXXXXXX (10 dígitos, empieza en 3)
+ *   - Celular con código: +573XXXXXXXXX o 573XXXXXXXXX
+ *   - Fijo: [1-8]XXXXXXX (7-8 dígitos) o con código +57
+ * Permite espacios, guiones y paréntesis como separadores.
+ */
+export const validateColombianPhone = (phone) => {
+  if (!phone || phone.trim() === '') {
+    return { isValid: false, error: 'El número de teléfono es obligatorio.' };
+  }
+
+  // Eliminar espacios, guiones y paréntesis para validar solo dígitos
+  const digits = phone.replace(/[\s\-().]/g, '');
+
+  // Con código de país +57 o 57
+  const withCode = /^(\+?57)(3\d{9}|[1-8]\d{6,7})$/.test(digits);
+  // Sin código: celular 10 dígitos empieza en 3, o fijo 7-8 dígitos
+  const withoutCode = /^3\d{9}$/.test(digits) || /^[1-8]\d{6,7}$/.test(digits);
+
+  if (!withCode && !withoutCode) {
+    return {
+      isValid: false,
+      error:
+        'Número inválido. Ingresa un celular colombiano (ej: 310 123 4567) o fijo con indicativo (ej: 608 123 4567).',
+    };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+/**
+ * Valida el campo de contacto de un reporte.
+ * Acepta teléfono colombiano O correo electrónico.
+ */
+export const validateContact = (contact) => {
+  if (!contact || contact.trim() === '') {
+    return { isValid: false, error: 'El contacto es obligatorio.' };
+  }
+
+  if (contact.trim().length > 100) {
+    return { isValid: false, error: 'El contacto no puede superar los 100 caracteres.' };
+  }
+
+  const value = contact.trim();
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  if (isEmail) return { isValid: true, error: '' };
+
+  const digits = value.replace(/[\s\-().]/g, '');
+  const isColombianPhone =
+    /^(\+?57)?(3\d{9}|[1-8]\d{6,7})$/.test(digits);
+  if (isColombianPhone) return { isValid: true, error: '' };
+
+  return {
+    isValid: false,
+    error:
+      'Ingresa un número de teléfono colombiano (ej: 310 123 4567) o un correo electrónico válido.',
+  };
+};
+
+/**
+ * Valida nombre propio (nombre, apellido).
+ * Solo letras, acentos, espacios y guiones. Entre 2 y 50 caracteres.
+ */
+export const validatePersonName = (value, fieldLabel = 'El nombre') => {
+  if (!value || value.trim() === '') {
+    return { isValid: false, error: `${fieldLabel} es obligatorio.` };
+  }
+
+  const trimmed = value.trim();
+
+  if (trimmed.length < 2) {
+    return { isValid: false, error: `${fieldLabel} debe tener al menos 2 caracteres.` };
+  }
+
+  if (trimmed.length > 50) {
+    return { isValid: false, error: `${fieldLabel} no puede superar los 50 caracteres.` };
+  }
+
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']+$/.test(trimmed)) {
+    return {
+      isValid: false,
+      error: `${fieldLabel} solo puede contener letras, espacios y guiones. No se permiten números ni símbolos.`,
+    };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+/**
+ * Valida campo de color de mascota.
+ * Solo letras, espacios, comas y guiones. Entre 2 y 50 caracteres.
+ */
+export const validateColor = (color) => {
+  if (!color || color.trim() === '') {
+    return { isValid: false, error: 'El color es obligatorio.' };
+  }
+
+  const trimmed = color.trim();
+
+  if (trimmed.length < 2) {
+    return { isValid: false, error: 'El color debe tener al menos 2 caracteres.' };
+  }
+
+  if (trimmed.length > 50) {
+    return { isValid: false, error: 'El color no puede superar los 50 caracteres.' };
+  }
+
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s,\-/]+$/.test(trimmed)) {
+    return {
+      isValid: false,
+      error: 'El color solo puede contener letras. Ej: "negro", "blanco y café".',
+    };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+/**
+ * Valida campo de raza de mascota.
+ * Letras, espacios, guiones y apóstrofes. Entre 2 y 60 caracteres.
+ */
+export const validateBreed = (breed) => {
+  if (!breed || breed.trim() === '') {
+    return { isValid: false, error: 'La raza es obligatoria.' };
+  }
+
+  const trimmed = breed.trim();
+
+  if (trimmed.length < 2) {
+    return { isValid: false, error: 'La raza debe tener al menos 2 caracteres.' };
+  }
+
+  if (trimmed.length > 60) {
+    return { isValid: false, error: 'La raza no puede superar los 60 caracteres.' };
+  }
+
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']+$/.test(trimmed)) {
+    return {
+      isValid: false,
+      error: "La raza solo puede contener letras y guiones. Ej: \"Golden Retriever\", \"mestizo\".",
+    };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+/**
+ * Valida descripción de reporte.
+ * Entre 10 y 500 caracteres.
+ */
+export const validateDescription = (description) => {
+  if (!description || description.trim() === '') {
+    return { isValid: false, error: 'La descripción es obligatoria.' };
+  }
+
+  const trimmed = description.trim();
+
+  if (trimmed.length < 10) {
+    return {
+      isValid: false,
+      error: `La descripción debe tener al menos 10 caracteres. Actualmente: ${trimmed.length}.`,
+    };
+  }
+
+  if (trimmed.length > 500) {
+    return {
+      isValid: false,
+      error: `La descripción no puede superar los 500 caracteres. Actualmente: ${trimmed.length}.`,
+    };
+  }
+
+  return { isValid: true, error: '' };
+};

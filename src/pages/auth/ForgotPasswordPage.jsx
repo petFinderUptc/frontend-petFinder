@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { forgotPassword } from '../../services/authService';
 import { PUBLIC_ROUTES } from '../../constants/routes';
@@ -38,18 +39,38 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-black flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <img
-            src="/LOGOPNG.png"
-            alt="PetFinder"
-            className="h-16 mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Recuperar contraseña</h1>
-          <p className="text-gray-700 dark:text-slate-300 mt-2">Te enviaremos un enlace para recuperar tu acceso</p>
-        </div>
+    <motion.div
+      className="min-h-screen flex items-center justify-center py-12 px-4 overflow-hidden relative"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+    >
+      {/* Blob decorativo */}
+      <motion.div
+        className="pointer-events-none absolute rounded-full"
+        style={{ width: 400, height: 400, background: 'radial-gradient(circle, rgba(0,76,34,0.07) 0%, transparent 70%)', top: '-10%', right: '-10%' }}
+        animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
+      <div className="w-full max-w-md relative z-10">
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <img src="/LOGOPNG.png" alt="PetFinder" className="h-14 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold" style={{ color: '#1b1c1a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Recuperar contraseña</h1>
+          <p className="mt-2" style={{ color: '#555f70' }}>Te enviaremos un enlace para recuperar tu acceso</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
         <Card className="shadow-xl border-0">
           <CardHeader>
             <CardTitle>¿Olvidaste tu contraseña?</CardTitle>
@@ -66,14 +87,24 @@ export default function ForgotPasswordPage() {
             )}
 
             {success && (
-              <Alert className="mb-4 border-green-300 text-green-700">
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <Alert className="mb-4 border-green-300 text-green-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              </motion.div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+              >
                 <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                   Correo Electrónico
                 </label>
@@ -86,28 +117,37 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                 />
-              </div>
+              </motion.div>
 
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
-                disabled={loading}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.38 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
               >
-                {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
-              </Button>
+                <Button
+                  type="submit"
+                  className="w-full text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}
+                  disabled={loading}
+                >
+                  {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                </Button>
+              </motion.div>
             </form>
 
             <div className="mt-6 text-center">
               <Link
                 to={PUBLIC_ROUTES.LOGIN}
-                className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                className="text-sm font-semibold hover:underline" style={{ color: '#004c22' }}
               >
                 Volver a iniciar sesión
               </Link>
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -28,6 +28,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import SearchPage from './pages/pet/SearchPage';
 import PetDetailPage from './pages/pet/PetDetailPage';
+import StatsPage from './pages/StatsPage';
 
 // Protected Pages
 import AdminPage from './pages/admin/AdminPage';
@@ -38,6 +39,7 @@ import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 import EditReportPage from './pages/pet/EditReportPage';
 import MyReportsPage from './pages/user/MyReportsPage';
+import AdminPage from './pages/admin/AdminPage';
 
 /**
  * NotFoundPage - Página 404 simple
@@ -75,6 +77,7 @@ const AppRouter = () => {
       <Route path={PUBLIC_ROUTES.HOME} element={<MainLayout><HomePage /></MainLayout>} />
       <Route path={PUBLIC_ROUTES.SEARCH} element={<MainLayout><SearchPage /></MainLayout>} />
       <Route path={PUBLIC_ROUTES.PET_DETAIL} element={<MainLayout><PetDetailPage /></MainLayout>} />
+      <Route path={PUBLIC_ROUTES.STATS} element={<MainLayout><StatsPage /></MainLayout>} />
       
       {/* Rutas de Autenticación sin Layout (pantalla completa) */}
       <Route path={PUBLIC_ROUTES.LOGIN} element={<LoginPage />} />

@@ -1,6 +1,11 @@
 import apiClient from './api/apiClient';
 import { REPORT_ENDPOINTS, ADMIN_ENDPOINTS } from '../constants/apiEndpoints';
 
+export const getReportStats = async () => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.STATS);
+  return response.data;
+};
+
 export const getReports = async (params = {}) => {
   const response = await apiClient.get(REPORT_ENDPOINTS.GET_ALL, { params });
   return response.data;

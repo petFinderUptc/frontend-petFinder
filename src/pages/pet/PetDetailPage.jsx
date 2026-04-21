@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, MapPin, Phone, Sparkles } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { getReportById } from '../../services/reportService';
+import { getReportById, getReportSummary } from '../../services/reportService';
 import { getPetById } from '../../services/petService';
 import { reverseGeocode } from '../../services/locationService';
 import { adaptPost } from '../../utils/postAdapter';
@@ -41,6 +42,8 @@ export default function PetDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [locationLabel, setLocationLabel] = useState('');
+  const [aiSummary, setAiSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -78,6 +81,15 @@ export default function PetDetailPage() {
             setLocationLabel('Ubicacion aproximada');
           }
         }
+
+        // Cargar resumen IA en paralelo (no bloquea el render)
+        if (!id?.startsWith('post_') && normalizedReport?.id) {
+          setSummaryLoading(true);
+          getReportSummary(normalizedReport.id)
+            .then(({ summary }) => setAiSummary(summary || null))
+            .catch(() => {})
+            .finally(() => setSummaryLoading(false));
+        }
       } catch (err) {
         const statusCode = err?.status || err?.response?.status;
         if (statusCode === 404) {
@@ -99,7 +111,7 @@ export default function PetDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#faf9f5' }}>
         <p className="text-muted-foreground">Cargando reporte...</p>
       </div>
     );
@@ -107,7 +119,7 @@ export default function PetDetailPage() {
 
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#faf9f5' }}>
         <Card className="max-w-lg w-full">
           <CardContent className="p-8 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
@@ -120,7 +132,13 @@ export default function PetDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <motion.div
+      className="min-h-screen py-8"
+      style={{ background: '#faf9f5' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="container mx-auto px-4 max-w-4xl">
         <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" /> Volver
@@ -143,6 +161,27 @@ export default function PetDetailPage() {
             ) : (
               <div className="w-full h-96 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                 Sin imagen disponible
+              </div>
+            )}
+
+            {/* Resumen IA */}
+            {(summaryLoading || aiSummary) && (
+              <div className="rounded-xl border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30 px-4 py-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                    Resumen generado por IA
+                  </span>
+                </div>
+                {summaryLoading ? (
+                  <div className="space-y-1.5 mt-1">
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-full" />
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-4/5" />
+                    <div className="h-3 rounded bg-violet-200 dark:bg-violet-800 animate-pulse w-3/5" />
+                  </div>
+                ) : (
+                  <p className="text-sm text-violet-900 dark:text-violet-200 leading-relaxed">{aiSummary}</p>
+                )}
               </div>
             )}
 
@@ -180,14 +219,14 @@ export default function PetDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-500" />
+                <Phone className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Contacto</p>
                   <p className="font-medium">{report.contactPhone || report.contact || 'No disponible'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-500" />
+                <MapPin className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Ubicacion</p>
                   <p className="font-medium">{locationLabel || `${latitude ?? 'N/A'}, ${longitude ?? 'N/A'}`}</p>
@@ -195,7 +234,7 @@ export default function PetDetailPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <Calendar className="h-4 w-4 text-[#004c22]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Publicado</p>
                   <p className="font-medium">
@@ -215,6 +254,6 @@ export default function PetDetailPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }

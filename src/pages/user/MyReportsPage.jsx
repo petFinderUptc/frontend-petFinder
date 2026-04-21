@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';

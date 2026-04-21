@@ -4,6 +4,15 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
+const EMPTY_FILTERS = {
+  reportType: 'all',
+  species: 'all',
+  size: 'all',
+  color: '',
+  breed: '',
+  searchTerm: '',
+};
+
 export function FilterPanel({ filters, onFilterChange, onSearch }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -25,20 +34,9 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
   };
 
   const clearFilters = () => {
-    onFilterChange({
-      reportType: 'all',
-      species: 'all',
-      size: 'all',
-      searchTerm: '',
-    });
-
+    onFilterChange(EMPTY_FILTERS);
     if (typeof onSearch === 'function') {
-      onSearch({
-        reportType: 'all',
-        species: 'all',
-        size: 'all',
-        searchTerm: '',
-      });
+      onSearch(EMPTY_FILTERS);
     }
   };
 
@@ -46,7 +44,9 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
     filters.reportType !== 'all',
     filters.species !== 'all',
     filters.size !== 'all',
-    filters.searchTerm !== '',
+    !!filters.color,
+    !!filters.breed,
+    !!filters.searchTerm,
   ].filter(Boolean).length;
 
   return (
@@ -55,7 +55,7 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar por especie, raza o descripción"
+            placeholder="Buscar por especie, raza o descripción..."
             value={filters.searchTerm}
             onChange={(e) => updateFilter('searchTerm', e.target.value)}
             onKeyDown={onSearchInputKeyDown}
@@ -67,7 +67,7 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
           <Search className="h-4 w-4" />
           Buscar
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -86,9 +86,10 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
 
       {isExpanded && (
         <div className="space-y-4 pt-4 border-t">
+          {/* Fila 1: Tipo, Especie, Tamaño */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Estado</label>
+              <label className="text-sm font-medium mb-2 block">Tipo</label>
               <select
                 value={filters.reportType}
                 onChange={(e) => updateFilter('reportType', e.target.value)}
@@ -99,7 +100,7 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
                 <option value="found">Encontrados</option>
               </select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Especie</label>
               <select
@@ -107,7 +108,7 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
                 onChange={(e) => updateFilter('species', e.target.value)}
                 className="w-full h-9 px-3 py-1 rounded-md border border-input bg-background text-sm"
               >
-                <option value="all">Todos</option>
+                <option value="all">Todas</option>
                 <option value="dog">Perros</option>
                 <option value="cat">Gatos</option>
                 <option value="bird">Aves</option>
@@ -115,7 +116,7 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
                 <option value="other">Otros</option>
               </select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Tamaño</label>
               <select
@@ -128,6 +129,31 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
                 <option value="medium">Mediano</option>
                 <option value="large">Grande</option>
               </select>
+            </div>
+          </div>
+
+          {/* Fila 2: Color, Raza */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Color</label>
+              <Input
+                placeholder="ej: negro, blanco y café"
+                value={filters.color}
+                onChange={(e) => updateFilter('color', e.target.value)}
+                onKeyDown={onSearchInputKeyDown}
+                maxLength={50}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Raza</label>
+              <Input
+                placeholder="ej: labrador, mestizo"
+                value={filters.breed}
+                onChange={(e) => updateFilter('breed', e.target.value)}
+                onKeyDown={onSearchInputKeyDown}
+                maxLength={60}
+              />
             </div>
           </div>
 
