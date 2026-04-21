@@ -1,5 +1,5 @@
 import apiClient from './api/apiClient';
-import { REPORT_ENDPOINTS } from '../constants/apiEndpoints';
+import { REPORT_ENDPOINTS, ADMIN_ENDPOINTS } from '../constants/apiEndpoints';
 
 export const getReports = async (params = {}) => {
   const response = await apiClient.get(REPORT_ENDPOINTS.GET_ALL, { params });
@@ -76,5 +76,10 @@ export const exportReportsCsv = async () => {
  */
 export const backfillEmbeddings = async () => {
   const response = await apiClient.post(REPORT_ENDPOINTS.BACKFILL_EMBEDDINGS);
+  return response.data;
+};
+
+export const adminDeleteReport = async (id) => {
+  const response = await apiClient.delete(ADMIN_ENDPOINTS.ADMIN_DELETE_REPORT(id));
   return response.data;
 };

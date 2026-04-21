@@ -18,6 +18,7 @@ import MainLayout from './layouts/MainLayout';
 
 // Auth Components
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Public Pages
 import HomePage from './pages/HomePage';
@@ -29,6 +30,7 @@ import SearchPage from './pages/pet/SearchPage';
 import PetDetailPage from './pages/pet/PetDetailPage';
 
 // Protected Pages
+import AdminPage from './pages/admin/AdminPage';
 import DashboardPage from './pages/user/DashboardPage';
 import ProfilePage from './pages/user/ProfilePage';
 import NotificationsPage from './pages/user/NotificationsPage';
@@ -149,6 +151,17 @@ const AppRouter = () => {
               <NotificationsPage />
             </MainLayout>
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path={PROTECTED_ROUTES.ADMIN}
+        element={
+          <AdminRoute>
+            <MainLayout>
+              <AdminPage />
+            </MainLayout>
+          </AdminRoute>
         }
       />
 

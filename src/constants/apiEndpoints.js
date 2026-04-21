@@ -84,6 +84,15 @@ export const LOCATION_ENDPOINTS = {
 };
 
 /**
+ * Admin related endpoints
+ */
+export const ADMIN_ENDPOINTS = {
+  GET_ALL_USERS: '/users',
+  DELETE_USER: (id) => `/users/${id}`,
+  ADMIN_DELETE_REPORT: (id) => `/reports/admin/${id}`,
+};
+
+/**
  * Notification related endpoints
  */
 export const NOTIFICATION_ENDPOINTS = {
