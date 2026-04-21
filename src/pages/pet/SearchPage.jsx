@@ -335,6 +335,6 @@ export default function SearchPage() {
           )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -6,6 +6,16 @@ export const getReportStats = async () => {
   return response.data;
 };
 
+export const getReportMatches = async (id) => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.MATCHES(id));
+  return response.data;
+};
+
+export const getReportSummary = async (id) => {
+  const response = await apiClient.get(`/reports/${id}/summary`);
+  return response.data;
+};
+
 export const getReports = async (params = {}) => {
   const response = await apiClient.get(REPORT_ENDPOINTS.GET_ALL, { params });
   return response.data;

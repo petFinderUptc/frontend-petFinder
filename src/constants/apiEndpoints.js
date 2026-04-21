@@ -47,7 +47,9 @@ export const PET_ENDPOINTS = {
 export const REPORT_ENDPOINTS = {
   GET_ALL: '/reports',
   SEARCH: '/reports/search',
+  STATS: '/reports/stats',
   GET_BY_ID: (id) => `/reports/${id}`,
+  MATCHES: (id) => `/reports/${id}/matches`,
   CREATE: '/reports',
   UPDATE: (id) => `/reports/${id}`,
   DELETE: (id) => `/reports/${id}`,
@@ -58,14 +60,6 @@ export const REPORT_ENDPOINTS = {
   BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
   ANALYZE_IMAGE: '/reports/analyze-image',
   AI_STATUS: '/reports/ai-status',
-};
-
-/**
- * User related endpoints
- */
-export const ADMIN_ENDPOINTS = {
-  GET_ALL_USERS: '/users',
-  DELETE_USER: (id) => `/users/${id}`,
 };
 
 export const USER_ENDPOINTS = {

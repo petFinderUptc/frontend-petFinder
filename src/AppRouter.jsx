@@ -39,7 +39,6 @@ import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 import EditReportPage from './pages/pet/EditReportPage';
 import MyReportsPage from './pages/user/MyReportsPage';
-import AdminPage from './pages/admin/AdminPage';
 
 /**
  * NotFoundPage - Página 404 simple

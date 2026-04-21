@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle2, Info, Loader2, MapPin, Navigation, Sparkles, Upload } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertCircle, CheckCircle2, HelpCircle, Info, Loader2, MapPin, Navigation, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -10,8 +11,9 @@ import { MatchesModal } from '../../components/MatchesModal';
 import { useAlert } from '../../context/AlertContext';
 import { PUBLIC_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
-import { analyzeReportImage, createReport, uploadReportImage } from '../../services/reportService';
+import { analyzeReportImage, createReport, getReportMatches, uploadReportImage } from '../../services/reportService';
 import { AiStatusBadge } from '../../components/AiStatusBadge';
+import { validateColor, validateBreed, validateDescription, validateContact } from '../../utils/validation';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -86,7 +88,9 @@ export default function PublishReportPage() {
   const [submitError, setSubmitError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState(null); // { species, color, breed, confidence, aiAvailable, message }
+  const [aiResult, setAiResult] = useState(null);
+  const [aiFields, setAiFields] = useState(null);
+  const [matches, setMatches] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
@@ -192,8 +196,8 @@ export default function PublishReportPage() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-    setError('');
     setAiResult(null);
+    setAiFields(null);
 
     // Análisis IA en segundo plano
     setIsAnalyzing(true);
@@ -201,12 +205,13 @@ export default function PublishReportPage() {
       .then((result) => {
         setAiResult(result);
         if (result.species && result.species !== 'other') {
-          setFormData((prev) => ({
-            ...prev,
+          const detected = {
             species: result.species,
             ...(result.color ? { color: result.color } : {}),
             ...(result.breed ? { breed: result.breed } : {}),
-          }));
+          };
+          setFormData((prev) => ({ ...prev, ...detected }));
+          setAiFields(detected);
         }
       })
       .catch(() => {
@@ -342,7 +347,16 @@ export default function PublishReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <>
+      {matches && (
+        <MatchesModal
+          open={!!matches}
+          matches={matches.items}
+          reportType={matches.type}
+          onClose={() => { setMatches(null); navigate(PUBLIC_ROUTES.SEARCH); }}
+        />
+      )}
+      <div className="min-h-screen bg-background py-8">
       <AiStatusBadge />
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
@@ -645,7 +659,7 @@ export default function PublishReportPage() {
           </motion.div>
         </div>
       </div>
-    </motion.div>
+    </div>
     </>
   );
 }
