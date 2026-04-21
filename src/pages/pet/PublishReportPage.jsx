@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, MapPin, Navigation, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Loader2, MapPin, Navigation, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -9,7 +9,8 @@ import { LocationPicker } from '../../components/LocationPicker';
 import { useAlert } from '../../context/AlertContext';
 import { PUBLIC_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
-import { createReport, uploadReportImage } from '../../services/reportService';
+import { analyzeReportImage, createReport, uploadReportImage } from '../../services/reportService';
+import { AiStatusBadge } from '../../components/AiStatusBadge';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -35,6 +36,8 @@ export default function PublishReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState(null); // { species, color, breed, confidence, aiAvailable, message }
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
@@ -120,6 +123,26 @@ export default function PublishReportPage() {
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setError('');
+    setAiResult(null);
+
+    // Análisis IA en segundo plano
+    setIsAnalyzing(true);
+    analyzeReportImage(file)
+      .then((result) => {
+        setAiResult(result);
+        if (result.species && result.species !== 'other') {
+          setFormData((prev) => ({
+            ...prev,
+            species: result.species,
+            ...(result.color ? { color: result.color } : {}),
+            ...(result.breed ? { breed: result.breed } : {}),
+          }));
+        }
+      })
+      .catch(() => {
+        setAiResult({ aiAvailable: false, message: 'No se pudo analizar la imagen automáticamente.' });
+      })
+      .finally(() => setIsAnalyzing(false));
   };
 
   const selectSuggestion = (suggestion) => {
@@ -263,6 +286,7 @@ export default function PublishReportPage() {
 
   return (
     <div className="min-h-screen bg-background py-8">
+      <AiStatusBadge />
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <Card>
@@ -304,6 +328,33 @@ export default function PublishReportPage() {
                       alt="Vista previa del reporte"
                       className="mt-3 h-64 w-full rounded-lg border object-cover"
                     />
+                  )}
+                  {isAnalyzing && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-violet-600 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin flex-shrink-0" />
+                      <span>Analizando imagen con IA...</span>
+                    </div>
+                  )}
+                  {!isAnalyzing && aiResult && (
+                    <div className={`mt-3 flex items-start gap-2 text-xs rounded-lg px-3 py-2 border ${
+                      aiResult.species && aiResult.species !== 'other' && aiResult.confidence !== 'low'
+                        ? 'bg-green-50 border-green-200 text-green-700'
+                        : 'bg-amber-50 border-amber-200 text-amber-700'
+                    }`}>
+                      {aiResult.species && aiResult.species !== 'other' && aiResult.confidence !== 'low' ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        {aiResult.species && aiResult.species !== 'other' ? (
+                          <span className="font-medium">IA detectó: {aiResult.species === 'dog' ? 'Perro' : aiResult.species === 'cat' ? 'Gato' : aiResult.species === 'bird' ? 'Ave' : aiResult.species === 'rabbit' ? 'Conejo' : 'Otro'}{aiResult.breed ? ` (${aiResult.breed})` : ''}{aiResult.color ? `, ${aiResult.color}` : ''}</span>
+                        ) : null}
+                        {aiResult.message && (
+                          <span className={aiResult.species && aiResult.species !== 'other' ? ' — ' : ''}>{aiResult.message}</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                   {isSubmitting && uploadProgress > 0 && (
                     <div className="mt-2">

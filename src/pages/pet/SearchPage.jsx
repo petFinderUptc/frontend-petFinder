@@ -6,6 +6,7 @@ import { FilterPanel } from '../../components/FilterPanel';
 import { getReports, searchReports } from '../../services/reportService';
 import { SearchResultCard } from '../../components/SearchResultCard';
 import { PetMap } from '../../components/PetMap';
+import { AiStatusBadge } from '../../components/AiStatusBadge';
 
 const PAGE_SIZE = 9;
 
@@ -136,6 +137,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background py-8">
+      <AiStatusBadge />
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Listado de reportes</h1>

@@ -83,3 +83,17 @@ export const adminDeleteReport = async (id) => {
   const response = await apiClient.delete(ADMIN_ENDPOINTS.ADMIN_DELETE_REPORT(id));
   return response.data;
 };
+
+export const analyzeReportImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await apiClient.post(REPORT_ENDPOINTS.ANALYZE_IMAGE, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const getAiStatus = async () => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.AI_STATUS);
+  return response.data;
+};
