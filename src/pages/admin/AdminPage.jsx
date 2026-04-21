@@ -1,27 +1,17 @@
-import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Users, ClipboardList, Trash2, RefreshCw, ShieldCheck,
-  AlertCircle, Search, UserX,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
+import { useEffect, useState } from 'react';
+import { Trash2, AlertCircle, RefreshCw, Users, FileText, Search } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
-import apiClient from '../../services/api/apiClient';
-import { REPORT_ENDPOINTS, ADMIN_ENDPOINTS } from '../../constants/apiEndpoints';
+import { getReports } from '../../services/reportService';
+import { adminDeleteReport } from '../../services/reportService';
+import { adminGetAllUsers, adminDeleteUser } from '../../services/userService';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Badge } from '../../components/ui/badge';
 
-const SPECIES_LABEL = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' };
-const TYPE_LABEL    = { lost: 'Perdido', found: 'Encontrado' };
-const STATUS_LABEL  = { active: 'Activo', resolved: 'Resuelto', inactive: 'Inactivo' };
-const STATUS_VARIANT = { active: 'default', resolved: 'secondary', inactive: 'outline' };
+const typeLabels = { lost: 'Perdido', found: 'Encontrado' };
+const statusLabels = { active: 'Activo', resolved: 'Resuelto', inactive: 'Inactivo' };
 
-// ─── Skeleton genérico ────────────────────────────────────────────────────────
-function Skeleton({ className }) {
-  return <div className={`rounded bg-muted animate-pulse ${className}`} />;
-}
-
-// ─── Confirmación de borrado ──────────────────────────────────────────────────
 function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
   if (!open) return null;
   return (
@@ -30,20 +20,15 @@ function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-sm rounded-2xl bg-background border shadow-xl p-6"
+        className="w-full max-w-sm rounded-2xl bg-background border shadow-xl p-6 animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-            <Trash2 className="h-5 w-5 text-red-600" />
-          </div>
-          <h2 className="text-base font-semibold">{title}</h2>
-        </div>
+        <h2 className="text-base font-semibold mb-2">{title}</h2>
         <p className="text-sm text-muted-foreground mb-6">{description}</p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onCancel}>Cancelar</Button>
           <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm}>
-            Eliminar
+            Sí, eliminar
           </Button>
         </div>
       </div>
@@ -51,288 +36,123 @@ function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
   );
 }
 
-// ─── Tab: Reportes ────────────────────────────────────────────────────────────
 function ReportsTab() {
   const { addAlert } = useAlert();
   const [reports, setReports] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
-  const [pendingDelete, setPendingDelete] = useState(null);
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
   const [busyId, setBusyId] = useState('');
-  const [search, setSearch] = useState('');
+  const [pending, setPending] = useState(null);
 
-  const load = useCallback(async (page = 1) => {
+  const load = async () => {
     setLoading(true);
+    setError('');
     try {
-      const res = await apiClient.get(REPORT_ENDPOINTS.ADMIN_ALL, { params: { page, limit: 20 } });
-      setReports(res.data?.data ?? []);
-      setPagination(res.data?.pagination ?? { page: 1, totalPages: 1, total: 0 });
-    } catch {
-      addAlert({ type: 'error', message: 'No se pudieron cargar los reportes.' });
+      const res = await getReports({ limit: 100 });
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+      setReports(data);
+    } catch (err) {
+      setError(err?.message || 'No fue posible cargar los reportes.');
     } finally {
       setLoading(false);
     }
-  }, [addAlert]);
+  };
 
-  useEffect(() => { load(1); }, [load]);
+  useEffect(() => { void load(); }, []);
 
-  const confirmDelete = async () => {
-    const id = pendingDelete;
-    setPendingDelete(null);
+  const filtered = reports.filter((r) => {
+    const q = query.toLowerCase();
+    return !q || r.species?.toLowerCase().includes(q) || r.breed?.toLowerCase().includes(q) || r.id?.includes(q);
+  });
+
+  const handleDelete = async () => {
+    const id = pending;
+    setPending(null);
     setBusyId(id);
     try {
-      await apiClient.delete(REPORT_ENDPOINTS.ADMIN_DELETE(id));
+      await adminDeleteReport(id);
+      setReports((prev) => prev.filter((r) => r.id !== id));
       addAlert({ type: 'success', message: 'Reporte eliminado.' });
-      load(pagination.page);
-    } catch {
-      addAlert({ type: 'error', message: 'No se pudo eliminar el reporte.' });
+    } catch (err) {
+      addAlert({ type: 'error', message: err?.message || 'No fue posible eliminar el reporte.' });
     } finally {
       setBusyId('');
     }
   };
 
-  const filtered = search.trim()
-    ? reports.filter(
-        (r) =>
-          r.description?.toLowerCase().includes(search.toLowerCase()) ||
-          r.breed?.toLowerCase().includes(search.toLowerCase()) ||
-          r.id?.toLowerCase().includes(search.toLowerCase()),
-      )
-    : reports;
-
   return (
     <>
       <ConfirmModal
-        open={!!pendingDelete}
+        open={!!pending}
         title="Eliminar reporte"
-        description="Esta acción no se puede deshacer. El reporte quedará inactivo permanentemente."
-        onConfirm={confirmDelete}
-        onCancel={() => setPendingDelete(null)}
+        description="Esta acción no se puede deshacer. El reporte dejará de aparecer públicamente."
+        onConfirm={handleDelete}
+        onCancel={() => setPending(null)}
       />
-
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar por descripción, raza o ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <Input
+            className="pl-9"
+            placeholder="Buscar por especie, raza o ID..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="sm" onClick={() => load(pagination.page)} className="gap-1.5 shrink-0">
-          <RefreshCw className="h-3.5 w-3.5" /> Actualizar
+        <Button variant="outline" onClick={load} className="gap-2">
+          <RefreshCw className="h-4 w-4" /> Actualizar
         </Button>
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14" />)}
+        <p className="text-center text-muted-foreground py-8">Cargando reportes...</p>
+      ) : error ? (
+        <div className="flex items-center gap-2 text-red-600 py-8">
+          <AlertCircle className="h-5 w-5" /> {error}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          <ClipboardList className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No hay reportes.</p>
-        </div>
+        <p className="text-center text-muted-foreground py-8">No se encontraron reportes.</p>
       ) : (
-        <>
-          <div className="rounded-xl border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Especie / Raza</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Tipo</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Estado</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Fecha</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filtered.map((r) => (
-                  <tr key={r.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{SPECIES_LABEL[r.species] ?? r.species}</p>
-                      <p className="text-xs text-muted-foreground">{r.breed || '—'}</p>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <Badge variant={r.type === 'lost' ? 'destructive' : 'default'}>
-                        {TYPE_LABEL[r.type] ?? r.type}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={STATUS_VARIANT[r.status] ?? 'outline'}>
-                        {STATUS_LABEL[r.status] ?? r.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">
-                      {new Date(r.createdAt).toLocaleDateString('es-ES')}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={busyId === r.id}
-                        onClick={() => setPendingDelete(r.id)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-4">
-              <Button
-                variant="outline" size="sm"
-                disabled={pagination.page <= 1}
-                onClick={() => load(pagination.page - 1)}
-              >Anterior</Button>
-              <span className="text-sm text-muted-foreground">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline" size="sm"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => load(pagination.page + 1)}
-              >Siguiente</Button>
-            </div>
-          )}
-        </>
-      )}
-    </>
-  );
-}
-
-// ─── Tab: Usuarios ────────────────────────────────────────────────────────────
-function UsersTab() {
-  const { addAlert } = useAlert();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pendingDelete, setPendingDelete] = useState(null);
-  const [busyId, setBusyId] = useState('');
-  const [search, setSearch] = useState('');
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await apiClient.get(ADMIN_ENDPOINTS.GET_ALL_USERS);
-      setUsers(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      addAlert({ type: 'error', message: 'No se pudieron cargar los usuarios.' });
-    } finally {
-      setLoading(false);
-    }
-  }, [addAlert]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const confirmDelete = async () => {
-    const id = pendingDelete;
-    setPendingDelete(null);
-    setBusyId(id);
-    try {
-      await apiClient.delete(ADMIN_ENDPOINTS.DELETE_USER(id));
-      addAlert({ type: 'success', message: 'Usuario desactivado.' });
-      load();
-    } catch {
-      addAlert({ type: 'error', message: 'No se pudo eliminar el usuario.' });
-    } finally {
-      setBusyId('');
-    }
-  };
-
-  const filtered = search.trim()
-    ? users.filter(
-        (u) =>
-          u.email?.toLowerCase().includes(search.toLowerCase()) ||
-          u.username?.toLowerCase().includes(search.toLowerCase()) ||
-          `${u.firstName} ${u.lastName}`.toLowerCase().includes(search.toLowerCase()),
-      )
-    : users;
-
-  return (
-    <>
-      <ConfirmModal
-        open={!!pendingDelete}
-        title="Desactivar usuario"
-        description="El usuario perderá acceso a la plataforma. Sus reportes serán desactivados."
-        onConfirm={confirmDelete}
-        onCancel={() => setPendingDelete(null)}
-      />
-
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre, email o username..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <Button variant="outline" size="sm" onClick={load} className="gap-1.5 shrink-0">
-          <RefreshCw className="h-3.5 w-3.5" /> Actualizar
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14" />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No hay usuarios.</p>
-        </div>
-      ) : (
-        <div className="rounded-xl border overflow-hidden">
+        <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Usuario</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Rol</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Estado</th>
-                <th className="px-4 py-3" />
+                <th className="text-left p-3 font-medium">ID</th>
+                <th className="text-left p-3 font-medium">Especie</th>
+                <th className="text-left p-3 font-medium">Raza</th>
+                <th className="text-left p-3 font-medium">Tipo</th>
+                <th className="text-left p-3 font-medium">Estado</th>
+                <th className="text-left p-3 font-medium">Fecha</th>
+                <th className="text-right p-3 font-medium">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
-              {filtered.map((u) => (
-                <tr key={u.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <p className="font-medium">{u.firstName} {u.lastName}</p>
-                    <p className="text-xs text-muted-foreground">@{u.username}</p>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={u.role === 'admin' ? 'default' : 'outline'}>
-                      {u.role}
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.id} className="border-t hover:bg-muted/30 transition-colors">
+                  <td className="p-3 font-mono text-xs text-muted-foreground">{r.id?.slice(0, 8)}…</td>
+                  <td className="p-3 capitalize">{r.species || '—'}</td>
+                  <td className="p-3">{r.breed || '—'}</td>
+                  <td className="p-3">
+                    <Badge variant={r.type === 'lost' ? 'destructive' : 'default'}>
+                      {typeLabels[r.type] || r.type}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={`inline-flex items-center gap-1 text-xs font-medium ${u.isActive ? 'text-emerald-600' : 'text-red-500'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${u.isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                      {u.isActive ? 'Activo' : 'Inactivo'}
-                    </span>
+                  <td className="p-3">
+                    <Badge variant="outline">{statusLabels[r.status] || r.status}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    {u.role !== 'admin' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={busyId === u.id}
-                        onClick={() => setPendingDelete(u.id)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
-                      >
-                        <UserX className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <td className="p-3 text-muted-foreground">
+                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-ES') : '—'}
+                  </td>
+                  <td className="p-3 text-right">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={busyId === r.id}
+                      onClick={() => setPending(r.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -344,98 +164,169 @@ function UsersTab() {
   );
 }
 
-// ─── Página principal ─────────────────────────────────────────────────────────
+function UsersTab() {
+  const { addAlert } = useAlert();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [busyId, setBusyId] = useState('');
+  const [pending, setPending] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await adminGetAllUsers();
+      setUsers(data);
+    } catch (err) {
+      setError(err?.message || 'No fue posible cargar los usuarios.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const filtered = users.filter((u) => {
+    const q = query.toLowerCase();
+    return !q || u.email?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q) || u.fullName?.toLowerCase().includes(q);
+  });
+
+  const handleDelete = async () => {
+    const id = pending;
+    setPending(null);
+    setBusyId(id);
+    try {
+      await adminDeleteUser(id);
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      addAlert({ type: 'success', message: 'Usuario desactivado.' });
+    } catch (err) {
+      addAlert({ type: 'error', message: err?.message || 'No fue posible desactivar el usuario.' });
+    } finally {
+      setBusyId('');
+    }
+  };
+
+  return (
+    <>
+      <ConfirmModal
+        open={!!pending}
+        title="Desactivar usuario"
+        description="El usuario dejará de poder acceder a la plataforma. Esta acción puede revertirse manualmente en base de datos."
+        onConfirm={handleDelete}
+        onCancel={() => setPending(null)}
+      />
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Buscar por email, username o nombre..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <Button variant="outline" onClick={load} className="gap-2">
+          <RefreshCw className="h-4 w-4" /> Actualizar
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="text-center text-muted-foreground py-8">Cargando usuarios...</p>
+      ) : error ? (
+        <div className="flex items-center gap-2 text-red-600 py-8">
+          <AlertCircle className="h-5 w-5" /> {error}
+        </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-center text-muted-foreground py-8">No se encontraron usuarios.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted">
+              <tr>
+                <th className="text-left p-3 font-medium">Nombre</th>
+                <th className="text-left p-3 font-medium">Username</th>
+                <th className="text-left p-3 font-medium">Email</th>
+                <th className="text-left p-3 font-medium">Rol</th>
+                <th className="text-left p-3 font-medium">Estado</th>
+                <th className="text-right p-3 font-medium">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u) => (
+                <tr key={u.id} className="border-t hover:bg-muted/30 transition-colors">
+                  <td className="p-3">{u.fullName || `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || '—'}</td>
+                  <td className="p-3 text-muted-foreground">@{u.username}</td>
+                  <td className="p-3">{u.email}</td>
+                  <td className="p-3">
+                    <Badge variant={u.role === 'admin' ? 'default' : 'outline'}>{u.role || 'user'}</Badge>
+                  </td>
+                  <td className="p-3">
+                    <Badge variant={u.isActive ? 'default' : 'secondary'}>
+                      {u.isActive ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </td>
+                  <td className="p-3 text-right">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={busyId === u.id || u.role === 'admin'}
+                      onClick={() => setPending(u.id)}
+                      title={u.role === 'admin' ? 'No se puede desactivar a un admin' : 'Desactivar usuario'}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function AdminPage() {
   const [tab, setTab] = useState('reports');
 
   return (
-    <motion.div
-      className="min-h-screen"
-      style={{ background: '#faf9f5' }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Header */}
-      <motion.div
-        className="py-10 border-b"
-        style={{ background: '#ffffff', borderColor: 'rgba(27,28,26,0.07)' }}
-        initial={{ opacity: 0, y: -28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex items-center gap-3 mb-1">
-            <motion.div
-              className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/40"
-              initial={{ scale: 0, rotate: 15 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.2 }}
-            >
-              <ShieldCheck className="h-6 w-6 text-amber-600" />
-            </motion.div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Panel de Administración</h1>
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Panel de Administración</h1>
+            <p className="mt-1 text-muted-foreground">Gestión de reportes y usuarios de la plataforma.</p>
           </div>
-          <p className="text-muted-foreground text-sm ml-14">
-            Gestión de reportes y usuarios de la plataforma
-          </p>
-        </div>
-      </motion.div>
 
-      <div className="container mx-auto px-4 max-w-6xl py-8">
-        {/* Tabs */}
-        <motion.div
-          className="flex gap-1 p-1 bg-muted rounded-xl w-fit mb-6"
-          initial={{ opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {[
-            { key: 'reports', label: 'Reportes', icon: ClipboardList },
-            { key: 'users',   label: 'Usuarios', icon: Users },
-          ].map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === key
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+          <div className="flex gap-2 mb-6">
+            <Button
+              variant={tab === 'reports' ? 'default' : 'outline'}
+              onClick={() => setTab('reports')}
+              className="gap-2"
             >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </motion.div>
+              <FileText className="h-4 w-4" /> Reportes
+            </Button>
+            <Button
+              variant={tab === 'users' ? 'default' : 'outline'}
+              onClick={() => setTab('users')}
+              className="gap-2"
+            >
+              <Users className="h-4 w-4" /> Usuarios
+            </Button>
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                {tab === 'reports' ? 'Todos los reportes' : 'Todos los usuarios'}
-              </CardTitle>
+            <CardHeader>
+              <CardTitle>{tab === 'reports' ? 'Todos los reportes' : 'Todos los usuarios'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={tab}
-                  initial={{ opacity: 0, x: tab === 'reports' ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: tab === 'reports' ? 20 : -20 }}
-                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {tab === 'reports' ? <ReportsTab /> : <UsersTab />}
-                </motion.div>
-              </AnimatePresence>
+              {tab === 'reports' ? <ReportsTab /> : <UsersTab />}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

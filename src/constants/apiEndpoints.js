@@ -47,7 +47,9 @@ export const PET_ENDPOINTS = {
 export const REPORT_ENDPOINTS = {
   GET_ALL: '/reports',
   SEARCH: '/reports/search',
+  STATS: '/reports/stats',
   GET_BY_ID: (id) => `/reports/${id}`,
+  MATCHES: (id) => `/reports/${id}/matches`,
   CREATE: '/reports',
   UPDATE: (id) => `/reports/${id}`,
   DELETE: (id) => `/reports/${id}`,
@@ -56,20 +58,8 @@ export const REPORT_ENDPOINTS = {
   EXPORT: '/reports/export',
   EXPORT_CSV: '/reports/export/csv',
   BACKFILL_EMBEDDINGS: '/reports/backfill-embeddings',
-  STATS: '/reports/stats',
-  ADMIN_ALL: '/reports/admin/all',
-  ADMIN_DELETE: (id) => `/reports/admin/${id}`,
-  ANALYZE_PHOTO: '/reports/analyze-photo',
-  MATCHES: (id) => `/reports/${id}/matches`,
-  SUMMARY: (id) => `/reports/${id}/summary`,
-};
-
-/**
- * User related endpoints
- */
-export const ADMIN_ENDPOINTS = {
-  GET_ALL_USERS: '/users',
-  DELETE_USER: (id) => `/users/${id}`,
+  ANALYZE_IMAGE: '/reports/analyze-image',
+  AI_STATUS: '/reports/ai-status',
 };
 
 export const USER_ENDPOINTS = {
@@ -92,6 +82,15 @@ export const LOCATION_ENDPOINTS = {
   GEOCODE: '/location/geocode',
   SEARCH_ADDRESS: '/location/search-address',
   REVERSE_GEOCODE: '/location/reverse-geocode',
+};
+
+/**
+ * Admin related endpoints
+ */
+export const ADMIN_ENDPOINTS = {
+  GET_ALL_USERS: '/users',
+  DELETE_USER: (id) => `/users/${id}`,
+  ADMIN_DELETE_REPORT: (id) => `/reports/admin/${id}`,
 };
 
 /**

@@ -7,6 +7,7 @@ import { FilterPanel } from '../../components/FilterPanel';
 import { getReports, searchReports } from '../../services/reportService';
 import { SearchResultCard } from '../../components/SearchResultCard';
 import { PetMap } from '../../components/PetMap';
+import { AiStatusBadge } from '../../components/AiStatusBadge';
 
 // ─── Skeleton de SearchResultCard ─────────────────────────────────────────────
 function SearchResultCardSkeleton() {
@@ -171,13 +172,8 @@ export default function SearchPage() {
   };
 
   return (
-    <motion.div
-      className="min-h-screen py-8"
-      style={{ background: '#faf9f5' }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35 }}
-    >
+    <div className="min-h-screen bg-background py-8">
+      <AiStatusBadge />
       <div className="container mx-auto px-4">
         <motion.div
           className="mb-8"
@@ -339,6 +335,6 @@ export default function SearchPage() {
           )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
   );
 }

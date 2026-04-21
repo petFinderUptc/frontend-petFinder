@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Eye, Pencil, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
 import { deleteReport, getMyReports, updateReport } from '../../services/reportService';
-import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../../constants/routes';
+import { PROTECTED_ROUTES } from '../../constants/routes';
 import { Button } from '../../components/ui/button';
 import { ReportCardItem } from '../../components/ReportCardItem';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
 
-// ─── Modal de confirmación ────────────────────────────────────────────────────
-function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
+function ConfirmModal({ open, icon, title, description, confirmLabel, confirmClass, onConfirm, onCancel }) {
   if (!open) return null;
   return (
     <div
@@ -23,22 +21,14 @@ function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-            <Trash2 className="h-5 w-5 text-red-600" />
-          </div>
+          <div className="p-2 rounded-full bg-muted">{icon}</div>
           <h2 className="text-base font-semibold">{title}</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-6">{description}</p>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button
-            size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white"
-            onClick={onConfirm}
-          >
-            Eliminar
+          <Button variant="outline" size="sm" onClick={onCancel}>Cancelar</Button>
+          <Button size="sm" className={confirmClass} onClick={onConfirm}>
+            {confirmLabel}
           </Button>
         </div>
       </div>
@@ -46,30 +36,10 @@ function ConfirmModal({ open, title, description, onConfirm, onCancel }) {
   );
 }
 
-const typeLabels = {
-  lost: 'Perdido',
-  found: 'Encontrado',
-};
-
-const speciesLabels = {
-  dog: 'Perro',
-  cat: 'Gato',
-  bird: 'Ave',
-  rabbit: 'Conejo',
-  other: 'Otro',
-};
-
-const statusLabels = {
-  active: 'Activo',
-  resolved: 'Resuelto',
-  inactive: 'Inactivo',
-};
-
-const statusVariant = {
-  active: 'default',
-  resolved: 'secondary',
-  inactive: 'outline',
-};
+const typeLabels = { lost: 'Perdido', found: 'Encontrado' };
+const speciesLabels = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' };
+const statusLabels = { active: 'Activo', resolved: 'Resuelto', inactive: 'Inactivo' };
+const statusVariant = { active: 'default', resolved: 'secondary', inactive: 'outline' };
 
 export default function MyReportsPage() {
   const { addAlert } = useAlert();
@@ -78,14 +48,13 @@ export default function MyReportsPage() {
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState('');
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingResolve, setPendingResolve] = useState(null);
 
   const loadReports = async () => {
     try {
       setLoading(true);
       setError('');
       const response = await getMyReports();
-      // Ocultar reportes inactivos (eliminados): el usuario ya los borró,
-      // no tiene sentido mostrarlos ni permitir acciones sobre ellos.
       const visible = Array.isArray(response)
         ? response.filter((r) => r.status !== 'inactive')
         : [];
@@ -98,33 +67,21 @@ export default function MyReportsPage() {
     }
   };
 
-  useEffect(() => {
-    void loadReports();
-  }, []);
+  useEffect(() => { void loadReports(); }, []);
 
-  const markAsResolved = async (report) => {
+  const confirmMarkResolved = async () => {
+    const report = pendingResolve;
+    setPendingResolve(null);
     try {
       setBusyId(report.id);
-      await updateReport(report.id, {
-        status: 'resolved',
-      });
-      addAlert({
-        type: 'success',
-        message: 'Reporte marcado como resuelto.',
-      });
+      await updateReport(report.id, { status: 'resolved' });
+      addAlert({ type: 'success', message: 'Reporte marcado como resuelto.' });
       await loadReports();
     } catch (err) {
-      addAlert({
-        type: 'error',
-        message: err?.message || 'No fue posible actualizar el estado.',
-      });
+      addAlert({ type: 'error', message: err?.message || 'No fue posible actualizar el estado.' });
     } finally {
       setBusyId('');
     }
-  };
-
-  const removeReport = (report) => {
-    setPendingDelete(report);
   };
 
   const confirmDelete = async () => {
@@ -133,17 +90,10 @@ export default function MyReportsPage() {
     try {
       setBusyId(report.id);
       await deleteReport(report.id);
-      // Quitar de la lista inmediatamente sin refetch
       setReports((prev) => prev.filter((r) => r.id !== report.id));
-      addAlert({
-        type: 'success',
-        message: 'Reporte eliminado correctamente.',
-      });
+      addAlert({ type: 'success', message: 'Reporte eliminado correctamente.' });
     } catch (err) {
-      addAlert({
-        type: 'error',
-        message: err?.message || 'No fue posible eliminar el reporte.',
-      });
+      addAlert({ type: 'error', message: err?.message || 'No fue posible eliminar el reporte.' });
     } finally {
       setBusyId('');
     }
@@ -151,90 +101,94 @@ export default function MyReportsPage() {
 
   return (
     <>
-    <ConfirmModal
-      open={!!pendingDelete}
-      title="Eliminar reporte"
-      description="Esta acción no se puede deshacer. ¿Deseas eliminar este reporte permanentemente?"
-      onConfirm={confirmDelete}
-      onCancel={() => setPendingDelete(null)}
-    />
-    <motion.div
-      className="min-h-screen py-8"
-      style={{ background: '#faf9f5' }}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-3xl font-bold">Mis Reportes</h1>
-              <p className="mt-1 text-muted-foreground">Administra, edita, resuelve o elimina tus reportes.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={loadReports} className="gap-2">
-                <RefreshCw className="h-4 w-4" /> Actualizar
-              </Button>
-              <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                <Button className="text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Publicar reporte
-                </Button>
-              </Link>
-            </div>
-          </div>
+      <ConfirmModal
+        open={!!pendingResolve}
+        icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
+        title="Marcar como resuelto"
+        description="Esta acción indicará que la mascota fue encontrada o reunida. Ya no podrás editar ni eliminar el reporte. ¿Confirmas?"
+        confirmLabel="Sí, marcar resuelto"
+        confirmClass="bg-green-600 hover:bg-green-700 text-white"
+        onConfirm={confirmMarkResolved}
+        onCancel={() => setPendingResolve(null)}
+      />
+      <ConfirmModal
+        open={!!pendingDelete}
+        icon={<Trash2 className="h-5 w-5 text-red-600" />}
+        title="Eliminar reporte"
+        description="Esta acción no se puede deshacer. El reporte dejará de aparecer en búsquedas públicas. ¿Deseas eliminarlo permanentemente?"
+        confirmLabel="Sí, eliminar"
+        confirmClass="bg-red-600 hover:bg-red-700 text-white"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
 
-          {loading ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">Cargando reportes...</CardContent>
-            </Card>
-          ) : error ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <AlertCircle className="mx-auto mb-3 h-12 w-12 text-red-500" />
-                <p className="text-red-600">{error}</p>
-              </CardContent>
-            </Card>
-          ) : reports.length === 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>No tienes reportes publicados</CardTitle>
-                <CardDescription>Publica tu primer reporte para empezar a recibir ayuda de la comunidad.</CardDescription>
-              </CardHeader>
-              <CardContent>
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-3xl font-bold">Mis Reportes</h1>
+                <p className="mt-1 text-muted-foreground">Administra, edita, resuelve o elimina tus reportes.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={loadReports} className="gap-2">
+                  <RefreshCw className="h-4 w-4" /> Actualizar
+                </Button>
                 <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
-                  <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Crear primer reporte
+                  <Button className="text-white" style={{ background: 'linear-gradient(135deg, #004c22 0%, #166534 100%)' }}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Publicar reporte
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {reports.map((report) => {
-                const isBusy = busyId === report.id;
+              </div>
+            </div>
 
-                return (
+            {loading ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">Cargando reportes...</CardContent>
+              </Card>
+            ) : error ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <AlertCircle className="mx-auto mb-3 h-12 w-12 text-red-500" />
+                  <p className="text-red-600">{error}</p>
+                </CardContent>
+              </Card>
+            ) : reports.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No tienes reportes publicados</CardTitle>
+                  <CardDescription>Publica tu primer reporte para empezar a recibir ayuda de la comunidad.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link to={PROTECTED_ROUTES.PUBLISH_REPORT}>
+                    <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Crear primer reporte
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {reports.map((report) => (
                   <ReportCardItem
                     key={report.id}
                     report={report}
-                    isBusy={isBusy}
+                    isBusy={busyId === report.id}
                     isResolved={report.status === 'resolved'}
-                    onMarkResolved={markAsResolved}
-                    onDelete={removeReport}
+                    onMarkResolved={(r) => setPendingResolve(r)}
+                    onDelete={(r) => setPendingDelete(r)}
                     speciesLabels={speciesLabels}
                     typeLabels={typeLabels}
                     statusLabels={statusLabels}
                     statusVariant={statusVariant}
                   />
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </motion.div>
     </>
   );
 }
