@@ -33,6 +33,8 @@ function getSimilarityConfig(score) {
 
 const SPECIES_LABEL = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' };
 const TYPE_LABEL    = { lost: 'Perdido', found: 'Encontrado' };
+const STATUS_LABEL  = { active: 'Activo', resolved: 'Resuelto', inactive: 'Inactivo' };
+const SIZE_LABEL    = { small: 'Pequeño', medium: 'Mediano', large: 'Grande' };
 const TYPE_STYLE    = {
   lost:  { bg: '#fef2f2', text: '#c0392b' },
   found: { bg: '#e6efe9', text: '#004c22' },
@@ -132,13 +134,13 @@ export const SearchResultCard = memo(function SearchResultCard({ report, species
             {report.description}
           </p>
 
-          <div className="text-xs pt-2" style={{ borderTop: '1px solid rgba(27,28,26,0.07)', color: '#555f70' }}>
-            <span>Estado: </span>
-            <span className="font-semibold" style={{ color: '#1b1c1a' }}>{report.status}</span>
+          <div className="text-xs pt-2 flex flex-wrap gap-x-3 gap-y-1" style={{ borderTop: '1px solid rgba(27,28,26,0.07)', color: '#555f70' }}>
+            <span>Estado: <span className="font-semibold" style={{ color: '#1b1c1a' }}>{STATUS_LABEL[report.status] ?? report.status}</span></span>
+            {report.size && (
+              <span>Tamaño: <span className="font-semibold" style={{ color: '#1b1c1a' }}>{SIZE_LABEL[report.size] ?? report.size}</span></span>
+            )}
             {hasSimilarity && report.distanceKm !== undefined && (
-              <span className="ml-3">
-                A <span className="font-semibold" style={{ color: '#1b1c1a' }}>{report.distanceKm} km</span>
-              </span>
+              <span>A <span className="font-semibold" style={{ color: '#1b1c1a' }}>{report.distanceKm} km</span></span>
             )}
           </div>
         </div>
