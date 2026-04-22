@@ -28,7 +28,7 @@ export const useNotifications = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -38,7 +38,7 @@ export const NotificationProvider = ({ children }) => {
   }), []);
 
   const loadNotifications = useCallback(async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || (user?.notificationsEnabled === false)) {
       setNotifications([]);
       setUnreadCount(0);
       return;
@@ -61,7 +61,7 @@ export const NotificationProvider = ({ children }) => {
       setNotifications([]);
       setUnreadCount(0);
     }
-  }, [isAuthenticated, normalizeNotification]);
+  }, [isAuthenticated, user?.notificationsEnabled, normalizeNotification]);
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {

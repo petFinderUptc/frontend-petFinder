@@ -12,7 +12,7 @@
  */
 
 import apiClient from './api/apiClient';
-import { USER_ENDPOINTS } from '../constants/apiEndpoints';
+import { USER_ENDPOINTS, ADMIN_ENDPOINTS } from '../constants/apiEndpoints';
 import { setItem } from '../utils/storage';
 import { STORAGE_KEYS } from '../constants/appConfig';
 import { normalizeUserFromBackend, toBackendProfilePayload } from '../utils/userAdapter';
@@ -74,5 +74,15 @@ export const deleteAccount = async (password) => {
  */
 export const getMyPets = async () => {
   const response = await apiClient.get(USER_ENDPOINTS.GET_MY_PETS);
+  return response.data;
+};
+
+export const adminGetAllUsers = async () => {
+  const response = await apiClient.get(ADMIN_ENDPOINTS.GET_ALL_USERS);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const adminDeleteUser = async (id) => {
+  const response = await apiClient.delete(ADMIN_ENDPOINTS.DELETE_USER(id));
   return response.data;
 };

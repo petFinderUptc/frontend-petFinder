@@ -1,8 +1,18 @@
 import apiClient from './api/apiClient';
-import { REPORT_ENDPOINTS } from '../constants/apiEndpoints';
+import { REPORT_ENDPOINTS, ADMIN_ENDPOINTS } from '../constants/apiEndpoints';
 
 export const getReportStats = async () => {
   const response = await apiClient.get(REPORT_ENDPOINTS.STATS);
+  return response.data;
+};
+
+export const getReportMatches = async (id) => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.MATCHES(id));
+  return response.data;
+};
+
+export const getReportSummary = async (id) => {
+  const response = await apiClient.get(`/reports/${id}/summary`);
   return response.data;
 };
 
@@ -84,36 +94,21 @@ export const backfillEmbeddings = async () => {
   return response.data;
 };
 
-/**
- * Analiza una foto de mascota con Gemini Vision.
- * @param {File} file - Archivo de imagen (JPG, PNG, WEBP)
- * @returns {{ species, breed, color, size, description }}
- */
-export const analyzePhoto = async (file) => {
+export const adminDeleteReport = async (id) => {
+  const response = await apiClient.delete(ADMIN_ENDPOINTS.ADMIN_DELETE_REPORT(id));
+  return response.data;
+};
+
+export const analyzeReportImage = async (file) => {
   const formData = new FormData();
   formData.append('image', file);
-  const response = await apiClient.post(REPORT_ENDPOINTS.ANALYZE_PHOTO, formData, {
+  const response = await apiClient.post(REPORT_ENDPOINTS.ANALYZE_IMAGE, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return response.data;
 };
 
-/**
- * Busca coincidencias para un reporte publicado (tipo opuesto, semánticamente similares).
- * @param {string} reportId
- * @returns {{ data: Report[], total: number }}
- */
-export const getReportMatches = async (reportId) => {
-  const response = await apiClient.get(REPORT_ENDPOINTS.MATCHES(reportId));
-  return response.data;
-};
-
-/**
- * Genera un resumen IA de un reporte para compartir en redes.
- * @param {string} reportId
- * @returns {{ summary: string | null }}
- */
-export const getReportSummary = async (reportId) => {
-  const response = await apiClient.get(REPORT_ENDPOINTS.SUMMARY(reportId));
+export const getAiStatus = async () => {
+  const response = await apiClient.get(REPORT_ENDPOINTS.AI_STATUS);
   return response.data;
 };

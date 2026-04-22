@@ -31,6 +31,7 @@ import PetDetailPage from './pages/pet/PetDetailPage';
 import StatsPage from './pages/StatsPage';
 
 // Protected Pages
+import AdminPage from './pages/admin/AdminPage';
 import DashboardPage from './pages/user/DashboardPage';
 import ProfilePage from './pages/user/ProfilePage';
 import NotificationsPage from './pages/user/NotificationsPage';
@@ -38,7 +39,6 @@ import SettingsPage from './pages/user/SettingsPage';
 import PublishReportPage from './pages/pet/PublishReportPage';
 import EditReportPage from './pages/pet/EditReportPage';
 import MyReportsPage from './pages/user/MyReportsPage';
-import AdminPage from './pages/admin/AdminPage';
 
 /**
  * NotFoundPage - Página 404 simple
@@ -156,7 +156,6 @@ const AppRouter = () => {
         }
       />
 
-      {/* Admin */}
       <Route
         path={PROTECTED_ROUTES.ADMIN}
         element={

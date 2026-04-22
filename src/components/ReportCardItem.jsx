@@ -60,34 +60,40 @@ export function ReportCardItem({
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)}>
+          <Link to={PUBLIC_ROUTES.PET_DETAIL.replace(':id', report.id)} className={isResolved ? 'col-span-2' : ''}>
             <Button variant="outline" size="sm" className="w-full">
               <Eye className="mr-2 h-4 w-4" /> Ver
             </Button>
           </Link>
-          <Link to={PROTECTED_ROUTES.EDIT_REPORT.replace(':id', report.id)}>
-            <Button variant="outline" size="sm" className="w-full">
-              <Pencil className="mr-2 h-4 w-4" /> Editar
+          {!isResolved && (
+            <Link to={PROTECTED_ROUTES.EDIT_REPORT.replace(':id', report.id)}>
+              <Button variant="outline" size="sm" className="w-full">
+                <Pencil className="mr-2 h-4 w-4" /> Editar
+              </Button>
+            </Link>
+          )}
+          {!isResolved && (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={isBusy}
+              onClick={() => onMarkResolved(report)}
+              className="w-full"
+            >
+              {isBusy ? 'Procesando...' : 'Marcar resuelto'}
             </Button>
-          </Link>
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={isBusy || isResolved}
-            onClick={() => onMarkResolved(report)}
-            className="w-full"
-          >
-            {isBusy ? 'Procesando...' : 'Marcar resuelto'}
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            disabled={isBusy}
-            onClick={() => onDelete(report)}
-            className="w-full"
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-          </Button>
+          )}
+          {!isResolved && (
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isBusy}
+              onClick={() => onDelete(report)}
+              className="w-full"
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
