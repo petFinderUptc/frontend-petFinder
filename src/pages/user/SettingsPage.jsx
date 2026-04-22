@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Moon, Sun, Bell, BellOff, Monitor, Check, Globe, Shield, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
