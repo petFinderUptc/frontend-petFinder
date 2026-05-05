@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ChevronLeft, ChevronRight, MapPinned, Rows3, Sparkles } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, Info, MapPinned, Rows3, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { FilterPanel } from '../../components/FilterPanel';
@@ -157,6 +157,16 @@ export default function SearchPage() {
             onSearch={handleSearch}
           />
         </div>
+
+        {!loading && filters.searchTerm?.trim().length >= 2 && !isSemanticSearch && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              La búsqueda semántica no está disponible temporalmente. Mostrando resultados por
+              coincidencia de texto.
+            </span>
+          </div>
+        )}
 
         <div className="mb-6 flex items-center justify-end gap-2">
           <Button
