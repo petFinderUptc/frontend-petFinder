@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Moon, Sun, Bell, BellOff, Monitor, Check, Globe, Shield, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
@@ -23,8 +23,12 @@ export default function SettingsPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // A3 — notifications preference from backend user object
-  const notificationsEnabled = user?.notificationsEnabled ?? true;
+  const [notificationsEnabled, setNotificationsEnabled] = useState(user?.notificationsEnabled ?? true);
   const [notifSaving, setNotifSaving] = useState(false);
+
+  useEffect(() => {
+    setNotificationsEnabled(user?.notificationsEnabled ?? true);
+  }, [user?.notificationsEnabled]);
 
   // A2 — change password form state
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -47,11 +51,14 @@ export default function SettingsPage() {
   const handleNotificationToggle = async () => {
     const next = !notificationsEnabled;
     setNotifSaving(true);
+    setNotificationsEnabled(next);
     try {
       const updated = await updateUserProfile({ notificationsEnabled: next });
       updateUser(updated);
+      setNotificationsEnabled(updated?.notificationsEnabled ?? next);
       showMsg('success', next ? 'Notificaciones activadas' : 'Notificaciones desactivadas');
     } catch {
+      setNotificationsEnabled(!next);
       showMsg('error', 'No fue posible actualizar la preferencia de notificaciones.');
     } finally {
       setNotifSaving(false);
