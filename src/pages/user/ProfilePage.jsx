@@ -145,6 +145,7 @@ export default function ProfilePage() {
       if (avatarFile) {
         const avatarResponse = await uploadAvatar(avatarFile);
         avatarUrl = avatarResponse.data?.avatarUrl || avatarResponse.avatarUrl;
+        setAvatarPreview(avatarUrl);
       }
 
       // Actualizar perfil
@@ -153,6 +154,7 @@ export default function ProfilePage() {
         lastName: values.lastName,
         phone: values.phone,
         location: values.location,
+        profileImage: avatarUrl,
         avatar: avatarUrl,
       };
 
