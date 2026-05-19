@@ -26,11 +26,13 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     return getItem('theme') || 'light';
   });
+  const [resolvedTheme, setResolvedTheme] = useState('light');
 
   useEffect(() => {
     const root = document.documentElement;
 
     const applyTheme = (resolvedTheme) => {
+      setResolvedTheme(resolvedTheme);
       if (resolvedTheme === 'dark') {
         root.classList.add('dark');
       } else {
@@ -52,12 +54,17 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme((prev) => {
+      if (prev === 'light') return 'dark';
+      if (prev === 'dark') return 'system';
+      return 'light';
+    });
   };
 
   const value = {
     theme,
-    isDark: theme === 'dark',
+    resolvedTheme,
+    isDark: resolvedTheme === 'dark',
     toggleTheme,
     setTheme,
   };

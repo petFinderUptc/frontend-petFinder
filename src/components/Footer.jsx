@@ -84,13 +84,13 @@ export function Footer() {
             <div className="text-sm space-y-1.5" style={{ color: '#555f70' }}>
               <p>
                 <a
-                  href="mailto:notificacions.petfinder@gmail.com"
+                  href="mailto:jhon.castro07@uptc.edu.co"
                   className="transition-colors hover:underline"
                   style={{ color: '#555f70' }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#004c22')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#555f70')}
                 >
-                  notificacions.petfinder@gmail.com
+                  jhon.castro07@uptc.edu.co
                 </a>
               </p>
               <p>Tunja, Boyacá, Colombia - UPTC</p>

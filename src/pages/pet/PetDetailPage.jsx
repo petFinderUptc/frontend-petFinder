@@ -30,6 +30,12 @@ const statusLabel = {
   inactive: 'Inactivo',
 };
 
+const sizeLabel = {
+  small: 'Pequeno',
+  medium: 'Mediano',
+  large: 'Grande',
+};
+
 const statusVariant = {
   active: 'default',
   resolved: 'secondary',
@@ -203,8 +209,8 @@ export default function PetDetailPage() {
                 <p className="font-medium">{report.color}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Tamano</p>
-                <p className="font-medium">{report.size}</p>
+                <p className="text-sm text-muted-foreground">Tamaño</p>
+                <p className="font-medium">{sizeLabel[report.size] || report.size}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Estado</p>

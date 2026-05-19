@@ -1,134 +1,142 @@
-# PetFinder — Frontend
+# PetFinder Frontend
 
-Aplicación web para el reencuentro de mascotas perdidas en Tunja y sus alrededores. Permite a cualquier persona publicar reportes de mascotas perdidas o encontradas, buscarlos con filtros avanzados e incluso por descripción en lenguaje natural gracias a búsqueda semántica con IA.
+Aplicación web para publicar, buscar y gestionar reportes de mascotas perdidas o encontradas.
 
-Desarrollada como proyecto para la asignatura Trabajo de Campo - Universidad Pedagógica y Tecnológica de Colombia (UPTC).
+Está pensada para un flujo simple de uso: crear reporte, consultar coincidencias, compartir información útil y mantener la cuenta bajo control desde configuración.
 
----
+## En qué está enfocada la app
+
+- Experiencia pública para búsqueda de reportes.
+- Panel autenticado para publicar y administrar reportes propios.
+- Integración con backend para IA (análisis de imagen, coincidencias y resumen).
+- Configuración de cuenta (tema, notificaciones, seguridad y eliminación de cuenta).
 
 ## Stack
 
-- **React 18** + **Vite** — interfaz y bundler
-- **React Router v6** — enrutamiento del lado del cliente
-- **Tailwind CSS** + **shadcn/ui** — estilos y componentes base
-- **Framer Motion** — animaciones
-- **Axios** — cliente HTTP con interceptores para JWT
-- **Leaflet** — mapas interactivos
-- **Recharts** — gráficas de estadísticas
-- **Lucide React** — iconografía
-
----
-
-## Estructura
-
-```
-src/
-├── components/          # Componentes reutilizables
-│   ├── ui/              # Primitivos: Button, Card, Input, Badge, Alert
-│   ├── Header.jsx
-│   ├── Footer.jsx
-│   ├── FilterPanel.jsx
-│   ├── LocationPicker.jsx
-│   ├── PetMap.jsx
-│   ├── SearchResultCard.jsx
-│   ├── MatchesModal.jsx
-│   ├── ProfileDropdown.jsx
-│   ├── ReportCardItem.jsx
-│   ├── StatsSection.jsx
-│   ├── ProtectedRoute.jsx
-│   └── AdminRoute.jsx
-├── pages/
-│   ├── HomePage.jsx
-│   ├── StatsPage.jsx
-│   ├── auth/            # Login, Register, ForgotPassword, ResetPassword
-│   ├── pet/             # SearchPage, PetDetailPage, PublishReportPage, EditReportPage
-│   ├── user/            # DashboardPage, ProfilePage, MyReportsPage, NotificationsPage, SettingsPage
-│   └── admin/           # AdminPage
-├── context/             # AuthContext, NotificationContext, ThemeContext, AlertContext
-├── hooks/               # useApi, useDebounce, useForm, useLocalStorage, useSignedUrl, useToggle
-├── services/
-│   ├── api/             # apiClient.js — instancia Axios con interceptores
-│   ├── authService.js
-│   ├── reportService.js
-│   ├── locationService.js
-│   ├── notificationService.js
-│   ├── profileService.js
-│   └── userService.js
-├── utils/               # validation, helpers, postAdapter, userAdapter, storage, alerts
-├── constants/           # routes.js, apiEndpoints.js, appConfig.js
-├── layouts/             # MainLayout.jsx
-├── styles/              # theme.css, fonts.css, leaflet.css, tailwind.css
-└── lib/                 # utils.js (cn helper de Tailwind)
-```
-
----
+- React 18 + Vite
+- React Router
+- Tailwind CSS + componentes UI internos
+- Framer Motion
+- Axios
+- Leaflet
 
 ## Requisitos
 
 - Node.js 18+
-- Backend corriendo en `http://localhost:3000` (ver [backend-petFinder](../backend-petFinder))
+- npm 9+
+- Backend disponible (por defecto en `http://localhost:3000/api/v1`)
 
----
-
-## Inicio rápido
+## Instalación y ejecución
 
 ```bash
-# Instalar dependencias
 npm install
-
-# Configurar entorno
 cp .env.example .env
-
-# Levantar servidor de desarrollo
 npm run dev
 ```
 
-La app queda disponible en `http://localhost:5173`.
+URL local:
 
----
+- `http://localhost:5173`
 
 ## Variables de entorno
 
-| Variable | Descripción | Por defecto |
-|---|---|---|
-| `VITE_API_BASE_URL` | URL base del backend | `http://localhost:3000/api/v1` |
-| `VITE_ENVIRONMENT` | Entorno de ejecución | `development` |
-| `VITE_OFFLINE_MODE` | Desactiva llamadas al backend | `false` |
-
----
+- `VITE_API_BASE_URL` (default: `http://localhost:3000/api/v1`)
+- `VITE_ENVIRONMENT`
+- `VITE_OFFLINE_MODE`
 
 ## Scripts
 
 ```bash
-npm run dev      # Desarrollo con hot-reload
-npm run build    # Build de producción
-npm run preview  # Vista previa del build
-npm run lint     # ESLint
+npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
----
+## Estructura resumida
+
+```text
+src/
+  components/
+  pages/
+  context/
+  hooks/
+  services/
+  utils/
+  constants/
+  layouts/
+  styles/
+```
 
 ## Rutas principales
 
-| Ruta | Acceso | Descripción |
-|---|---|---|
-| `/` | Público | Página de inicio |
-| `/search` | Público | Búsqueda y filtrado de reportes |
-| `/pet/:id` | Público | Detalle de un reporte |
-| `/stats` | Público | Estadísticas de la comunidad |
-| `/login` | Público | Inicio de sesión |
-| `/register` | Público | Registro |
-| `/dashboard` | Autenticado | Resumen de actividad del usuario |
-| `/my-reports` | Autenticado | Reportes propios |
-| `/publish` | Autenticado | Crear nuevo reporte |
-| `/profile` | Autenticado | Editar perfil |
-| `/notifications` | Autenticado | Centro de notificaciones |
-| `/settings` | Autenticado | Configuración de la cuenta |
-| `/admin` | Admin | Panel de administración |
+Públicas:
 
----
+- `/`
+- `/search`
+- `/pet/:id`
+- `/stats`
+- `/login`
+- `/register`
 
-## Producción
+Protegidas:
 
-El frontend está desplegado en Azure Static Web Apps:
-[kind-water-085d48310.2.azurestaticapps.net](https://kind-water-085d48310.2.azurestaticapps.net)
+- `/dashboard`
+- `/my-reports`
+- `/publish`
+- `/profile`
+- `/notifications`
+- `/settings`
+
+Admin:
+
+- `/admin`
+
+## Funcionalidades relevantes
+
+### Publicación de reportes
+
+- Carga de imagen con validación básica.
+- Análisis de imagen asistido por IA para sugerir atributos.
+- Creación de reporte con ubicación y datos de contacto.
+
+### Coincidencias y resumen
+
+Después de publicar un reporte:
+
+- puede mostrar coincidencias automáticas relevantes
+- puede mostrar un resumen breve generado por IA en detalle del reporte
+
+### Configuración de cuenta
+
+La pantalla de configuración permite:
+
+- cambiar tema (claro, oscuro, sistema)
+- activar o desactivar notificaciones
+- cambiar contraseña
+- eliminar cuenta con confirmación por contraseña
+
+## Contacto del proyecto
+
+Correo de contacto visible en la app:
+
+- `jhon.castro07@uptc.edu.co`
+
+## Despliegue
+
+Frontend desplegado en Azure Static Web Apps.
+
+Si vas a desplegar cambios en entornos de prueba o producción, valida primero:
+
+- `VITE_API_BASE_URL`
+- reglas de rutas en `public/staticwebapp.config.json`
+
+## Estado actual
+
+Proyecto estable para demo funcional, con integración backend activa para:
+
+- autenticación
+- reportes
+- configuración de usuario
+- notificaciones
+- funciones asistidas por IA

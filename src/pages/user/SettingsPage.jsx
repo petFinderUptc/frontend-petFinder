@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Moon, Sun, Bell, BellOff, Monitor, Check, Globe, Shield, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -8,11 +9,13 @@ import { Button } from '../../components/ui/button';
 import { Alert } from '../../components/ui/alert';
 import { Input } from '../../components/ui/input';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { changePassword, updateUserProfile } from '../../services/userService';
+import { changePassword, deleteAccount, updateUserProfile } from '../../services/userService';
+import { PUBLIC_ROUTES } from '../../constants/routes';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { theme, setTheme, isDark } = useTheme();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
 
   const [emailNotifications, setEmailNotifications] = useLocalStorage('email-notifications', true);
   const [profileVisibility, setProfileVisibility] = useLocalStorage('profile-visibility', 'public');
@@ -27,6 +30,8 @@ export default function SettingsPage() {
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwError, setPwError] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteSaving, setDeleteSaving] = useState(false);
 
   const showMsg = (type, text) => {
     setMessage({ type, text });
@@ -81,6 +86,32 @@ export default function SettingsPage() {
       setPwError(err?.response?.data?.message || err?.message || 'No fue posible cambiar la contraseña.');
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      showMsg('error', 'Debes ingresar tu contraseña para eliminar la cuenta.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Esta accion eliminara tu cuenta. Esta accion no se puede deshacer. ¿Deseas continuar?',
+    );
+    if (!confirmed) return;
+
+    setDeleteSaving(true);
+    try {
+      await deleteAccount(deletePassword.trim());
+      await logout();
+      navigate(PUBLIC_ROUTES.LOGIN);
+    } catch (err) {
+      showMsg(
+        'error',
+        err?.response?.data?.message || err?.message || 'No fue posible eliminar la cuenta.',
+      );
+    } finally {
+      setDeleteSaving(false);
     }
   };
 
@@ -317,6 +348,36 @@ export default function SettingsPage() {
                     {showPhone ? 'Visible' : 'Oculto'}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle className="text-red-700">Zona de peligro</CardTitle>
+                <CardDescription>
+                  Eliminar tu cuenta borrara tu acceso permanentemente.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-1 max-w-md">
+                  <label className="text-sm font-medium text-foreground">Confirma tu contraseña</label>
+                  <Input
+                    type="password"
+                    placeholder="Ingresa tu contraseña"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    disabled={deleteSaving}
+                  />
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  disabled={deleteSaving}
+                  className="gap-2"
+                >
+                  {deleteSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Eliminar mi cuenta
+                </Button>
               </CardContent>
             </Card>
 
