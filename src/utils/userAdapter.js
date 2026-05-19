@@ -42,6 +42,10 @@ export const normalizeUserFromBackend = (user) => {
 export const toBackendProfilePayload = (profileData = {}) => {
   const payload = {};
 
+  if (typeof profileData.notificationsEnabled === 'boolean') {
+    payload.notificationsEnabled = profileData.notificationsEnabled;
+  }
+
   if (typeof profileData.firstName === 'string') {
     payload.firstName = profileData.firstName;
   }

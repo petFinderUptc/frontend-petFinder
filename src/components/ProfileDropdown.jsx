@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Heart, Settings, Bell, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useSignedUrl from '../hooks/useSignedUrl';
 import { useNotifications } from '../context/NotificationContext';
 import { PROTECTED_ROUTES, PUBLIC_ROUTES } from '../constants/routes';
 
@@ -49,6 +50,9 @@ export function ProfileDropdown() {
     return null;
   };
 
+  const avatarRaw = getAvatarImage();
+  const avatarSigned = useSignedUrl(avatarRaw);
+
   const getInitials = () => {
     if (user?.username) {
       return user.username.substring(0, 2).toUpperCase();
@@ -66,9 +70,9 @@ export function ProfileDropdown() {
       >
         {/* Avatar with notification badge */}
         <div className="relative">
-          {getAvatarImage() ? (
+          { (avatarSigned || avatarRaw) ? (
             <img
-              src={getAvatarImage()}
+              src={avatarSigned || avatarRaw}
               alt={user?.username || 'Usuario'}
               className="h-10 w-10 rounded-full object-cover border-2 border-gray-300"
             />
