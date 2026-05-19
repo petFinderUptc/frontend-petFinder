@@ -46,8 +46,6 @@ export const updateUserProfile = async (profileData) => {
  * Change user password
  * @param {Object} passwordData - { currentPassword, newPassword }
  * @returns {Promise<Object>} Password change confirmation
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const changePassword = async (passwordData) => {
   const response = await apiClient.put(USER_ENDPOINTS.CHANGE_PASSWORD, passwordData);
@@ -58,8 +56,6 @@ export const changePassword = async (passwordData) => {
  * Delete user account
  * @param {string} password - User password for confirmation
  * @returns {Promise<Object>} Deletion confirmation
- * 
- * TODO: Endpoint pendiente de implementación en backend
  */
 export const deleteAccount = async (password) => {
   const response = await apiClient.delete(USER_ENDPOINTS.DELETE_ACCOUNT, {

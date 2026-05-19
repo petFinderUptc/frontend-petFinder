@@ -6,6 +6,12 @@ import { Button } from './ui/button';
 import { PUBLIC_ROUTES, PROTECTED_ROUTES } from '../constants/routes';
 import { useMediaUrl } from '../hooks/useSignedUrl';
 
+const sizeLabels = {
+  small: 'Pequeno',
+  medium: 'Mediano',
+  large: 'Grande',
+};
+
 export function ReportCardItem({
   report,
   isBusy,
@@ -51,6 +57,11 @@ export function ReportCardItem({
           <p>
             Raza: <span className="font-medium">{report.breed || 'No especificada'}</span>
           </p>
+          {report.size && (
+            <p>
+              Tamaño: <span className="font-medium">{sizeLabels[report.size] || report.size}</span>
+            </p>
+          )}
           <p>
             Publicado:{' '}
             <span className="font-medium">
