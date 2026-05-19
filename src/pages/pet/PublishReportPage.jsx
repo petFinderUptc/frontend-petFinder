@@ -11,7 +11,7 @@ import { MatchesModal } from '../../components/MatchesModal';
 import { useAlert } from '../../context/AlertContext';
 import { PUBLIC_ROUTES } from '../../constants/routes';
 import { reverseGeocode, searchAddress } from '../../services/locationService';
-import { analyzeReportImage, createReport, getReportMatches, uploadReportImage } from '../../services/reportService';
+import { analyzeReportImage, createReport, getReportMatches, uploadReportImage, getAiStatus } from '../../services/reportService';
 import { AiStatusBadge } from '../../components/AiStatusBadge';
 import { validateColor, validateBreed, validateDescription, validateContact } from '../../utils/validation';
 
@@ -90,6 +90,7 @@ export default function PublishReportPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiFields, setAiFields] = useState(null);
+  const [aiAvailable, setAiAvailable] = useState(null);
   const [matches, setMatches] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
@@ -104,6 +105,22 @@ export default function PublishReportPage() {
       if (locationTimerRef.current) window.clearTimeout(locationTimerRef.current);
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    let mounted = true;
+    getAiStatus()
+      .then((res) => {
+        if (!mounted) return;
+        setAiAvailable(res?.available === true);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setAiAvailable(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const query = formData.locationQuery.trim();
@@ -199,7 +216,12 @@ export default function PublishReportPage() {
     setAiResult(null);
     setAiFields(null);
 
-    // Análisis IA en segundo plano
+    // Análisis IA en segundo plano (solo si IA está disponible)
+    if (aiAvailable === false) {
+      setAiResult({ aiAvailable: false, message: 'El servicio IA no está disponible.' });
+      return;
+    }
+
     setIsAnalyzing(true);
     analyzeReportImage(file)
       .then((result) => {
