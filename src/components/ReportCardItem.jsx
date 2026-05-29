@@ -1,5 +1,6 @@
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Loader2, Trash2, Pencil, Eye } from 'lucide-react';
+import { Trash2, Pencil, Eye } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -110,3 +111,25 @@ export function ReportCardItem({
     </Card>
   );
 }
+
+ReportCardItem.propTypes = {
+  report: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    imageUrl: PropTypes.string,
+    species: PropTypes.string,
+    type: PropTypes.string,
+    status: PropTypes.string,
+    description: PropTypes.string,
+    breed: PropTypes.string,
+    size: PropTypes.string,
+    createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  }).isRequired,
+  isBusy: PropTypes.bool,
+  isResolved: PropTypes.bool,
+  onMarkResolved: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  speciesLabels: PropTypes.objectOf(PropTypes.string).isRequired,
+  typeLabels: PropTypes.objectOf(PropTypes.string).isRequired,
+  statusLabels: PropTypes.objectOf(PropTypes.string).isRequired,
+  statusVariant: PropTypes.objectOf(PropTypes.string).isRequired,
+};

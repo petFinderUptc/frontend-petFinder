@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { memo, useState, useMemo } from 'react';
 import { Calendar, MapPin, AlertCircle, Phone } from 'lucide-react';
@@ -109,5 +110,9 @@ export const PetCard = memo(function PetCard({ pet }) {
     </Link>
   );
 });
+
+PetCard.propTypes = {
+  pet: PropTypes.object.isRequired,
+};
 
 export default PetCard;

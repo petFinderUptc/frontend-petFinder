@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, ArrowRight, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
@@ -67,10 +68,6 @@ function MatchCard({ report }) {
   );
 }
 
-/**
- * Modal que muestra posibles coincidencias tras publicar un reporte.
- * @param {{ matches: Array, onClose: () => void, reportType: 'lost' | 'found' }} props
- */
 export function MatchesModal({ matches, onClose, reportType }) {
   const navigate = useNavigate();
 
@@ -133,3 +130,21 @@ export function MatchesModal({ matches, onClose, reportType }) {
     </div>
   );
 }
+
+MatchCard.propTypes = {
+  report: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    imageUrl: PropTypes.string,
+    species: PropTypes.string,
+    type: PropTypes.string,
+    similarityScore: PropTypes.number,
+    description: PropTypes.string,
+    distanceKm: PropTypes.number,
+  }).isRequired,
+};
+
+MatchesModal.propTypes = {
+  matches: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired })).isRequired,
+  onClose: PropTypes.func.isRequired,
+  reportType: PropTypes.oneOf(['lost', 'found']).isRequired,
+};

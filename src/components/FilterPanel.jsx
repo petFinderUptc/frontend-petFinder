@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import { Input } from './ui/input';
@@ -180,3 +181,16 @@ export function FilterPanel({ filters, onFilterChange, onSearch }) {
     </div>
   );
 }
+
+FilterPanel.propTypes = {
+  filters: PropTypes.shape({
+    reportType: PropTypes.string,
+    species: PropTypes.string,
+    size: PropTypes.string,
+    color: PropTypes.string,
+    breed: PropTypes.string,
+    searchTerm: PropTypes.string,
+  }).isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  onSearch: PropTypes.func,
+};
