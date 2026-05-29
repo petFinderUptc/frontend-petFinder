@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -100,6 +101,14 @@ export function LocationPicker({
     </div>
   );
 }
+
+LocationPicker.propTypes = {
+  latitude: PropTypes.number,
+  longitude: PropTypes.number,
+  onLocationChange: PropTypes.func.isRequired,
+  defaultCenter: PropTypes.arrayOf(PropTypes.number),
+  zoom: PropTypes.number,
+};
 
 function placeMarker(lat, lon, map, markerRef, onLocationChangeRef) {
   if (!markerRef.current) {
