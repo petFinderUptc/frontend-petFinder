@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -208,3 +209,28 @@ export function StatsSection({ stats, loading }) {
     </section>
   );
 }
+
+DonutCenter.propTypes = {
+  total: PropTypes.number.isRequired,
+};
+
+StatCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  count: PropTypes.number.isRequired,
+  palette: PropTypes.shape({
+    bg: PropTypes.string.isRequired,
+    text: PropTypes.string.isRequired,
+    ring: PropTypes.string.isRequired,
+  }).isRequired,
+  delay: PropTypes.number,
+};
+
+StatsSection.propTypes = {
+  stats: PropTypes.shape({
+    lost: PropTypes.number,
+    found: PropTypes.number,
+    resolved: PropTypes.number,
+    totalActive: PropTypes.number,
+  }),
+  loading: PropTypes.bool,
+};

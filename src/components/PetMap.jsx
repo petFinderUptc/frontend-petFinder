@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -236,3 +237,19 @@ export function PetMap({ reports = [], center = DEFAULT_CENTER, zoom = 12 }) {
 
   return <div ref={mapContainerRef} className="w-full h-[420px] rounded-lg border" />;
 }
+
+PetMap.propTypes = {
+  reports: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      lon: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      type: PropTypes.string,
+      species: PropTypes.string,
+      description: PropTypes.string,
+      imageUrl: PropTypes.string,
+    }),
+  ),
+  center: PropTypes.arrayOf(PropTypes.number),
+  zoom: PropTypes.number,
+};

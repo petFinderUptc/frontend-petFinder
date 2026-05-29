@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { memo, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
@@ -148,3 +149,20 @@ export const SearchResultCard = memo(function SearchResultCard({ report, species
     </Link>
   );
 });
+
+SearchResultCard.propTypes = {
+  report: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    imageUrl: PropTypes.string,
+    species: PropTypes.string,
+    type: PropTypes.string,
+    status: PropTypes.string,
+    description: PropTypes.string,
+    size: PropTypes.string,
+    similarityScore: PropTypes.number,
+    distanceKm: PropTypes.number,
+  }).isRequired,
+  speciesLabel: PropTypes.objectOf(PropTypes.string),
+  typeLabel: PropTypes.objectOf(PropTypes.string),
+  showSimilarity: PropTypes.bool,
+};
